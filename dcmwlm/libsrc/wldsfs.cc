@@ -643,6 +643,7 @@ OFBool WlmDataSourceFileSystem::SetReadlock()
 // Return Value : OFTrue - The read lock has been set successfully.
 //                OFFalse - The read lock has not been set successfully.
 {
+   /*JF
 #ifndef _WIN32
   struct flock lockdata;
 #endif
@@ -717,6 +718,8 @@ OFBool WlmDataSourceFileSystem::SetReadlock()
   // update member variable to indicate that a read lock has been set successfully
   readLockSetOnDataSource = OFTrue;
 
+    */
+    
   // return success
   return OFTrue;
 }
@@ -731,6 +734,7 @@ OFBool WlmDataSourceFileSystem::ReleaseReadlock()
 // Return Value : OFTrue - The read lock has been released successfully.
 //                OFFalse - The read lock has not been released successfully.
 {
+   /*
 #ifndef _WIN32
   struct flock lockdata;
 #endif
@@ -772,7 +776,8 @@ OFBool WlmDataSourceFileSystem::ReleaseReadlock()
 
   // update member variable to indicate that no read lock is set
   readLockSetOnDataSource = OFFalse;
-
+*/
+   
   // return success
   return OFTrue;
 }

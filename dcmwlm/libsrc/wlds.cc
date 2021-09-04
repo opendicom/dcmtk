@@ -268,7 +268,9 @@ void WlmDataSource::CheckNonSequenceElementInSearchMask( DcmDataset *searchMask,
     // handle special case of "Specific Character Set"
     if( tag == DCM_SpecificCharacterSet )
     {
+      /* JF
       DCMWLM_WARN("Attribute " << tag.getTagName() << " found in the search mask, value is neither checked nor used for matching");
+       */
     }
     else
     {
