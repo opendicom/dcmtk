@@ -1337,6 +1337,21 @@ storeSCU(T_ASC_Association *assoc, const char *fname)
     filexfer = EXS_DeflatedLittleEndianExplicit;
   }
 
+  //OFLOG_DEBUG(storescuLogger, "(jf) filexfer.getXfer(): " << filexfer.getXfer() << "(2=explicit little endian)" );
+  //OFLOG_DEBUG(storescuLogger, "(jf) abstractSyntax looked for: " << sopClass );
+   /*
+   DUL_PRESENTATIONCONTEXT *pcjf;
+   LST_HEAD **l;
+   l = &assoc->params->DULparams.acceptedPresentationContext;
+   pcjf = (DUL_PRESENTATIONCONTEXT*) LST_Head(l);
+   (void)LST_Position(l, (LST_NODE*)pcjf);
+   while (pcjf)
+   {
+      OFLOG_DEBUG(storescuLogger, "(jf)" << pcjf->abstractSyntax );
+       pcjf = (DUL_PRESENTATIONCONTEXT*) LST_Next(l);
+   }
+   */
+   
   if (filexfer.getXfer() != EXS_Unknown)
     presID = ASC_findAcceptedPresentationContextID(assoc, sopClass, filexfer.getXferID());
   else

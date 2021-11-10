@@ -463,6 +463,7 @@ ChestCADSRStorage                                    1.2.840.10008.5.1.4.1.1.88.
 XRayRadiationDoseSRStorage                           1.2.840.10008.5.1.4.1.1.88.67
 ColonCADSRStorage                                    1.2.840.10008.5.1.4.1.1.88.69
 EncapsulatedPDFStorage                               1.2.840.10008.5.1.4.1.1.104.1
+EncapsulatedCDAStorage                               1.2.840.10008.5.1.4.1.1.104.2
 PositronEmissionTomographyImageStorage               1.2.840.10008.5.1.4.1.1.128
 RTImageStorage                                       1.2.840.10008.5.1.4.1.1.481.1
 RTDoseStorage                                        1.2.840.10008.5.1.4.1.1.481.2
