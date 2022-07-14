@@ -63,6 +63,10 @@ t_huge_concat.o: t_huge_concat.cc \
  ../../dcmdata/include/dcmtk/dcmdata/dcistrma.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcostrma.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
+ ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
+ ../../ofstd/include/dcmtk/ofstd/diag/push.def \
+ ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
+ ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcdicent.h \
  ../../dcmdata/include/dcmtk/dcmdata/dchashdi.h \
@@ -152,11 +156,8 @@ t_huge_concat.o: t_huge_concat.cc \
  ../../ofstd/include/dcmtk/ofstd/ofvriant.h \
  ../../ofstd/include/dcmtk/ofstd/variadic/variant.h \
  ../../ofstd/include/dcmtk/ofstd/variadic/helpers.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
  ../../ofstd/include/dcmtk/ofstd/diag/cnvrsn.def \
  ../../ofstd/include/dcmtk/ofstd/diag/vsprfw.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmiod/include/dcmtk/dcmiod/modacquisitioncontext.h \
  ../../dcmiod/include/dcmtk/dcmiod/modenhequipment.h \
  ../../dcmiod/include/dcmtk/dcmiod/modimagepixel.h \
@@ -253,6 +254,10 @@ t_roundtrip.o: t_roundtrip.cc \
  ../../dcmdata/include/dcmtk/dcmdata/dcistrma.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcostrma.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
+ ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
+ ../../ofstd/include/dcmtk/ofstd/diag/push.def \
+ ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
+ ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcdicent.h \
  ../../dcmdata/include/dcmtk/dcmdata/dchashdi.h \
@@ -342,11 +347,8 @@ t_roundtrip.o: t_roundtrip.cc \
  ../../ofstd/include/dcmtk/ofstd/ofvriant.h \
  ../../ofstd/include/dcmtk/ofstd/variadic/variant.h \
  ../../ofstd/include/dcmtk/ofstd/variadic/helpers.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
  ../../ofstd/include/dcmtk/ofstd/diag/cnvrsn.def \
  ../../ofstd/include/dcmtk/ofstd/diag/vsprfw.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmiod/include/dcmtk/dcmiod/modacquisitioncontext.h \
  ../../dcmiod/include/dcmtk/dcmiod/modenhequipment.h \
  ../../dcmiod/include/dcmtk/dcmiod/modimagepixel.h \

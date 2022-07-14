@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 2012-2016, OFFIS e.V.
+ *  Copyright (C) 2012-2022, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -34,8 +34,8 @@
  * represented through DicomImage.
  *
  * @note These functions hopefully simplify working with DRTImageIOD. This is a
- * work in progress, please propose any improvements which would make working
- * with this class easier for you and that your consider useful.
+ *   work in progress, please propose any improvements which would make working
+ *   with this class easier for you and that you consider useful.
  */
 class DCMTK_DCMRT_EXPORT DRTImage : public DRTImageIOD
 {
@@ -119,7 +119,7 @@ public:
 
     /** render pixel data and return result as a memory buffer.
      *  apply VOI/PLUT transformation and (visible) overlay planes.
-     *  The rendered pixel data is alway unsigned.
+     *  The rendered pixel data is always unsigned.
      *  @param  result  OFVector to fill with resulting frame's data
      *  @param  frame   number of frame to be rendered (0..n-1)
      *  @return EC_Normal if successful, else an error code

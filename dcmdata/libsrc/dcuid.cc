@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 1994-2021, OFFIS e.V.
+ *  Copyright (C) 1994-2022, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -215,7 +215,7 @@ static const UIDNameMap uidNameMap[] = {
     { UID_MacularGridThicknessAndVolumeReportStorage,          "MacularGridThicknessAndVolumeReportStorage" },
     { UID_MammographyCADSRStorage,                             "MammographyCADSRStorage" },
     { UID_MediaStorageDirectoryStorage,                        "MediaStorageDirectoryStorage" },
-    { UID_MicroscopyBulkSimpleAnnotationsStorage,              "MicroscopyBulkSimple​AnnotationsStorage​" },
+    { UID_MicroscopyBulkSimpleAnnotationsStorage,              "MicroscopyBulkSimpleAnnotationsStorage" },
     { UID_MRImageStorage,                                      "MRImageStorage" },
     { UID_MRSpectroscopyStorage,                               "MRSpectroscopyStorage" },
     { UID_MultichannelRespiratoryWaveformStorage,              "MultichannelRespiratoryWaveformStorage" },
@@ -260,9 +260,11 @@ static const UIDNameMap uidNameMap[] = {
     { UID_RTPlanStorage,                                       "RTPlanStorage" },
     { UID_RTRadiationRecordSetStorage,                         "RTRadiationRecordSetStorage" },
     { UID_RTRadiationSalvageRecordStorage,                     "RTRadiationSalvageRecordStorage" },
+    { UID_RTRadiationSetDeliveryInstructionStorage,            "RTRadiationSetDeliveryInstructionStorage" },
     { UID_RTRadiationSetStorage,                               "RTRadiationSetStorage" },
     { UID_RTSegmentAnnotationStorage,                          "RTSegmentAnnotationStorage" },
     { UID_RTStructureSetStorage,                               "RTStructureSetStorage" },
+    { UID_RTTreatmentPreparationStorage,                       "RTTreatmentPreparationStorage" },
     { UID_RTTreatmentSummaryRecordStorage,                     "RTTreatmentSummaryRecordStorage" },
     { UID_SecondaryCaptureImageStorage,                        "SecondaryCaptureImageStorage" },
     { UID_SegmentationStorage,                                 "SegmentationStorage" },
@@ -538,6 +540,7 @@ static const UIDNameMap uidNameMap[] = {
     { UID_ICBM452T1FrameOfReference,                           "ICBM452T1FrameOfReference" },
     { UID_ICBMSingleSubjectMRIFrameOfReference,                "ICBMSingleSubjectMRIFrameOfReference" },
     { UID_IEC61217FixedCoordinateSystemFrameOfReference,       "IEC61217FixedCoordinateSystemFrameOfReference" },
+    { UID_IEC61217TableTopCoordinateSystemFrameOfReference,    "IEC61217TableTopCoordinateSystemFrameOfReference" },
     { UID_SPM2AVG152PDFrameOfReference,                        "SPM2AVG152PDFrameOfReference" },
     { UID_SPM2AVG152T1FrameOfReference,                        "SPM2AVG152T1FrameOfReference" },
     { UID_SPM2AVG152T2FrameOfReference,                        "SPM2AVG152T2FrameOfReference" },
@@ -721,9 +724,11 @@ const char* dcmAllStorageSOPClassUIDs[] = {
     UID_RTPlanStorage,
     UID_RTRadiationRecordSetStorage,
     UID_RTRadiationSalvageRecordStorage,
+    UID_RTRadiationSetDeliveryInstructionStorage,
     UID_RTRadiationSetStorage,
     UID_RTSegmentAnnotationStorage,
     UID_RTStructureSetStorage,
+    UID_RTTreatmentPreparationStorage,
     UID_RTTreatmentSummaryRecordStorage,
     UID_SecondaryCaptureImageStorage,
     UID_SegmentationStorage,
@@ -975,8 +980,10 @@ const char* dcmLongSCUStorageSOPClassUIDs[] = {
 //  UID_RTPhysicianIntentStorage,
 //  UID_RTRadiationRecordSetStorage,
 //  UID_RTRadiationSalvageRecordStorage,
+//  UID_RTRadiationSetDeliveryInstructionStorage,
 //  UID_RTRadiationSetStorage,
 //  UID_RTSegmentAnnotationStorage,
+//  UID_RTTreatmentPreparationStorage,
 //  UID_SegmentedVolumeRenderingVolumetricPresentationStateStorage,
 //  UID_SimplifiedAdultEchoSRStorage,
 //  UID_SleepElectroencephalogramWaveformStorage,
@@ -1349,9 +1356,11 @@ static const DcmModalityTable modalities[] = {
     { UID_RTPhysicianIntentStorage,                                "RIp",  4096 },
     { UID_RTRadiationRecordSetStorage,                             "RSr",  4096 },
     { UID_RTRadiationSalvageRecordStorage,                         "RRs",  4096 },
+    { UID_RTRadiationSetDeliveryInstructionStorage,                "RSd",  4096 },
     { UID_RTRadiationSetStorage,                                   "RSe",  4096 },  /* was RRs */
     { UID_RTSegmentAnnotationStorage,                              "RAs",  4096 },  /* was RRs */
     { UID_RTStructureSetStorage,                                   "RS",   4096 },
+    { UID_RTTreatmentPreparationStorage,                           "RTp",  4096 },
     { UID_RTTreatmentSummaryRecordStorage,                         "RTs",  4096 },
     { UID_SecondaryCaptureImageStorage,                            "SC",   512 * 512 * 2 },
     { UID_SegmentationStorage,                                     "SG",   4096 },

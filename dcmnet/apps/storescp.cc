@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 1994-2021, OFFIS e.V.
+ *  Copyright (C) 1994-2022, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -578,7 +578,7 @@ int main(int argc, char *argv[])
       app.checkValue(cmd.getValue(opt_profileName));
 
       // read configuration file
-      OFCondition cond = DcmAssociationConfigurationFile::initialize(asccfg, opt_configFile);
+      OFCondition cond = DcmAssociationConfigurationFile::initialize(asccfg, opt_configFile, OFFalse);
       if (cond.bad())
       {
         OFLOG_FATAL(storescpLogger, "cannot read config file: " << cond.text());
@@ -1853,12 +1853,14 @@ storeSCPCallback(
               if (!subdirectoryName.empty())
                 subdirectoryName += '_';
               subdirectoryName += currentStudyInstanceUID;
+              OFStandard::sanitizeFilename(subdirectoryName);
               break;
             case ESM_PatientName:
               // pattern: "[Patient's Name]_[YYYYMMDD]_[HHMMSSMMM]"
               subdirectoryName = currentPatientName;
               subdirectoryName += '_';
               subdirectoryName += timestamp;
+              OFStandard::sanitizeFilename(subdirectoryName);
               break;
             case ESM_None:
               break;
@@ -2065,9 +2067,11 @@ static OFCondition storeSCP(
     }
     else
     {
-      // don't create new UID, use the study instance UID as found in object
+      // Use the SOP instance UID as found in the C-STORE request message as part of the filename
+      OFString uid(OFSTRING_GUARD(req->AffectedSOPInstanceUID));
+      OFStandard::sanitizeFilename(uid);
       sprintf(imageFileName, "%s%c%s.%s%s", opt_outputDirectory.c_str(), PATH_SEPARATOR, dcmSOPClassUIDToModality(req->AffectedSOPClassUID, "UNKNOWN"),
-        req->AffectedSOPInstanceUID, opt_fileNameExtension.c_str());
+        uid.c_str(), opt_fileNameExtension.c_str());
     }
   }
 

@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 1996-2018, OFFIS e.V.
+ *  Copyright (C) 1996-2022, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -151,7 +151,7 @@ class DCMTK_DCMWLM_EXPORT WlmFileSystemInteractionManager
        *  @param normalize Normalize each attribute value before the check. Defaults to OFTrue, which
        *    means the value will be normalized as appropriate for the given VR, e.g. ignoring spaces
        *    used as padding.
-       *  @param normalizeWildCards. Whether to interpret a query only consisting of wild cards as
+       *  @param normalizeWildCards Whether to interpret a query only consisting of wild cards as
        *    an universal match. Defaults to OFTrue, which means wild cards will be normalized if an
        *    attribute's VR supports it and it is allowed for the attribute (as defined by the matchingKeys
        *    argument). Set to OFFalse to force strict interpretation instead.
@@ -192,7 +192,7 @@ class DCMTK_DCMWLM_EXPORT WlmFileSystemInteractionManager
        */
     OFCondition ConnectToFileSystem( const OFString& dfPathv );
 
-      /** Disconnects from the worklist file system database..
+      /** Disconnects from the worklist file system database.
        *  @return Indicates if the connection was disconnected successfully.
        */
     OFCondition DisconnectFromFileSystem();
@@ -252,7 +252,7 @@ class DCMTK_DCMWLM_EXPORT WlmFileSystemInteractionManager
        *  @param numOfSuperiorSequences The number of elements in the above array.
        *  @param idx                    Identifies the record from which the attribute value shall be retrieved.
        *  @param value                  Pointer to a newly created string that contains the requested value.
-       *                                If value was not found an emtpy string will be returned.
+       *                                If value was not found an empty string will be returned.
        */
     void GetAttributeValueForMatchingRecord( DcmTagKey tag, WlmSuperiorSequenceInfoType *superiorSequenceArray, unsigned long numOfSuperiorSequences, unsigned long idx, char *&value );
 

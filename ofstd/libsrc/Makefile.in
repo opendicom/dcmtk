@@ -12,7 +12,9 @@ configdir = @top_srcdir@/@configdir@
 
 include $(configdir)/@common_makefile@
 
-LOCALINCLUDES =
+oficonvdir = $(top_srcdir)/../oficonv
+
+LOCALINCLUDES = -I$(oficonvdir)/include
 LOCALDEFS =
 
 objs = oflist.o ofstring.o ofcmdln.o ofconapp.o offname.o ofconsol.o ofthread.o \
@@ -25,15 +27,15 @@ library = libofstd.$(LIBEXT)
 
 all: $(library)
 
+$(library): $(objs)
+	$(AR) $(ARFLAGS) $@ $(objs)
+	$(RANLIB) $@
+
+
 install: $(library)
 	$(configdir)/mkinstalldirs $(DESTDIR)$(libdir)
 	$(INSTALL_DATA) $(library) $(DESTDIR)$(libdir)/$(library)
 	$(RANLIB) $(DESTDIR)$(libdir)/$(library)
-
-
-$(library): $(objs)
-	$(AR) $(ARFLAGS) $@ $(objs)
-	$(RANLIB) $@
 
 
 clean:

@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 1998-2021, OFFIS e.V.
+ *  Copyright (C) 1998-2022, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -2474,7 +2474,7 @@ OFCondition DVInterface::terminateQueryRetrieveServer()
   OFCondition cond = ASC_initializeNetwork(NET_REQUESTOR, 0, 30, &net);
   if (cond.good())
   {
-    cond = ASC_createAssociationParameters(&params, DEFAULT_MAXPDU);
+    cond = ASC_createAssociationParameters(&params, DEFAULT_MAXPDU, dcmConnectionTimeout.get());
     if (cond.good())
     {
       ASC_setAPTitles(params, getNetworkAETitle(), getQueryRetrieveAETitle(), NULL);
@@ -2726,6 +2726,8 @@ OFCondition DVInterface::saveHardcopyGrayscaleImage(
       if (EC_Normal==status) status = DVPSHelper::putStringValue(dataset, DCM_InstanceCreationDate, aString.c_str());
       DVPSHelper::currentTime(aString);
       if (EC_Normal==status) status = DVPSHelper::putStringValue(dataset, DCM_InstanceCreationTime, aString.c_str());
+      const char *specificCharSet = pState->getCharsetString();
+      if (status.good() && specificCharSet) status = DVPSHelper::putStringValue(dataset, DCM_SpecificCharacterSet, specificCharSet);
 
       // Hardcopy Grayscale Image Module
       if (EC_Normal==status) status = DVPSHelper::putStringValue(dataset, DCM_PhotometricInterpretation, "MONOCHROME2");
@@ -3630,7 +3632,7 @@ OFCondition DVInterface::terminatePrintServer()
     OFCondition cond = ASC_initializeNetwork(NET_REQUESTOR, 0, 30, &net);
     if (cond.good())
     {
-      cond = ASC_createAssociationParameters(&params, DEFAULT_MAXPDU);
+      cond = ASC_createAssociationParameters(&params, DEFAULT_MAXPDU, dcmConnectionTimeout.get());
       if (cond.good())
       {
         if (useTLS)

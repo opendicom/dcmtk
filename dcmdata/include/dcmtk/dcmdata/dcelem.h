@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 1994-2021, OFFIS e.V.
+ *  Copyright (C) 1994-2022, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -123,8 +123,14 @@ class DCMTK_DCMDATA_EXPORT DcmElement
      *  @param enctype sequence encoding type for length calculation
      *  @return value length of DICOM element
      */
-    virtual Uint32 getLength(const E_TransferSyntax /*xfer*/ = EXS_LittleEndianImplicit,
-                             const E_EncodingType /*enctype*/ = EET_UndefinedLength)
+
+#ifdef DOXYGEN
+    virtual Uint32 getLength(const E_TransferSyntax xfer = EXS_LittleEndianImplicit,
+                             const E_EncodingType enctype = EET_UndefinedLength)
+#else
+    virtual Uint32 getLength(const E_TransferSyntax /* xfer */ = EXS_LittleEndianImplicit,
+                             const E_EncodingType /* enctype */ = EET_UndefinedLength)
+#endif
     {
         return getLengthField();
     }
@@ -800,8 +806,8 @@ class DCMTK_DCMDATA_EXPORT DcmElement
      *  @param candidateFirst the first part of the candidate that will be matched against this
      *    this element + keySecond.
      *  @param candidateSecond the second part of the candidate that will be combined with
-     *    candidateFirst for matching against this elemement + keySecond.
-     *  @return OFTrue if the combination of this elemement and keySecond match with the
+     *    candidateFirst for matching against this element + keySecond.
+     *  @return OFTrue if the combination of this element and keySecond match with the
      *    combination of candidateFirst and candidateSecond. OFFalse otherwise.
      */
     virtual OFBool combinationMatches(const DcmElement& keySecond,

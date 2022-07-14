@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 1998-2021, OFFIS e.V.
+ *  Copyright (C) 1998-2022, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -957,7 +957,9 @@ OFCondition DcmPresentationState::createFromImage(
   if (result==EC_Normal) result = seriesInstanceUID.putString(dcmGenerateUniqueIdentifier(uid, SITE_SERIES_UID_ROOT));
   if (result==EC_Normal) result = sOPInstanceUID.putString(dcmGenerateUniqueIdentifier(uid));
   if (result==EC_Normal) result = seriesNumber.putString(DEFAULT_seriesNumber);
-  if (result==EC_Normal) result = specificCharacterSet.putString(DEFAULT_specificCharacterSet);
+
+  /* If no other character set is specified by the image, we use ISO_IR 100 as the default */
+  if ((result==EC_Normal) && (specificCharacterSet.getLength() == 0)) result = specificCharacterSet.putString(DEFAULT_specificCharacterSet);
 
   if (result==EC_Normal)
   {
@@ -1764,6 +1766,9 @@ OFCondition DcmPresentationState::setCharset(DVPScharacterSet charset)
     case DVPSC_latin5:
       cname = "ISO_IR 148";
       break;
+    case DVPSC_latin9:
+      cname = "ISO_IR 203";
+      break;
     case DVPSC_cyrillic:
       cname = "ISO_IR 144";
       break;
@@ -1803,6 +1808,7 @@ DVPScharacterSet DcmPresentationState::getCharset()
   else if (aString == "ISO_IR 109") return DVPSC_latin3;
   else if (aString == "ISO_IR 110") return DVPSC_latin4;
   else if (aString == "ISO_IR 148") return DVPSC_latin5;
+  else if (aString == "ISO_IR 203") return DVPSC_latin9;
   else if (aString == "ISO_IR 144") return DVPSC_cyrillic;
   else if (aString == "ISO_IR 127") return DVPSC_arabic;
   else if (aString == "ISO_IR 126") return DVPSC_greek;
