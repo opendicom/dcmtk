@@ -12,6 +12,11 @@ configdir = @top_srcdir@/@configdir@
 
 include $(configdir)/@common_makefile@
 
+oficonvdir = $(top_srcdir)/../oficonv
+oficonvinc = -I$(oficonvdir)/include
+oficonvlibdir = -L$(oficonvdir)/libsrc
+oficonvlib = -loficonv
+
 ofstddir = $(top_srcdir)/../ofstd
 ofstdinc = -I$(ofstddir)/include
 ofstdlibdir = -L$(ofstddir)/libsrc
@@ -33,9 +38,9 @@ dcmnetlibdir = -L$(dcmnetdir)/libsrc
 dcmnetlib = -ldcmnet
 
 LOCALINCLUDES = $(dcmnetinc) $(dcmdatainc) $(ofstdinc) $(ofloginc)
-LIBDIRS = -L$(top_srcdir)/libsrc $(dcmnetlibdir) $(dcmdatalibdir) \
-	$(ofstdlibdir) $(ofloglibdir)
-LOCALLIBS = -ldcmqrdb $(dcmnetlib) $(dcmdatalib) $(ofstdlib) $(ofloglib) \
+LIBDIRS = -L$(top_srcdir)/libsrc $(dcmnetlibdir) $(dcmdatalibdir) $(ofloglibdir) \
+	$(ofstdlibdir) $(oficonvlibdir)
+LOCALLIBS = -ldcmqrdb $(dcmnetlib) $(dcmdatalib) $(ofloglib) $(ofstdlib) $(oficonvlib) \
 	$(ZLIBLIBS) $(TCPWRAPPERLIBS) $(CHARCONVLIBS) $(MATHLIBS)
 
 objs = dcmqrscp.o dcmqrti.o dcmqridx.o

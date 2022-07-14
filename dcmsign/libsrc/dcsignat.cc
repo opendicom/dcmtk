@@ -52,7 +52,7 @@ BEGIN_EXTERN_C
 #include <openssl/evp.h>
 #include <openssl/err.h>
 #include <openssl/ssl.h>
-#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+#ifdef HAVE_OPENSSL_PROVIDER_H
 #include <openssl/provider.h>
 #endif
 END_EXTERN_C
@@ -60,7 +60,7 @@ END_EXTERN_C
 
 /* static helper methods */
 
-#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+#ifdef HAVE_OPENSSL_PROTOTYPE_OSSL_PROVIDER_LOAD
 static OSSL_PROVIDER *legacyProvider = NULL;
 static OSSL_PROVIDER *defaultProvider = NULL;
 #endif
@@ -70,17 +70,20 @@ void DcmSignature::initializeLibrary()
   SSL_library_init();
   SSL_load_error_strings();
   OpenSSL_add_all_algorithms();
-#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+#ifdef HAVE_OPENSSL_PROTOTYPE_OSSL_PROVIDER_LOAD
   // load the legacy provider, which is needed for RIPEMD160
   if (legacyProvider == NULL) legacyProvider = OSSL_PROVIDER_load(NULL, "legacy");
+  if (legacyProvider == NULL) DCMSIGN_ERROR("Unable to load the OpenSSL Legacy Provider, RIPEMD160 and MD5 not available");
+
   // explicitly also load the default provider
   if (defaultProvider == NULL) defaultProvider = OSSL_PROVIDER_load(NULL, "default");
+  if (defaultProvider == NULL) DCMSIGN_ERROR("Unable to load the OpenSSL Default Provider");
 #endif
 }
 
 void DcmSignature::cleanupLibrary()
 {
-#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+#ifdef HAVE_OPENSSL_PROTOTYPE_OSSL_PROVIDER_LOAD
   if (legacyProvider)
   {
     OSSL_PROVIDER_unload(legacyProvider);

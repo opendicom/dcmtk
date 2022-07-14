@@ -404,8 +404,7 @@ The following preferred interpolation algorithms can be selected using the
 The \e --write-tiff option is only available when DCMTK has been configured
 and compiled with support for the external \b libtiff TIFF library.  The
 availability of the TIFF compression options depends on the \b libtiff
-configuration.  In particular, the patented LZW algorithm may not be
-available.
+configuration.
 
 The \e --write-png option is only available when DCMTK has been configured
 and compiled with support for the external \b libpng PNG library.  Option
@@ -498,6 +497,6 @@ It is an error if no data dictionary can be loaded.
 
 \section dcml2pnm_copyright COPYRIGHT
 
-Copyright (C) 2001-2020 by OFFIS e.V., Escherweg 2, 26121 Oldenburg, Germany.
+Copyright (C) 2001-2022 by OFFIS e.V., Escherweg 2, 26121 Oldenburg, Germany.
 
 */

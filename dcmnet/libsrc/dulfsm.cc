@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 1994-2021, OFFIS e.V.
+ *  Copyright (C) 1994-2022, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were partly developed by
@@ -105,7 +105,7 @@ END_EXTERN_C
 #include "dcmtk/dcmnet/lst.h"
 #include "dcmtk/dcmnet/cond.h"
 #include "dcmtk/dcmnet/dul.h"
-#include "dulstruc.h"
+#include "dcmtk/dcmnet/dulstruc.h"
 #include "dulpriv.h"
 #include "dulfsm.h"
 #include "dcmtk/ofstd/ofbmanip.h"
@@ -114,6 +114,7 @@ END_EXTERN_C
 #include "dcmtk/dcmnet/dcmtrans.h"
 #include "dcmtk/dcmnet/dcmlayer.h"
 #include "dcmtk/dcmnet/diutil.h"
+#include "dcmtk/dcmnet/helpers.h"
 #include "dcmtk/ofstd/ofsockad.h" /* for class OFSockAddr */
 #include <ctime>
 
@@ -303,9 +304,6 @@ findPresentationCtx(LST_HEAD ** lst, DUL_PRESENTATIONCONTEXTID contextID);
 
 PRV_SCUSCPROLE *
 findSCUSCPRole(LST_HEAD ** lst, char *abstractSyntax);
-
-void destroyPresentationContextList(LST_HEAD ** l);
-void destroyUserInformationLists(DUL_USERINFO * userInfo);
 
 static volatile FSM_Event_Description Event_Table[] = {
     {A_ASSOCIATE_REQ_LOCAL_USER, "A-ASSOCIATE request (local user)"},
@@ -1015,7 +1013,7 @@ AE_3_AssociateConfirmationAccept(PRIVATE_NETWORKKEY ** /*network*/,
 
         }
 
-        destroyPresentationContextList(&assoc.presentationContextList);
+        destroyAssociatePDUPresentationContextList(&assoc.presentationContextList);
         destroyUserInformationLists(&assoc.userInfo);
         service->peerMaxPDU = assoc.userInfo.maxLength.maxLength;
         (*association)->maxPDV = assoc.userInfo.maxLength.maxLength;
@@ -1232,7 +1230,7 @@ AE_6_ExamineAssociateRequest(PRIVATE_NETWORKKEY ** /*network*/,
                assoc.userInfo.implementationVersionName.data, 16 + 1);
         (*association)->associationState = DUL_ASSOC_ESTABLISHED;
 
-        destroyPresentationContextList(&assoc.presentationContextList);
+        destroyAssociatePDUPresentationContextList(&assoc.presentationContextList);
         destroyUserInformationLists(&assoc.userInfo);
 
         /* If this PDU is ok with us */
@@ -2262,8 +2260,7 @@ requestAssociationTCP(PRIVATE_NETWORKKEY ** network,
     }
     server.setPort(OFstatic_cast(unsigned short, htons(OFstatic_cast(unsigned short, port))));
 
-    // get global connection timeout
-    Sint32 connectTimeout = dcmConnectionTimeout.get();
+    const Sint32 connectTimeout = params->tcpConnectTimeout;
 
     s = socket(server.getFamily(), SOCK_STREAM, 0);
 #ifdef _WIN32
@@ -2589,7 +2586,7 @@ sendAssociationRQTCP(PRIVATE_NETWORKKEY ** /*network*/,
       }
     }
 
-    destroyPresentationContextList(&associateRequest.presentationContextList);
+    destroyAssociatePDUPresentationContextList(&associateRequest.presentationContextList);
     destroyUserInformationLists(&associateRequest.userInfo);
     if (cond.bad())
         return cond;
@@ -2672,7 +2669,7 @@ sendAssociationACTCP(PRIVATE_NETWORKKEY ** /*network*/,
       }
     }
 
-    destroyPresentationContextList(&associateReply.presentationContextList);
+    destroyAssociatePDUPresentationContextList(&associateReply.presentationContextList);
     destroyUserInformationLists(&associateReply.userInfo);
 
     if (cond.bad()) return cond;
@@ -3682,6 +3679,19 @@ defragmentTCP(DcmTransportConnection *connection, DUL_BLOCKOPTIONS block, time_t
         /* we actually did receive data or an error occurred */
         do
         {
+#if 0
+            /* the original patch submitted for DCMTK issue #1006 contains a sleep statement here
+             * that should actually not be necessary. We're leaving it in the code for now
+             * with this comment. If your code (in non-blocking mode, on Windows) works if
+             * and only if this gets enabled, please let us know: <bugs@dcmtk.org> */
+#ifdef HAVE_WINSOCK_H
+            if (OFStandard::getLastNetworkErrorCode().value() == WSAEWOULDBLOCK)
+            {
+                Sleep(1);
+            }
+#endif
+#endif
+
             /* if DUL_NOBLOCK is specified as a blocking option, we only want to wait a certain
              * time for receiving data over the network. If no data was received during that time,
              * DUL_READTIMEOUT shall be returned. Note that if DUL_BLOCK is specified the application
@@ -3700,7 +3710,11 @@ defragmentTCP(DcmTransportConnection *connection, DUL_BLOCKOPTIONS block, time_t
             /* data has become available, now call read(). */
             bytesRead = connection->read((char*)b, size_t(l));
 
-        } while (bytesRead == -1 && OFStandard::getLastNetworkErrorCode().value() == DCMNET_EINTR);
+        } while ((bytesRead == -1 && OFStandard::getLastNetworkErrorCode().value() == DCMNET_EINTR)
+#ifdef HAVE_WINSOCK_H
+                 || (bytesRead == -1 && (OFStandard::getLastNetworkErrorCode().value() == WSAEWOULDBLOCK))
+#endif
+                 );
 
         /* if we actually received data, move the buffer pointer to its own end, update the variable */
         /* that determines the end of the first loop, and update the reference parameter return variable */
@@ -3977,49 +3991,4 @@ findSCUSCPRole(LST_HEAD ** lst, char *abstractSyntax)
         role = (PRV_SCUSCPROLE*)LST_Next(lst);
     }
     return NULL;
-}
-
-void
-destroyPresentationContextList(LST_HEAD ** l)
-{
-    PRV_PRESENTATIONCONTEXTITEM
-    * prvCtx;
-    DUL_SUBITEM
-        * subItem;
-
-    if (*l == NULL)
-        return;
-
-    prvCtx = (PRV_PRESENTATIONCONTEXTITEM*)LST_Dequeue(l);
-    while (prvCtx != NULL) {
-        subItem = (DUL_SUBITEM*)LST_Dequeue(&prvCtx->transferSyntaxList);
-        while (subItem != NULL) {
-            free(subItem);
-            subItem = (DUL_SUBITEM*)LST_Dequeue(&prvCtx->transferSyntaxList);
-        }
-        LST_Destroy(&prvCtx->transferSyntaxList);
-        free(prvCtx);
-        prvCtx = (PRV_PRESENTATIONCONTEXTITEM*)LST_Dequeue(l);
-    }
-    LST_Destroy(l);
-}
-
-void
-destroyUserInformationLists(DUL_USERINFO * userInfo)
-{
-    PRV_SCUSCPROLE
-    * role;
-
-    role = (PRV_SCUSCPROLE*)LST_Dequeue(&userInfo->SCUSCPRoleList);
-    while (role != NULL) {
-        free(role);
-        role = (PRV_SCUSCPROLE*)LST_Dequeue(&userInfo->SCUSCPRoleList);
-    }
-    LST_Destroy(&userInfo->SCUSCPRoleList);
-
-    /* extended negotiation */
-    delete userInfo->extNegList; userInfo->extNegList = NULL;
-
-    /* user identity negotiation */
-    delete userInfo->usrIdent; userInfo->usrIdent = NULL;
 }

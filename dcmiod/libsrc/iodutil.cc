@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 2015-2019, Open Connections GmbH
+ *  Copyright (C) 2015-2022, Open Connections GmbH
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation are maintained by
@@ -675,12 +675,13 @@ OFString DcmIODUtil::createUID(const Uint8 level)
 
 Uint32 DcmIODUtil::limitMaxFrames(const size_t numFramesPresent, const OFString& warning)
 {
+    // limit to 2^31-1 since this is the Number of Frames attribute's VR IS' maximum value
     if (numFramesPresent > 2147483647)
     {
         DCMIOD_WARN(warning);
         return 2147483647;
     }
-    return OFstatic_cast(Uint16, numFramesPresent);
+    return OFstatic_cast(Uint32, numFramesPresent);
 }
 
 OFCondition DcmIODUtil::extractBinaryFrames(Uint8* pixData,
@@ -715,7 +716,10 @@ OFCondition DcmIODUtil::extractBinaryFrames(Uint8* pixData,
             return EC_MemoryExhausted;
         }
         memcpy(frame->pixData, readPos, frame->length);
-        // If we have been copying too much, i.e the first bits of the frame
+        // ---------------------------------------------------------
+        // Remove bits in first byte from former frame if necessary:
+        // ---------------------------------------------------------
+        // If we have been copying too much, i.e the first bits of this frame
         // actually belong to the former frame, shift the whole frame this amount
         // of bits to the left in order to shift the superfluous bits out, i.e.
         // make frame start at byte boundary.
@@ -723,9 +727,12 @@ OFCondition DcmIODUtil::extractBinaryFrames(Uint8* pixData,
         {
             DcmIODUtil::alignFrameOnByteBoundary(frame->pixData, frame->length, 8 - bitShift);
         }
+        // -------------------------------------------------------
+        // Mask out (set 0) bits of last byte if not used by frame
+        // -------------------------------------------------------
         // Adapt last byte by masking out unused bits (i.e. those belonging to next frame).
         // A reader should ignore those unused bits anyway.
-        frame->pixData[frame->length - 1] = (frame->pixData[frame->length - 1] << (overlapBits)) >> (overlapBits);
+        frame->pixData[frame->length - 1] = OFstatic_cast(unsigned char, (frame->pixData[frame->length - 1] << overlapBits)) >> overlapBits;
         // Store frame
         results.push_back(frame);
         // Compute the bitshift created by this frame
@@ -735,6 +742,7 @@ OFCondition DcmIODUtil::extractBinaryFrames(Uint8* pixData,
         // that was partially read. Otherwise skip to the next full byte.
         if (bitShift > 0)
         {
+
             readPos = readPos + frame->length - 1;
         }
         else
@@ -755,12 +763,12 @@ void DcmIODUtil::alignFrameOnByteBoundary(Uint8* buf, size_t bufLen, Uint8 numBi
     for (size_t x = 0; x < bufLen - 1; x++)
     {
         // Shift current byte
-        buf[x] = buf[x] >> numBits;
+        buf[x] = OFstatic_cast(unsigned char, buf[x]) >> numBits;
         // isolate portion of next byte that must be shifted into current byte
         Uint8 next = (buf[x + 1] << (8 - numBits));
         // Take over portion from next byte
         buf[x] |= next;
     }
     // Shift last byte manually
-    buf[bufLen - 1] >>= numBits;
+    buf[bufLen - 1] = OFstatic_cast(unsigned char, buf[bufLen - 1]) >> numBits;
 }

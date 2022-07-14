@@ -266,6 +266,7 @@ ISO Latin 2   "ISO_IR 101"                     =>  "ISO-8859-2"
 ISO Latin 3   "ISO_IR 109"                     =>  "ISO-8859-3"
 ISO Latin 4   "ISO_IR 110"                     =>  "ISO-8859-4"
 ISO Latin 5   "ISO_IR 148"                     =>  "ISO-8859-9"
+ISO Latin 9   "ISO_IR 203"                     =>  "ISO-8859-15"
 Cyrillic      "ISO_IR 144"                     =>  "ISO-8859-5"
 Arabic        "ISO_IR 127"                     =>  "ISO-8859-6"
 Greek         "ISO_IR 126"                     =>  "ISO-8859-7"
@@ -283,7 +284,8 @@ If this DICOM attribute is missing in the input file, although needed, option
 manually (using one of the DICOM defined terms).  For reasons of backward
 compatibility with previous versions of this tool, the following terms are also
 supported and mapped automatically to the associated DICOM defined terms:
-latin-1, latin-2, latin-3, latin-4, latin-5, cyrillic, arabic, greek, hebrew.
+latin-1, latin-2, latin-3, latin-4, latin-5, latin-9, cyrillic, arabic, greek,
+hebrew.
 
 Option \e --convert-to-utf8 can be used to convert the DICOM file or data set
 to UTF-8 encoding prior to the rendering to HTML/XHTML format.
@@ -356,6 +358,6 @@ It is an error if no data dictionary can be loaded.
 
 \section dsr2html_copyright COPYRIGHT
 
-Copyright (C) 2000-2019 by OFFIS e.V., Escherweg 2, 26121 Oldenburg, Germany.
+Copyright (C) 2000-2022 by OFFIS e.V., Escherweg 2, 26121 Oldenburg, Germany.
 
 */

@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 1993-2021, OFFIS e.V.
+ *  Copyright (C) 1993-2022, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -859,7 +859,7 @@ public:
                     if (!findRequestConverter)
                         cond = findRequestConverter.selectCharacterSet(findRequestCharacterSet);
                     if (cond.good()) {
-                        // covert the string and cache the result, using the
+                        // convert the string and cache the result, using the
                         // specific delimitation characters for this VR
                         cond = findRequestConverter.convertString(
                             query->elem.PValueField,
@@ -964,7 +964,7 @@ OFBool DcmQueryRetrieveIndexDatabaseHandle::isConversionNecessary(const OFString
 
 /************
 **      Create the response list in specified handle,
-**      using informations found in an index record.
+**      using information found in an index record.
 **      Old response list is supposed freed
 **/
 
@@ -1119,12 +1119,20 @@ OFCondition DcmQueryRetrieveIndexDatabaseHandle::testFindRequestList (
                     DCMQRDB_DEBUG("Non Unique Key found (level " << level << ")");
                     return QR_EC_IndexDatabaseError ;
                 }
+                else if (plist->elem.ValueLength == 0) {
+                    DCMQRDB_DEBUG("Unique Key value is empty (level " << level << ")");
+                    return QR_EC_IndexDatabaseError ;
+                }
                 else if (uniqueKeyFound) {
                     DCMQRDB_DEBUG("More than one Unique Key found (level " << level << ")");
                     return QR_EC_IndexDatabaseError ;
                 }
                 else
                     uniqueKeyFound = OFTrue ;
+            }
+            if (! uniqueKeyFound) {
+                DCMQRDB_DEBUG("No Unique Key found (level " << level << ")");
+                return QR_EC_IndexDatabaseError ;
             }
         }
 
@@ -1443,7 +1451,7 @@ OFCondition DcmQueryRetrieveIndexDatabaseHandle::startFindRequest(
 
     if (!qrLevelFound) {
         /* The Query/Retrieve Level is missing */
-        status->setStatus(STATUS_FIND_Failed_IdentifierDoesNotMatchSOPClass);
+        status->setStatus(STATUS_FIND_Error_DataSetDoesNotMatchSOPClass);
         DCMQRDB_WARN("DB_startFindRequest(): missing Query/Retrieve Level");
         handle_->idxCounter = -1 ;
         DB_FreeElementList (handle_->findRequestList) ;
@@ -1477,9 +1485,9 @@ OFCondition DcmQueryRetrieveIndexDatabaseHandle::startFindRequest(
             DB_FreeElementList (handle_->findRequestList) ;
             handle_->findRequestList = NULL ;
 #ifdef DEBUG
-            DCMQRDB_DEBUG("DB_startFindRequest () : STATUS_FIND_Failed_IdentifierDoesNotMatchSOPClass - Invalid RequestList");
+            DCMQRDB_DEBUG("DB_startFindRequest () : STATUS_FIND_Error_DataSetDoesNotMatchSOPClass - Invalid RequestList");
 #endif
-            status->setStatus(STATUS_FIND_Failed_IdentifierDoesNotMatchSOPClass);
+            status->setStatus(STATUS_FIND_Error_DataSetDoesNotMatchSOPClass);
             return (cond) ;
         }
     }
@@ -1942,6 +1950,10 @@ OFCondition DcmQueryRetrieveIndexDatabaseHandle::testMoveRequestList (
                     DCMQRDB_DEBUG("Non Unique Key found (level " << level << ")");
                     return QR_EC_IndexDatabaseError ;
                 }
+                else if (plist->elem.ValueLength == 0) {
+                    DCMQRDB_DEBUG("Unique Key value is empty (level " << level << ")");
+                    return QR_EC_IndexDatabaseError ;
+                }
                 else if (uniqueKeyFound) {
                     DCMQRDB_DEBUG("More than one Unique Key found (level " << level << ")");
                     return QR_EC_IndexDatabaseError ;
@@ -2027,7 +2039,7 @@ OFCondition DcmQueryRetrieveIndexDatabaseHandle::startMoveRequest(
 #endif
 
     else {
-        status->setStatus(STATUS_MOVE_Failed_SOPClassNotSupported);
+        status->setStatus(STATUS_MOVE_Refused_SOPClassNotSupported);
         return (QR_EC_IndexDatabaseError) ;
     }
 
@@ -2122,7 +2134,7 @@ OFCondition DcmQueryRetrieveIndexDatabaseHandle::startMoveRequest(
 
     if (!qrLevelFound) {
         /* The Query/Retrieve Level is missing */
-        status->setStatus(STATUS_MOVE_Failed_IdentifierDoesNotMatchSOPClass);
+        status->setStatus(STATUS_MOVE_Error_DataSetDoesNotMatchSOPClass);
         DCMQRDB_WARN("DB_startMoveRequest(): missing Query/Retrieve Level");
         handle_->idxCounter = -1 ;
         DB_FreeElementList (handle_->findRequestList) ;
@@ -2157,9 +2169,9 @@ OFCondition DcmQueryRetrieveIndexDatabaseHandle::startMoveRequest(
             DB_FreeElementList (handle_->findRequestList) ;
             handle_->findRequestList = NULL ;
 #ifdef DEBUG
-            DCMQRDB_DEBUG("DB_startMoveRequest () : STATUS_MOVE_Failed_IdentifierDoesNotMatchSOPClass - Invalid RequestList");
+            DCMQRDB_DEBUG("DB_startMoveRequest () : STATUS_MOVE_Error_DataSetDoesNotMatchSOPClass - Invalid RequestList");
 #endif
-            status->setStatus(STATUS_MOVE_Failed_IdentifierDoesNotMatchSOPClass);
+            status->setStatus(STATUS_MOVE_Error_DataSetDoesNotMatchSOPClass);
             return (cond) ;
         }
     }

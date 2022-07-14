@@ -12,14 +12,16 @@ configdir = @top_srcdir@/@configdir@
 
 include $(configdir)/@common_makefile@
 
+oficonvdir = $(top_srcdir)/../oficonv
 ofstddir = $(top_srcdir)/../ofstd
 oflogdir = $(top_srcdir)/../oflog
 
 LOCALINCLUDES = -I$(top_srcdir)/include -I$(ofstddir)/include -I$(oflogdir)/include
 LIBDIRS = -L$(top_srcdir)/libsrc -L$(top_srcdir)/libi2d -L$(ofstddir)/libsrc \
-	-L$(oflogdir)/libsrc
-LOCALLIBS = -ldcmdata -loflog -lofstd $(ZLIBLIBS) $(XMLLIBS) $(CHARCONVLIBS) $(MATHLIBS)
+	-L$(oflogdir)/libsrc -L$(top_srcdir)/libdcxml -L$(oficonvdir)/libsrc 
+LOCALLIBS = -ldcmdata -loflog -lofstd -loficonv $(ZLIBLIBS) $(XMLLIBS) $(CHARCONVLIBS) $(MATHLIBS)
 I2DLIBS = -li2d
+LIBDCMXML = -ldcmxml
 
 objs = tests.o tpread.o ti2dbmp.o tchval.o tpath.o tvrdatim.o telemlen.o tparser.o \
 	tdict.o tvrds.o tvrfd.o tvrui.o tvrol.o tvrov.o tvrsv.o tvruv.o tstrval.o \
@@ -32,17 +34,18 @@ progs = tests
 all: $(progs)
 
 tests: $(objs)
-	$(CXX) $(CXXFLAGS) $(LIBDIRS) $(LDFLAGS) -o $@ $(objs) $(I2DLIBS) $(LOCALLIBS) $(LIBS)
+	$(CXX) $(CXXFLAGS) $(LIBDIRS) $(LDFLAGS) -o $@ $(objs) $(I2DLIBS) $(LIBDCMXML) $(LOCALLIBS) $(LIBS)
 
 
 check: tests
-	DCMDICTPATH=../data/dicom.dic ./tests
+	DCMICONVPATH=../../oficonv/data DCMDICTPATH=../data/dicom.dic ./tests
 
 check-exhaustive: tests
-	DCMDICTPATH=../data/dicom.dic ./tests -x
+	DCMICONVPATH=../../oficonv/data DCMDICTPATH=../data/dicom.dic ./tests -x
 
 
 install: all
+
 
 clean:
 	rm -f $(objs) $(progs) $(TRASH)

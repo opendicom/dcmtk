@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 2000-2019, OFFIS e.V.
+ *  Copyright (C) 2000-2022, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -149,7 +149,7 @@ OFCondition DSRDocumentTreeNode::print(STD_NAMESPACE ostream &stream,
     stream << valueTypeToDefinedTerm(ValueType);
     DCMSR_PRINT_ANSI_ESCAPE_CODE(DCMSR_ANSI_ESCAPE_CODE_DELIMITER)
     stream << ":";
-    /* only print valid concept name codes */
+    /* only print valid concept name codes (unless explicitly requested otherwise) */
     if (ConceptName.isValid() || (flags & PF_printInvalidCodes))
     {
         DCMSR_PRINT_ANSI_ESCAPE_CODE(DCMSR_ANSI_ESCAPE_CODE_CONCEPT_NAME)

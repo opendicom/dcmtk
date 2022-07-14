@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 1994-2018, OFFIS e.V.
+ *  Copyright (C) 1994-2022, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -170,7 +170,7 @@ class DCMTK_DCMDATA_EXPORT DcmTime
     // ensure inherited overloads of matches take part in overload resolution
     using DcmByteString::matches;
 
-    /// @copydoc DcmByteString::matches(OFString,OFString,OFBool)
+    /// @copydoc DcmByteString::matches(const OFString&,const OFString&,const OFBool) const
     virtual OFBool matches(const OFString& key,
                            const OFString& candidate,
                            const OFBool enableWildCardMatching = OFTrue) const;
@@ -346,7 +346,7 @@ class DCMTK_DCMDATA_EXPORT DcmTime
      *  the DICOM format ("&ZZZZ" where "&" is "+" or "-" and "ZZZZ" hours and minutes) to a
      *  floating point value, e.g. "+1.0" means plus one hour and "-2.5" minus two and a half
      *  hour, i.e. 2 hours and 30 minutes.
-     *  The resulting 'timeZone' value can be used in conjuction with a OFTime object to convert
+     *  The resulting 'timeZone' value can be used in conjunction with a OFTime object to convert
      *  the time to different time zones (e.g. to local time or UTC).
      *  @param dicomTimeZone string value in DICOM format ("&ZZZZ") to be converted
      *  @param timeZone reference to floating point variable where the resulting UTC offset is stored
@@ -361,7 +361,7 @@ class DCMTK_DCMDATA_EXPORT DcmTime
      *  the DICOM format ("&ZZZZ" where "&" is "+" or "-" and "ZZZZ" hours and minutes) to a
      *  floating point value, e.g. "+1.0" means plus one hour and "-2.5" minus two and a half
      *  hour, i.e. 2 hours and 30 minutes.
-     *  The resulting 'timeZone' value can be used in conjuction with a OFTime object to convert
+     *  The resulting 'timeZone' value can be used in conjunction with a OFTime object to convert
      *  the time to different time zones (e.g. to local time or UTC).
      *  @param dicomTimeZone string value in DICOM format ("&ZZZZ") to be converted
      *  @param timeZone reference to floating point variable where the resulting UTC offset is stored

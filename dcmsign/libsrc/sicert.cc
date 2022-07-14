@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 1998-2020, OFFIS e.V.
+ *  Copyright (C) 1998-2021, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -40,9 +40,15 @@ BEGIN_EXTERN_C
 #include <openssl/err.h>
 END_EXTERN_C
 
-#if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(LIBRESSL_VERSION_NUMBER)
+#ifndef HAVE_OPENSSL_PROTOTYPE_X509_GET0_NOTBEFORE
 #define X509_get0_notBefore(x) X509_get_notBefore(x)
+#endif
+
+#ifndef HAVE_OPENSSL_PROTOTYPE_X509_GET0_NOTAFTER
 #define X509_get0_notAfter(x) X509_get_notAfter(x)
+#endif
+
+#ifndef HAVE_OPENSSL_PROTOTYPE_EVP_PKEY_ID
 #define EVP_PKEY_id(key) key->type
 #endif
 
@@ -159,13 +165,8 @@ OFCondition SiCertificate::read(DcmItem& item)
           {
             if (data)
             {
-#if OPENSSL_VERSION_NUMBER >= 0x00908000L
-              // incompatible API change in OpenSSL 0.9.8
               const Uint8 *cdata = data;
               x509 = d2i_X509(NULL, &cdata, cert->getLength());
-#else
-              x509 = d2i_X509(NULL, &data, cert->getLength());
-#endif
               if (x509 == NULL)
               {
                 DCMSIGN_WARN("Unable to parse X.509 certificate.");
@@ -407,17 +408,25 @@ long SiCertificate::getCertKeyBits()
   return certPubKeyBits;
 }
 
-const char *SiCertificate::getCertCurveName()
+OFString SiCertificate::getCertCurveName()
 {
-  const char *result = NULL;
+  OFString result;
 #ifndef OPENSSL_NO_EC
   if (x509)
   {
     EVP_PKEY *pkey = X509_extract_key(x509);
     if (pkey && EVP_PKEY_type(EVP_PKEY_id(pkey)) == EVP_PKEY_EC)
     {
-      // we have an elliptic curve. Access EC key.
-#if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(LIBRESSL_VERSION_NUMBER)
+      // we have an elliptic curve.
+#ifdef HAVE_OPENSSL_PROTOTYPE_EVP_PKEY_GET_GROUP_NAME
+      /* code for OpenSSL 3.0 and newer */
+      char groupname[100];
+      groupname[0] = '\0';
+      EVP_PKEY_get_group_name(pkey, groupname, 100,  NULL);
+      result = groupname;
+#else
+      /* code for older OpenSSL versions */
+#ifndef HAVE_OPENSSL_PROTOTYPE_EVP_PKEY_GET0_EC_KEY
       EC_KEY *eckey = EVP_PKEY_get1_EC_KEY(pkey);
 #else
       const EC_KEY *eckey = EVP_PKEY_get0_EC_KEY(pkey);
@@ -436,10 +445,12 @@ const char *SiCertificate::getCertCurveName()
           }
           else result = "unnamed curve";
         }
-#if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(LIBRESSL_VERSION_NUMBER)
+#ifndef HAVE_OPENSSL_PROTOTYPE_EVP_PKEY_GET0_EC_KEY
         EC_KEY_free(eckey);
 #endif
       }
+#endif /* HAVE_OPENSSL_PROTOTYPE_EVP_PKEY_GET_GROUP_NAME */
+
       EVP_PKEY_free(pkey);
     }
   }
@@ -609,13 +620,9 @@ OFCondition SiCertificate::convertASN1Time(const ASN1_TIME *d, OFDateTime& dt)
 {
   if (d)
   {
-#if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(LIBRESSL_VERSION_NUMBER)
     // Before OpenSSL 1.1.0, the first parameter of ASN1_TIME_to_generalizedtime()
-    // was not declared const, as it should be
+    // was not declared const. We cast the const away, which should work with old and new versions.
     ASN1_GENERALIZEDTIME *gm = ASN1_TIME_to_generalizedtime(OFconst_cast(ASN1_TIME *, d), NULL);
-#else
-    ASN1_GENERALIZEDTIME *gm = ASN1_TIME_to_generalizedtime(d, NULL);
-#endif
     if (gm)
     {
       OFCondition result = convertGeneralizedTime(gm, dt);

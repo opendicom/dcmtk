@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 2000-2021, OFFIS e.V.
+ *  Copyright (C) 2000-2022, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -984,7 +984,7 @@ class DCMTK_OFSTD_EXPORT OFStandard
      *    be OFTrue.
      *  @tparam Count the number of digits to extract. Must be greater zero
      *    and less or equal to OFnumeric_limits<T>::digits10
-     *  @param string a pointer to a character array to extract digits from.
+     *  @tparam string a pointer to a character array to extract digits from.
      *  @return a value of type T that is equivalent to the number represented
      *    by the digits.
      *  @details
@@ -1164,6 +1164,36 @@ class DCMTK_OFSTD_EXPORT OFStandard
     *  @param seconds The number of seconds to sleep (at least)
     */
     static void forceSleep(Uint32 seconds);
+
+    /** sanitize a filename (NOT a path name!) by replacing all path
+     *  separators with underscores. This avoids possible path traversal
+     *  vulnerabilities if malformed data read from file or received over
+     *  a network is used as part of a filename.
+     *  @param fname filename to be sanitized
+     */
+    static void sanitizeFilename(OFString& fname);
+
+    /** sanitize a filename (NOT a path name!) by replacing all path
+     *  separators with underscores. This avoids possible path traversal
+     *  vulnerabilities if malformed data read from file or received over
+     *  a network is used as part of a filename.
+     *  @param fname filename to be sanitized
+     */
+    static void sanitizeFilename(char *fname);
+
+    /** retrieve the name of the default directory for support data.
+     *  On Windows, this method resolves environment variables such as %PROGRAMDATA% in the path,
+     *  on Posix platforms it just returns DEFAULT_SUPPORT_DATA_DIR.
+     *  @return name of the default directory for support data
+     */
+    static OFString getDefaultSupportDataDir();
+
+    /** retrieve the name of the default directory for configuration files.
+     *  On Windows, this method resolves environment variables such as %PROGRAMDATA% in the path,
+     *  on Posix platforms it just returns DEFAULT_CONFIGURATION_DIR.
+     *  @return name of the default directory for configuration files
+     */
+    static OFString getDefaultConfigurationDir();
 
  private:
 

@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 2002-2021, OFFIS e.V.
+ *  Copyright (C) 2002-2022, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -47,24 +47,18 @@ static char rcsid[] = "$dcmtk: " OFFIS_CONSOLE_APPLICATION " v"
 
 // ********************************************
 
-static OFCondition writeFile(STD_NAMESPACE ostream &out,
-                             const char *ifname,
-                             DcmFileFormat *dfile,
-                             const E_FileReadMode readMode,
-                             const OFBool loadIntoMemory,
-                             const char *dtdFilename,
-                             const char *defaultCharset,
-                             /*const*/ size_t writeFlags,
-                             const OFBool checkAllStrings)
+static OFCondition checkCharacterSet(const char *ifname,
+                                     DcmFileFormat &dfile,
+                                     const char *defaultCharset,
+                                     OFString &encString,
+                                     size_t &writeFlags,
+                                     const OFBool checkAllStrings)
 {
     OFCondition result = EC_IllegalParameter;
-    if ((ifname != NULL) && (dfile != NULL))
+    if (ifname != NULL)
     {
-        DcmDataset *dset = dfile->getDataset();
-        if (loadIntoMemory)
-            dset->loadAllDataIntoMemory();
-        /* determine dataset character encoding */
-        OFString encString;
+        DcmDataset *dset = dfile.getDataset();
+        /* determine character set encoding of the dataset */
         OFString csetString;
         if (dset->findAndGetOFStringArray(DCM_SpecificCharacterSet, csetString).good())
         {
@@ -80,8 +74,6 @@ static OFCondition writeFile(STD_NAMESPACE ostream &out,
                 encString = "ISO-8859-3";
             else if (csetString == "ISO_IR 110")
                 encString = "ISO-8859-4";
-            else if (csetString == "ISO_IR 148")
-                encString = "ISO-8859-9";
             else if (csetString == "ISO_IR 144")
                 encString = "ISO-8859-5";
             else if (csetString == "ISO_IR 127")
@@ -90,6 +82,10 @@ static OFCondition writeFile(STD_NAMESPACE ostream &out,
                 encString = "ISO-8859-7";
             else if (csetString == "ISO_IR 138")
                 encString = "ISO-8859-8";
+            else if (csetString == "ISO_IR 148")
+                encString = "ISO-8859-9";
+            else if (csetString == "ISO_IR 203")
+                encString = "ISO-8859-15";
             else {
                 if (!csetString.empty())
                 {
@@ -103,6 +99,8 @@ static OFCondition writeFile(STD_NAMESPACE ostream &out,
                 /* make sure that non-ASCII characters are quoted appropriately */
                 writeFlags |= DCMTypes::XF_convertNonASCII;
             }
+            /* no error */
+            result = EC_Normal;
         } else {
             /* SpecificCharacterSet is not present in the dataset */
             if (dset->containsExtendedCharacters(checkAllStrings))
@@ -113,11 +111,32 @@ static OFCondition writeFile(STD_NAMESPACE ostream &out,
                     OFLOG_ERROR(dcm2xmlLogger, OFFIS_CONSOLE_APPLICATION << ": SpecificCharacterSet (0008,0005) "
                         << "element absent (on the main data set level) but extended characters used in file: " << ifname);
                     OFLOG_DEBUG(dcm2xmlLogger, "use option --charset-assume to manually specify an appropriate character set");
-                    return makeOFCondition(OFM_dcmdata, EC_CODE_CannotSelectCharacterSet, OF_error, "Missing Specific Character Set");;
+                    result = makeOFCondition(OFM_dcmdata, EC_CODE_CannotSelectCharacterSet, OF_error, "Missing Specific Character Set");;
                 } else {
-                    OFString sopClass;
+                    result = EC_Normal;
                     csetString = defaultCharset;
-                    /* use the default character set specified by the user */
+                    /* first, map "old" character set names to DICOM defined terms */
+                    if (csetString == "latin-1")
+                        csetString = "ISO_IR 100";
+                    else if (csetString == "latin-2")
+                        csetString = "ISO_IR 101";
+                    else if (csetString == "latin-3")
+                        csetString = "ISO_IR 109";
+                    else if (csetString == "latin-4")
+                        csetString = "ISO_IR 110";
+                    else if (csetString == "latin-5")
+                        csetString = "ISO_IR 148";
+                    else if (csetString == "cyrillic")
+                        csetString = "ISO_IR 144";
+                    else if (csetString == "arabic")
+                        csetString = "ISO_IR 127";
+                    else if (csetString == "greek")
+                        csetString = "ISO_IR 126";
+                    else if (csetString == "hebrew")
+                        csetString = "ISO_IR 138";
+                    else if (csetString == "latin-9")
+                        csetString = "ISO_IR 203";
+                    /* then map the DICOM defined term to XML character encoding */
                     if (csetString == "ISO_IR 192")
                         encString = "UTF-8";
                     else if (csetString == "ISO_IR 100")
@@ -128,8 +147,6 @@ static OFCondition writeFile(STD_NAMESPACE ostream &out,
                         encString = "ISO-8859-3";
                     else if (csetString == "ISO_IR 110")
                         encString = "ISO-8859-4";
-                    else if (csetString == "ISO_IR 148")
-                        encString = "ISO-8859-9";
                     else if (csetString == "ISO_IR 144")
                         encString = "ISO-8859-5";
                     else if (csetString == "ISO_IR 127")
@@ -138,19 +155,26 @@ static OFCondition writeFile(STD_NAMESPACE ostream &out,
                         encString = "ISO-8859-7";
                     else if (csetString == "ISO_IR 138")
                         encString = "ISO-8859-8";
+                    else if (csetString == "ISO_IR 148")
+                        encString = "ISO-8859-9";
+                    else if (csetString == "ISO_IR 203")
+                        encString = "ISO-8859-15";
                     else {
                         OFLOG_FATAL(dcm2xmlLogger, OFFIS_CONSOLE_APPLICATION << ": Character set '"
                             << defaultCharset << "' specified with option --charset-assume not supported");
-                        return makeOFCondition(OFM_dcmdata, EC_CODE_CannotSelectCharacterSet, OF_error, "Cannot select character set");
+                        result = makeOFCondition(OFM_dcmdata, EC_CODE_CannotSelectCharacterSet, OF_error, "Cannot select character set");
                     }
-                    /* check whether this file is a DICOMDIR */
-                    if (dfile->getMetaInfo()->findAndGetOFString(DCM_MediaStorageSOPClassUID, sopClass).bad() ||
-                        (sopClass != UID_MediaStorageDirectoryStorage))
+                    if (result.good())
                     {
-                        OFLOG_INFO(dcm2xmlLogger, "inserting SpecificCharacterSet (0008,0005) element with value '"
-                            << defaultCharset << "'");
-                        /* insert the SpecificCharacterSet (0008,0005) element */
-                        dset->putAndInsertString(DCM_SpecificCharacterSet, defaultCharset);
+                        OFString sopClass;
+                        /* check whether this file is a DICOMDIR */
+                        if (dfile.getMetaInfo()->findAndGetOFString(DCM_MediaStorageSOPClassUID, sopClass).bad() ||
+                            (sopClass != UID_MediaStorageDirectoryStorage))
+                        {
+                            OFLOG_INFO(dcm2xmlLogger, "inserting SpecificCharacterSet (0008,0005) element with value '" << csetString << "'");
+                            /* insert the SpecificCharacterSet (0008,0005) element with new value */
+                            result = dset->putAndInsertOFStringArray(DCM_SpecificCharacterSet, csetString);
+                        }
                     }
                 }
             } else {
@@ -162,9 +186,74 @@ static OFCondition writeFile(STD_NAMESPACE ostream &out,
                 }
                 /* by default, we use UTF-8 encoding */
                 encString = "UTF-8";
+                /* no error */
+                result = EC_Normal;
             }
         }
+    }
+    return result;
+}
 
+
+#ifdef DCMTK_ENABLE_CHARSET_CONVERSION
+static OFCondition convertCharacterSet(const char *ifname,
+                                       DcmFileFormat &dfile,
+                                       OFString &encString,
+                                       const OFBool convertToUTF8)
+{
+    OFCondition result = EC_IllegalParameter;
+    if (ifname != NULL)
+    {
+        DcmDataset *dset = dfile.getDataset();
+        /* convert all DICOM strings to UTF-8 (if requested) */
+        if (convertToUTF8)
+        {
+            OFLOG_INFO(dcm2xmlLogger, "converting all element values that are affected by SpecificCharacterSet (0008,0005) to UTF-8");
+            /* expect that SpecificCharacterSet contains the correct value (defined term) */
+            result = dset->convertToUTF8();
+            if (result.good())
+            {
+                /* if conversion was successful, set XML character encoding accordingly */
+                encString = "UTF-8";
+            } else
+                OFLOG_FATAL(dcm2xmlLogger, OFFIS_CONSOLE_APPLICATION << ": error (" << result.text() << ") converting file to UTF-8: " << ifname);
+        } else {
+            OFString sopClass;
+            /* check whether the file is a DICOMDIR ... */
+            if (dfile.getMetaInfo()->findAndGetOFString(DCM_MediaStorageSOPClassUID, sopClass).good() &&
+                (sopClass == UID_MediaStorageDirectoryStorage))
+            {
+                /* ... with one or more SpecificCharacterSet elements */
+                if (dset->tagExistsWithValue(DCM_SpecificCharacterSet, OFTrue /*searchIntoSub*/))
+                {
+                    OFLOG_WARN(dcm2xmlLogger, OFFIS_CONSOLE_APPLICATION << ": this is a DICOMDIR file, which can contain more than one "
+                        << "SpecificCharacterSet (0008,0005) element ... using option --convert-to-utf8 is strongly recommended");
+                }
+            }
+            /* no error */
+            result = EC_Normal;
+        }
+    }
+    return result;
+}
+#endif
+
+
+static OFCondition writeFile(STD_NAMESPACE ostream &out,
+                             const char *ifname,
+                             DcmFileFormat &dfile,
+                             const E_FileReadMode readMode,
+                             const OFBool loadIntoMemory,
+                             const OFString &dtdFilename,
+                             const OFString &encString,
+                             const size_t writeFlags)
+{
+    OFCondition result = EC_IllegalParameter;
+    if (ifname != NULL)
+    {
+        DcmDataset *dset = dfile.getDataset();
+        if (loadIntoMemory)
+            dset->loadAllDataIntoMemory();
         /* write XML document header */
         out << "<?xml version=\"1.0\"";
         /* optional character set */
@@ -184,7 +273,7 @@ static OFCondition writeFile(STD_NAMESPACE ostream &out,
             {
                 out << " [" << OFendl;
                 /* copy content from DTD file */
-                STD_NAMESPACE ifstream dtdFile(dtdFilename, OFopenmode_in_nocreate);
+                STD_NAMESPACE ifstream dtdFile(dtdFilename.c_str(), OFopenmode_in_nocreate);
                 if (dtdFile)
                 {
                     char c;
@@ -204,7 +293,7 @@ static OFCondition writeFile(STD_NAMESPACE ostream &out,
         if (readMode == ERM_dataset)
             result = dset->writeXML(out, writeFlags);
         else
-            result = dfile->writeXML(out, writeFlags);
+            result = dfile.writeXML(out, writeFlags);
     }
     return result;
 }
@@ -226,7 +315,8 @@ int main(int argc, char *argv[])
     E_FileReadMode opt_readMode = ERM_autoDetect;
     E_TransferSyntax opt_ixfer = EXS_Unknown;
     OFCmdUnsignedInt opt_maxReadLength = 4096; // default is 4 KB
-    const char *opt_dtdFilename = DEFAULT_SUPPORT_DATA_DIR DOCUMENT_TYPE_DEFINITION_FILE;
+    OFString opt_dtdFilename = OFStandard::getDefaultSupportDataDir();
+    opt_dtdFilename += DOCUMENT_TYPE_DEFINITION_FILE;
     OFString optStr;
 
     OFConsoleApplication app(OFFIS_CONSOLE_APPLICATION, OFFIS_CONSOLE_DESCRIPTION, rcsid);
@@ -473,107 +563,54 @@ int main(int argc, char *argv[])
         OFCondition status = dfile.loadFile(ifname, opt_ixfer, EGL_noChange, OFstatic_cast(Uint32, opt_maxReadLength), opt_readMode);
         if (status.good())
         {
-            // map "old" charset names to DICOM defined terms
-            if (opt_defaultCharset != NULL)
+            OFString encString;
+            /* check specific character set (and possibly fix it) */
+            if (checkCharacterSet(ifname, dfile, opt_defaultCharset, encString, opt_writeFlags, opt_checkAllStrings).good())
             {
-                OFString charset(opt_defaultCharset);
-                if (charset == "latin-1")
-                    opt_defaultCharset = "ISO_IR 100";
-                else if (charset == "latin-2")
-                    opt_defaultCharset = "ISO_IR 101";
-                else if (charset == "latin-3")
-                    opt_defaultCharset = "ISO_IR 109";
-                else if (charset == "latin-4")
-                    opt_defaultCharset = "ISO_IR 110";
-                else if (charset == "latin-5")
-                    opt_defaultCharset = "ISO_IR 148";
-                else if (charset == "cyrillic")
-                    opt_defaultCharset = "ISO_IR 144";
-                else if (charset == "arabic")
-                    opt_defaultCharset = "ISO_IR 127";
-                else if (charset == "greek")
-                    opt_defaultCharset = "ISO_IR 126";
-                else if (charset == "hebrew")
-                    opt_defaultCharset = "ISO_IR 138";
-            }
 #ifdef DCMTK_ENABLE_CHARSET_CONVERSION
-            DcmDataset *dset = dfile.getDataset();
-            /* convert all DICOM strings to UTF-8 (if requested) */
-            if (opt_convertToUTF8)
-            {
-                OFLOG_INFO(dcm2xmlLogger, "converting all element values that are affected by SpecificCharacterSet (0008,0005) to UTF-8");
-                // check whether SpecificCharacterSet is absent but needed
-                if ((opt_defaultCharset != NULL) && !dset->tagExistsWithValue(DCM_SpecificCharacterSet) &&
-                    dset->containsExtendedCharacters(OFFalse /*checkAllStrings*/))
-                {
-                    // use the manually specified source character set
-                    status = dset->convertCharacterSet(opt_defaultCharset, OFString("ISO_IR 192"));
-                } else {
-                    // expect that SpecificCharacterSet contains the correct value
-                    status = dset->convertToUTF8();
-                }
-                if (status.bad())
-                {
-                    OFLOG_FATAL(dcm2xmlLogger, status.text() << ": converting file to UTF-8: " << ifname);
+                /* convert character set of dataset, e.g. to UTF-8 */
+                if (convertCharacterSet(ifname, dfile, encString, opt_convertToUTF8).bad())
                     result = 4;
-                }
-            } else {
-                OFString sopClass;
-                /* check whether the file is a DICOMDIR ... */
-                if (dfile.getMetaInfo()->findAndGetOFString(DCM_MediaStorageSOPClassUID, sopClass).good() &&
-                    (sopClass == UID_MediaStorageDirectoryStorage))
-                {
-                    /* ... with one or more SpecificCharacterSet elements */
-                    if (dset->tagExistsWithValue(DCM_SpecificCharacterSet, OFTrue /*searchIntoSub*/))
-                    {
-                        OFLOG_WARN(dcm2xmlLogger, OFFIS_CONSOLE_APPLICATION << ": this is a DICOMDIR file, which can contain more than one "
-                            << "SpecificCharacterSet (0008,0005) element ... using option --convert-to-utf8 is strongly recommended");
-                    }
-                }
-            }
 #endif
+            } else
+                result = 7;
             if (result == 0)
             {
                 /* if second parameter is present, it is treated as the output filename,
-                 * unless it is "-". If the name is absent or equal to "-", write to stdout */
+                 * unless it is "-". If the name is absent or equal to "-", write to stdout. */
                 const char *ofname = NULL;
                 if (cmd.getParamCount() == 2)
-                {
                     cmd.getParam(2, ofname);
-                }
-
                 if (ofname && (strcmp(ofname, "-") != 0))
                 {
                     STD_NAMESPACE ofstream stream(ofname);
                     if (stream.good())
                     {
                         /* write content in XML format to file */
-                        status = writeFile(stream, ifname, &dfile, opt_readMode, opt_loadIntoMemory, opt_dtdFilename,
-                            opt_defaultCharset, opt_writeFlags, opt_checkAllStrings);
+                        status = writeFile(stream, ifname, dfile, opt_readMode, opt_loadIntoMemory, opt_dtdFilename, encString, opt_writeFlags);
                         if (status.bad())
                         {
-                            OFLOG_ERROR(dcm2xmlLogger, OFFIS_CONSOLE_APPLICATION << ": error (" << status.text() << ") writing file: "<< ofname);
+                            OFLOG_FATAL(dcm2xmlLogger, OFFIS_CONSOLE_APPLICATION << ": error (" << status.text() << ") writing file: "<< ofname);
                             result = 2;
                         }
                     } else
                         result = 1;
                 } else {
                     /* write content in XML format to standard output */
-                    status = writeFile(COUT, ifname, &dfile, opt_readMode, opt_loadIntoMemory, opt_dtdFilename,
-                        opt_defaultCharset, opt_writeFlags, opt_checkAllStrings);
+                    status = writeFile(COUT, ifname, dfile, opt_readMode, opt_loadIntoMemory, opt_dtdFilename, encString, opt_writeFlags);
                     if (status.bad())
                     {
-                        OFLOG_ERROR(dcm2xmlLogger, OFFIS_CONSOLE_APPLICATION << ": error (" << status.text() << ") writing to standard output");
+                        OFLOG_FATAL(dcm2xmlLogger, OFFIS_CONSOLE_APPLICATION << ": error (" << status.text() << ") writing to standard output");
                         result = 3;
                     }
                 }
             }
         } else {
-            OFLOG_ERROR(dcm2xmlLogger, OFFIS_CONSOLE_APPLICATION << ": error (" << status.text() << ") reading file: "<< ifname);
+            OFLOG_FATAL(dcm2xmlLogger, OFFIS_CONSOLE_APPLICATION << ": error (" << status.text() << ") reading file: "<< ifname);
             result = 5;
         }
     } else {
-        OFLOG_ERROR(dcm2xmlLogger, OFFIS_CONSOLE_APPLICATION << ": invalid filename: <empty string>");
+        OFLOG_FATAL(dcm2xmlLogger, OFFIS_CONSOLE_APPLICATION << ": invalid filename: <empty string>");
         result = 6;
     }
 

@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 2015-2019, Open Connections GmbH
+ *  Copyright (C) 2015-2022, Open Connections GmbH
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation are maintained by
@@ -58,10 +58,10 @@ public:
      *          successful; memory is allocated by the function
      *  @param  segmentLabel Free text label for the segment
      *  @param  segmentedPropertyCategory The segmented property category.
-     *          Baseline CID 7150 “Segmentation Property Categories” should be
+     *          Baseline CID 7150 "Segmentation Property Categories" should be
      *          used.
      *  @param  segmentedPropertyType The segmented property type. Baseline CID
-     *          7151 “Segmentation Property Types”
+     *          7151 "Segmentation Property Types"
      *  @param  algoType The algorithm type used for segmenting this segment
      *  @param  algoName Algorithm name (required if algoType is not MANUAL)
      *  @return EC_Normal if creation was successful, error otherwise
@@ -97,7 +97,7 @@ public:
     /** Get Segment Number
      *  @return The Segment number
      */
-    virtual unsigned int getSegmentNumber();
+    virtual Uint16 getSegmentNumber();
 
     /** Get Segment Label
      *  @param  value Reference to variable in which the value should be stored

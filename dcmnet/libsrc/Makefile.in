@@ -17,7 +17,8 @@ oflogdir = $(top_srcdir)/../oflog
 dcmdatadir = $(top_srcdir)/../dcmdata
 dcmtlsdir = $(top_srcdir)/../dcmtls
 
-LOCALINCLUDES = -I$(ofstddir)/include -I$(oflogdir)/include -I$(dcmdatadir)/include -I$(dcmtlsdir)/include
+LOCALINCLUDES = -I$(ofstddir)/include -I$(oflogdir)/include -I$(dcmdatadir)/include \
+	-I$(dcmtlsdir)/include
 LOCALDEFS =
 
 objs = assoc.o cond.o dcompat.o dimcancl.o dimcmd.o dimdump.o dimecho.o \
@@ -25,22 +26,22 @@ objs = assoc.o cond.o dcompat.o dimcancl.o dimcmd.o dimdump.o dimecho.o \
 	dulfsm.o dulparse.o dulpres.o dul.o lst.o extneg.o dimget.o dcmlayer.o \
 	dcmtrans.o dcasccfg.o dcasccff.o dccfuidh.o dccftsmp.o dccfpcmp.o \
 	dccfrsmp.o dccfenmp.o dccfprmp.o dfindscu.o dstorscp.o dstorscu.o \
-	dcuserid.o scu.o scp.o scpcfg.o scpthrd.o scppool.o dwrap.o
+	dcuserid.o helpers.o scu.o scp.o scpcfg.o scpthrd.o scppool.o dwrap.o
 
 library = libdcmnet.$(LIBEXT)
 
 
 all: $(library)
 
+$(library): $(objs)
+	$(AR) $(ARFLAGS) $@ $(objs)
+	$(RANLIB) $@
+
+
 install: $(library)
 	$(configdir)/mkinstalldirs $(DESTDIR)$(libdir)
 	$(INSTALL_DATA) $(library) $(DESTDIR)$(libdir)/$(library)
 	$(RANLIB) $(DESTDIR)$(libdir)/$(library)
-
-
-$(library): $(objs)
-	$(AR) $(ARFLAGS) $@ $(objs)
-	$(RANLIB) $@
 
 
 clean:
