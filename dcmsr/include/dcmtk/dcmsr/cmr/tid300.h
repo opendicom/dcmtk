@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 2017-2022, J. Riesmeier, Oldenburg, Germany
+ *  Copyright (C) 2017, J. Riesmeier, Oldenburg, Germany
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  Header file for class TID300_Measurement
@@ -40,7 +40,6 @@
  *  @tparam  T_Units        units of the numeric measurement values (context group)
  *  @tparam  T_Method       methods used for measuring the values (context group)
  *  @tparam  T_Derivation   methods of deriving or calculating the values (context group)
- *  @tparam  T_Purpose      purpose of reference for the source of measurement (context group)
  ** @note Please note that currently only the mandatory and some optional/conditional
  *        content items and included templates are supported.
  *  @note Also note that this template class requires explicit instantiation for those
@@ -48,8 +47,7 @@
  *        because the implementation is "hidden" in a separate source file, which has
  *        some advantages over the usual header-only approach.
  */
-template<typename T_Measurement, typename T_Units, typename T_Method, typename T_Derivation,
-    typename T_Purpose>
+template<typename T_Measurement, typename T_Units, typename T_Method, typename T_Derivation>
 class DCMTK_CMR_EXPORT TID300_Measurement
   : public DSRSubTemplate
 {
@@ -167,31 +165,31 @@ class DCMTK_CMR_EXPORT TID300_Measurement
 
     /** add an 'Image' content item (TID 320 - Row 1) referencing the image used as a
      *  source of the measurement.  This is a by-value relationship.
-     ** @param  purpose         coded entry describing the purpose of reference
+     ** @param  conceptName     coded entry describing the purpose of reference
      *  @param  imageReference  reference to image used as a source of the measurement
      *  @param  check           if enabled, check values for validity before setting them
      ** @return status, EC_Normal if successful, an error code otherwise
      */
-    OFCondition addImage(const T_Purpose &purpose,
+    OFCondition addImage(const DSRCodedEntryValue &conceptName,
                          const DSRImageReferenceValue &imageReference,
                          const OFBool check = OFTrue);
 
     /** add an 'Image' content item (TID 320 - Row 1) referencing the image used as a
      *  source of the measurement.  This is a by-value relationship.
-     ** @param  purpose  coded entry describing the purpose of reference
-     *  @param  dataset  DICOM dataset from which the values for the reference to an image
-     *                   (SOP class UID and SOP instance UID), which was used as a source
-     *                   of the measurement, should be retrieved
-     *  @param  check    if enabled, check values for validity before setting them
+     ** @param  conceptName  coded entry describing the purpose of reference
+     *  @param  dataset      DICOM dataset from which the values for the reference to an
+     *                       image (SOP class UID and SOP instance UID), which was used
+     *                       as a source of the measurement, should be retrieved
+     *  @param  check        if enabled, check values for validity before setting them
      ** @return status, EC_Normal if successful, an error code otherwise
      */
-    OFCondition addImage(const T_Purpose &purpose,
+    OFCondition addImage(const DSRCodedEntryValue &conceptName,
                          DcmItem &dataset,
                          const OFBool check = OFTrue);
 
     /** add a 'Spatial Coordinates' content item (TID 320 - Row 3 and 4) referencing the
      *  image used as a source of the measurement.  This is a by-value relationship.
-     ** @param  purpose           coded entry describing the purpose of reference
+     ** @param  conceptName       coded entry describing the purpose of reference
      *  @param  coordinatesValue  spatial coordinates used as a source of the measurement
      *  @param  imageReference    reference to image the spatial coordinates are selected
      *                            from
@@ -199,7 +197,7 @@ class DCMTK_CMR_EXPORT TID300_Measurement
      *                            them
      ** @return status, EC_Normal if successful, an error code otherwise
      */
-    OFCondition addSpatialCoordinates(const T_Purpose &purpose,
+    OFCondition addSpatialCoordinates(const DSRCodedEntryValue &conceptName,
                                       const DSRSpatialCoordinatesValue &coordinatesValue,
                                       const DSRImageReferenceValue &imageReference,
                                       const OFBool check = OFTrue);

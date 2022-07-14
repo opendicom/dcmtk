@@ -43,9 +43,7 @@ public:
         const DcmTag & tag,
         const Uint32 len = 0);
 
-    /** copy constructor
-    * @param old the OBOW to copy
-    */
+    /// copy constructor
     DcmPolymorphOBOW(
         const DcmPolymorphOBOW & old);
 

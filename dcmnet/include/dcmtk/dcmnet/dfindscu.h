@@ -123,14 +123,10 @@ protected: /* the two member variables are protected and can be accessed from de
 
 private:
 
-  /** private undefined copy constructor.
-   * @param other documented to avoid doxygen warnings
-   */
+  /// private undefined copy constructor.
   DcmFindSCUCallback(const DcmFindSCUCallback& other);
 
-  /** private undefined assignment operator.
-   * @param other documented to avoid doxygen warnings
-   */
+  /// private undefined assignment operator.
   DcmFindSCUCallback& operator=(const DcmFindSCUCallback& other);
 
 };
@@ -383,14 +379,10 @@ private:
     const char *outputDirectory = NULL,
     STD_NAMESPACE ofstream *outputStream = NULL) const;
 
-  /** Private undefined copy constructor
-   * @param other documented to avoid doxygen warnings
-   */
+  /// Private undefined copy constructor
   DcmFindSCU(const DcmFindSCU& other);
 
-  /** Private undefined assignment operator
-   * @param other documented to avoid doxygen warnings
-   */
+  /// Private undefined assignment operator
   DcmFindSCU& operator=(const DcmFindSCU& other);
 
 private:

@@ -87,13 +87,8 @@ public:
    *  @param srcLossyComprMethod - [out] Unused parameter
    *  @return EC_Normal if information is available, error otherwise
    */
-#ifdef DOXYGEN
   virtual OFCondition getLossyComprInfo(OFBool& srcEncodingLossy,
-                                        OFString& srcLossyComprMethod) const
-#else
-  virtual OFCondition getLossyComprInfo(OFBool& srcEncodingLossy,
-                                        OFString& /* srcLossyComprMethod */ ) const
-#endif
+                                        OFString& /* srcLossyComprMethod */) const
   {
     srcEncodingLossy = OFFalse;
     return EC_Normal;

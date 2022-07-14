@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 2011-2022, OFFIS e.V.
+ *  Copyright (C) 2011-2021, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -545,16 +545,19 @@ static void prepareTS(E_TransferSyntax ts,
   {
     case EXS_LittleEndianImplicit:
       /* we only support Little Endian Implicit */
+      syntaxes.push_back(UID_LittleEndianExplicitTransferSyntax);
       break;
     case EXS_LittleEndianExplicit:
       /* we prefer Little Endian Explicit */
       syntaxes.push_back(UID_LittleEndianExplicitTransferSyntax);
       syntaxes.push_back(UID_BigEndianExplicitTransferSyntax);
+      syntaxes.push_back(UID_LittleEndianImplicitTransferSyntax);
       break;
     case EXS_BigEndianExplicit:
       /* we prefer Big Endian Explicit */
       syntaxes.push_back(UID_BigEndianExplicitTransferSyntax);
       syntaxes.push_back(UID_LittleEndianExplicitTransferSyntax);
+      syntaxes.push_back(UID_LittleEndianImplicitTransferSyntax);
       break;
 #ifdef WITH_ZLIB
     case EXS_DeflatedLittleEndianExplicit:
@@ -562,6 +565,7 @@ static void prepareTS(E_TransferSyntax ts,
       syntaxes.push_back(UID_DeflatedExplicitVRLittleEndianTransferSyntax);
       syntaxes.push_back(UID_LittleEndianExplicitTransferSyntax);
       syntaxes.push_back(UID_BigEndianExplicitTransferSyntax);
+      syntaxes.push_back(UID_LittleEndianImplicitTransferSyntax);
       break;
 #endif
     default:
@@ -583,9 +587,7 @@ static void prepareTS(E_TransferSyntax ts,
         syntaxes.push_back(UID_BigEndianExplicitTransferSyntax);
         syntaxes.push_back(UID_LittleEndianExplicitTransferSyntax);
       }
-
+      syntaxes.push_back(UID_LittleEndianImplicitTransferSyntax);
       break;
   }
-  // Always propose Little Endian Implicit
-  syntaxes.push_back(UID_LittleEndianImplicitTransferSyntax);
 }

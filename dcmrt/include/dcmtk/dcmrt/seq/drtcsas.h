@@ -53,7 +53,7 @@ class DCMTK_DCMRT_EXPORT DRTConversionSourceAttributesSequence
          */
         virtual ~Item();
 
-        /** assignment operator
+        /** assigment operator
          *  @param copy item object to be copied
          *  @return reference to this object
          */
@@ -188,7 +188,7 @@ class DCMTK_DCMRT_EXPORT DRTConversionSourceAttributesSequence
      */
     virtual ~DRTConversionSourceAttributesSequence();
 
-    /** assignment operator
+    /** assigment operator
      *  @param copy sequence object to be copied
      *  @return reference to this object
      */

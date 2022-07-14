@@ -20,7 +20,6 @@ install:
 		$(INSTALL_DATA) $$file $(DESTDIR)$(includedir)/dcmtk/dcmtract ;\
 	done
 
-
 clean:
 	rm -f $(TRASH)
 

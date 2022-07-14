@@ -210,8 +210,8 @@ public:
   void setEventHandler(DVPSPrintEventHandler *handler) { eventHandler = handler; }
 
   /** sets the blocking and timeout mode for receive operations.
-   *  @param blocking blocking mode
-   *  @param timeOut
+   *  @param blockMode blocking mode
+   *  @param timeout
    */
   void setTimeout(T_DIMSE_BlockingMode blocking, int timeOut) { blockMode=blocking; timeout=timeOut; }
 

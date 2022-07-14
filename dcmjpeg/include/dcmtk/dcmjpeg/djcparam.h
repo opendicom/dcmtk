@@ -141,7 +141,7 @@ public:
   }
 
   /** returns maximum fragment size (in kbytes) for compression, 0 for unlimited.
-   *  @return maximum fragment size for compression
+   *  @returnmaximum fragment size for compression
    */
   Uint32 getFragmentSize() const
   {

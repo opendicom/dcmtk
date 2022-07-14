@@ -114,17 +114,13 @@ public:
         /// allow DcmJsonFormat to use this class' private members
         friend class DcmJsonFormat;
 
-        /** private constructor, used by DcmJsonFormat
-         * @param format the format
-         */
+        /// private constructor, used by DcmJsonFormat
         inline Indention(DcmJsonFormat& format) : m_Format(format)
         {
 
         }
 
-        /** prints the current indention using the parent formatter
-         * @param out the stream to print to
-         */
+        /// prints the current indention using the parent formatter
         inline void printIndention(STD_NAMESPACE ostream& out) const
         {
             m_Format.printIndention(out);

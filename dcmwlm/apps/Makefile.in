@@ -12,11 +12,6 @@ configdir = @top_srcdir@/@configdir@
 
 include $(configdir)/@common_makefile@
 
-oficonvdir = $(top_srcdir)/../oficonv
-oficonvinc = -I$(oficonvdir)/include
-oficonvlibdir = -L$(oficonvdir)/libsrc
-oficonvlib = -loficonv
-
 ofstddir = $(top_srcdir)/../ofstd
 ofstdinc = -I$(ofstddir)/include
 ofstdlibdir = -L$(ofstddir)/libsrc
@@ -39,9 +34,9 @@ dcmnetlib = -ldcmnet
 
 LOCALINCLUDES = $(dcmnetinc) $(dcmdatainc) $(ofloginc) $(ofstdinc)
 LIBDIRS = -L$(top_srcdir)/libsrc $(dcmnetlibdir) $(dcmdatalibdir) \
-	$(ofloglibdir) $(ofstdlibdir) $(oficonvlibdir)
+	$(ofloglibdir) $(ofstdlibdir)
 LOCALLIBS = -ldcmwlm $(dcmnetlib) $(dcmdatalib) $(ofloglib) $(ofstdlib) \
-	$(oficonvlib) $(ZLIBLIBS) $(TCPWRAPPERLIBS) $(CHARCONVLIBS) $(MATHLIBS)
+	$(ZLIBLIBS) $(TCPWRAPPERLIBS) $(CHARCONVLIBS) $(MATHLIBS)
 
 objs = wlcefs.o wlmscpfs.o
 progs = wlmscpfs

@@ -333,7 +333,7 @@ void DVSignatureHandler::updateDigitalSignatureInformation(DcmItem& /*dataset*/,
           cert->getCertValidityNotAfter(aString);
           os << aString.c_str() << htmlEndl
              << htmlLine4 << "Public key" << htmlNext;
-          OFString ecname;
+          const char *ecname = NULL;
           switch (cert->getKeyType())
           {
             case EKT_RSA:
@@ -344,7 +344,7 @@ void DVSignatureHandler::updateDigitalSignatureInformation(DcmItem& /*dataset*/,
               break;
             case EKT_EC:
               ecname = cert->getCertCurveName();
-              if (ecname.length() > 0)
+              if (ecname)
               {
                 os << "EC, curve " << ecname << ", " << cert->getCertKeyBits() << " bits";
               }

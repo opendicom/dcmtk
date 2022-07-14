@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 1994-2022, OFFIS e.V.
+ *  Copyright (C) 1994-2019, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -267,8 +267,7 @@ OFCondition DcmCharString::writeJson(STD_NAMESPACE ostream &out,
 
 const OFString& DcmCharString::getDelimiterChars() const
 {
-    /* use actual VR of this class (including derived ones) */
-    return DcmVR(ident()).getDelimiterChars();
+    return DcmVR(EVR_UN).getDelimiterChars();
 }
 
 

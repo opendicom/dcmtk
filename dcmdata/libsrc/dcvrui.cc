@@ -176,15 +176,7 @@ OFCondition DcmUniqueIdentifier::putString(const char *stringVal,
     if ((stringVal != NULL) && (stringVal[0] == '='))
     {
         uid = dcmFindUIDFromName(stringVal + 1);
-        /* check whether UID name could be mapped to a UID number */
-        if (uid == NULL)
-        {
-            DCMDATA_DEBUG("DcmUniqueIdentifier::putString() cannot map UID name '"
-                << OFSTRING_GUARD(stringVal + 1) << "' to UID value");
-            /* return with an error */
-            return EC_UnknownUIDName;
-        } else
-            uidLen = OFstatic_cast(Uint32, strlen(uid));
+        uidLen = (uid != NULL) ? OFstatic_cast(Uint32, strlen(uid)) : 0;
     }
     /* call inherited method to set the UID string */
     return DcmByteString::putString(uid, uidLen);

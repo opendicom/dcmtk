@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 2015-2022, Open Connections GmbH
+ *  Copyright (C) 2015-2019, Open Connections GmbH
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation are maintained by
@@ -38,7 +38,6 @@ makeOFConditionConst(SG_EC_NoSuchSegment, OFM_dcmseg, 2, OF_error, "No such segm
 makeOFConditionConst(SG_EC_UnknownSegmentationType, OFM_dcmseg, 3, OF_error, "Unknown Segmentation Type");
 makeOFConditionConst(SG_EC_InvalidValue, OFM_dcmseg, 4, OF_error, "Invalid value for Segmentation SOP Class");
 makeOFConditionConst(SG_EC_NotEnoughData, OFM_dcmseg, 5, OF_error, "Not enough data");
-makeOFConditionConst(SG_EC_MaxFramesReached, OFM_dcmseg, 6, OF_error, "Maximum Number of Frames reached");
 
 DcmSegTypes::E_SegmentationType DcmSegTypes::OFString2Segtype(const OFString& value)
 {
@@ -330,12 +329,12 @@ OFCondition SegmentedPropertyTypeCodeItem::write(DcmItem& item)
         if (result.good())
         {
             DcmIODUtil::writeSubSequence<OFVector<CodeSequenceMacro*> >(result,
-                                                                       DCM_SegmentedPropertyTypeModifierCodeSequence,
-                                                                       m_SegmentedPropertyTypeModifierCode,
-                                                                       item,
-                                                                       "1-n",
-                                                                       "3",
-                                                                       "SegmentDescriptionMacro");
+                                                                        DCM_SegmentedPropertyTypeModifierCodeSequence,
+                                                                        m_SegmentedPropertyTypeModifierCode,
+                                                                        item,
+                                                                        "1-n",
+                                                                        "3",
+                                                                        "SegmentDescriptionMacro");
         }
     }
     return result;

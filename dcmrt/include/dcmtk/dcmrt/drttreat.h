@@ -102,7 +102,7 @@ class DCMTK_DCMRT_EXPORT DRTTreatmentSummaryRecordIOD
      */
     virtual ~DRTTreatmentSummaryRecordIOD();
 
-    /** assignment operator
+    /** assigment operator
      *  @param copy IOD object to be copied
      *  @return reference to this object
      */

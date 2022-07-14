@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 2003-2022, OFFIS e.V.
+ *  Copyright (C) 2003-2017, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -84,8 +84,7 @@ OFCondition DcmAssociationConfiguration::addTransferSyntax(
 OFCondition DcmAssociationConfiguration::addPresentationContext(
   const char *key,
   const char *abstractSyntaxUID,
-  const char *transferSyntaxKey,
-  OFBool scuMode)
+  const char *transferSyntaxKey)
 {
   if ((!key)||(!abstractSyntaxUID)||(!transferSyntaxKey)) return EC_IllegalCall;
 
@@ -97,7 +96,7 @@ OFCondition DcmAssociationConfiguration::addPresentationContext(
     return makeOFCondition(OFM_dcmnet, 1031, OF_error, s.c_str());
   }
 
-  return contexts_.add(key, abstractSyntaxUID, transferSyntaxKey, scuMode);
+  return contexts_.add(key, abstractSyntaxUID, transferSyntaxKey);
 }
 
 OFCondition DcmAssociationConfiguration::addRole(
@@ -214,19 +213,6 @@ OFBool DcmAssociationConfiguration::isValidSCPProfile(const char *key) const
 }
 
 
-OFBool DcmAssociationConfiguration::isValidSCUProfile(const char *key) const
-{
-  const char *contextKey = profiles_.getPresentationContextKey(key);
-  const DcmPresentationContextList *contextList = contexts_.getPresentationContextList(contextKey);
-  if (contextList)
-  {
-    return (contextList->size() <= 128);
-  }
-  return OFFalse;
-
-}
-
-
 OFCondition DcmAssociationConfiguration::setAssociationParameters(
   const char *profile,
   T_ASC_Parameters& params) const
@@ -290,10 +276,10 @@ OFCondition DcmAssociationConfiguration::setAssociationParameters(
   const char *abstractSyntax = NULL;
   const char *transferSyntaxKey = NULL;
   const DcmTransferSyntaxList *transferSyntaxList = NULL;
+  const char *xferSyntaxes[128];
   OFListConstIterator(DcmUIDHandler) xffirst;
   OFListConstIterator(DcmUIDHandler) xflast;
   int numXferSyntaxes = 0;
-  const char **xferSyntaxes = NULL;
   T_ASC_SC_ROLE proposedRole;
   OFListConstIterator(DcmRoleSelectionItem) rsfirst;
   OFListConstIterator(DcmRoleSelectionItem) rslast;
@@ -317,9 +303,15 @@ OFCondition DcmAssociationConfiguration::setAssociationParameters(
       return makeOFCondition(OFM_dcmnet, 1066, OF_error, s.c_str());
     }
 
-    size_t transferSyntaxList_size = transferSyntaxList->size();
+    if (transferSyntaxList->size() > 128)
+    {
+      // error: key undefined
+      OFString s("transfer syntax list too long, cannot handle more than 128 entries: ");
+      s += transferSyntaxKey;
+      return makeOFCondition(OFM_dcmnet, 1067, OF_error, s.c_str());
+    }
 
-    if (transferSyntaxList_size < 1)
+    if (transferSyntaxList->size() < 1)
     {
       // error: key undefined
       OFString s("transfer syntax list empty: ");
@@ -328,7 +320,6 @@ OFCondition DcmAssociationConfiguration::setAssociationParameters(
     }
 
     // copy list of transfer syntaxes into array
-    xferSyntaxes = new const char *[transferSyntaxList_size];
     numXferSyntaxes = 0;
     xffirst = transferSyntaxList->begin();
     xflast  = transferSyntaxList->end();
@@ -360,11 +351,7 @@ OFCondition DcmAssociationConfiguration::setAssociationParameters(
 
     // finally add presentation context to params
     result = ASC_addPresentationContext(&params, cid, abstractSyntax, xferSyntaxes, numXferSyntaxes, proposedRole);
-    if (result.bad())
-    {
-      delete[] xferSyntaxes;
-      return result;
-    }
+    if (result.bad()) return result;
 
     // increase index by 2
     cid += 2;
@@ -395,7 +382,6 @@ OFCondition DcmAssociationConfiguration::setAssociationParameters(
     }
   }
 
-  delete[] xferSyntaxes;
   return result;
 }
 

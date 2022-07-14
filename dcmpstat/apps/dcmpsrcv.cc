@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 1999-2022, OFFIS e.V.
+ *  Copyright (C) 1999-2021, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -824,7 +824,7 @@ static void terminateAllReceivers(DVConfiguration& dvi)
     }
     if (prepared && recAETitle && (recPort > 0))
     {
-      if ((ASC_createAssociationParameters(&params, DEFAULT_MAXPDU, dcmConnectionTimeout.get())).good())
+      if ((ASC_createAssociationParameters(&params, DEFAULT_MAXPDU)).good())
       {
         ASC_setTransportLayerType(params, recUseTLS);
         ASC_setAPTitles(params, dvi.getNetworkAETitle(), recAETitle, NULL);
@@ -1332,7 +1332,7 @@ int main(int argc, char *argv[])
               finished2=OFTrue;
               finished1=OFTrue;
             }
-#else  /* HAVE_FORK */
+#else
             // Windows version - call CreateProcess()
             finished2=OFTrue;
             cond = ASC_dropNetwork(&net);
@@ -1378,13 +1378,12 @@ int main(int argc, char *argv[])
               {
                 // notify about rejected association
                 OFOStringStream out;
-                OFString temp_str;
                 out << "DIMSE Association Rejected:" << OFendl
                     << "  reason: cannot execute command line: " << commandline << OFendl
                     << "  calling presentation address: " << assoc->params->DULparams.callingPresentationAddress << OFendl
                     << "  calling AE title: " << assoc->params->DULparams.callingAPTitle << OFendl
                     << "  called AE title: " << assoc->params->DULparams.calledAPTitle << OFendl;
-                out << ASC_dumpConnectionParameters(temp_str, assoc) << OFendl;
+                ASC_dumpConnectionParameters(assoc, out);
                 out << OFStringStream_ends;
                 OFSTRINGSTREAM_GETSTR(out, theString)
                 if (useTLS)
@@ -1395,7 +1394,7 @@ int main(int argc, char *argv[])
 
               dropAssociation(&assoc);
             }
-#endif  /* HAVE_FORK */
+#endif
             break;
         }
       } // finished2

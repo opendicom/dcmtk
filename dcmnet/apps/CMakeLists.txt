@@ -3,7 +3,7 @@ include_directories("${dcmjpls_SOURCE_DIR}/include" "${dcmjpeg_SOURCE_DIR}/inclu
 
 # declare executables
 foreach(PROGRAM dcmrecv dcmsend echoscu findscu getscu movescu storescp storescu termscu)
-  DCMTK_ADD_EXECUTABLE(${PROGRAM} ${PROGRAM}.cc)
+  DCMTK_ADD_EXECUTABLE(${PROGRAM} ${PROGRAM})
 endforeach()
 
 # declare installation files

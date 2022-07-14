@@ -45,10 +45,6 @@ dsracqcc.o: dsracqcc.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -107,10 +103,6 @@ dsrbascc.o: dsrbascc.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -169,10 +161,6 @@ dsrc3dcc.o: dsrc3dcc.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -231,10 +219,6 @@ dsrchecc.o: dsrchecc.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -293,10 +277,6 @@ dsrcitem.o: dsrcitem.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -380,10 +360,6 @@ dsrcodtn.o: dsrcodtn.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -449,10 +425,6 @@ dsrcodvl.o: dsrcodvl.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -527,10 +499,6 @@ dsrcolcc.o: dsrcolcc.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -589,10 +557,6 @@ dsrcomcc.o: dsrcomcc.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -650,10 +614,6 @@ dsrcomtn.o: dsrcomtn.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -721,10 +681,6 @@ dsrcomvl.o: dsrcomvl.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -788,10 +744,6 @@ dsrcontn.o: dsrcontn.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -858,10 +810,6 @@ dsrcsidl.o: dsrcsidl.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -930,10 +878,6 @@ dsrctpl.o: dsrctpl.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -1018,10 +962,6 @@ dsrctxgr.o: dsrctxgr.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -1080,10 +1020,6 @@ dsrdattn.o: dsrdattn.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -1154,10 +1090,6 @@ dsrdncsr.o: dsrdncsr.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -1224,10 +1156,6 @@ dsrdnflt.o: dsrdnflt.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -1297,10 +1225,6 @@ dsrdoc.o: dsrdoc.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -1401,10 +1325,6 @@ dsrdocst.o: dsrdocst.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -1490,10 +1410,6 @@ dsrdoctn.o: dsrdoctn.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -1572,10 +1488,6 @@ dsrdoctr.o: dsrdoctr.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -1659,10 +1571,6 @@ dsrdtitn.o: dsrdtitn.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -1735,10 +1643,6 @@ dsrenhcc.o: dsrenhcc.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -1797,10 +1701,6 @@ dsrimgfr.o: dsrimgfr.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -1863,10 +1763,6 @@ dsrimgse.o: dsrimgse.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -1927,10 +1823,6 @@ dsrimgtn.o: dsrimgtn.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -2000,10 +1892,6 @@ dsrimgvl.o: dsrimgvl.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -2090,10 +1978,6 @@ dsrimpcc.o: dsrimpcc.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -2152,10 +2036,6 @@ dsriodcc.o: dsriodcc.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -2214,10 +2094,6 @@ dsritcsr.o: dsritcsr.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -2299,10 +2175,6 @@ dsrkeycc.o: dsrkeycc.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -2361,10 +2233,6 @@ dsrmaccc.o: dsrmaccc.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -2423,10 +2291,6 @@ dsrmamcc.o: dsrmamcc.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -2484,10 +2348,6 @@ dsrnumtn.o: dsrnumtn.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -2556,10 +2416,6 @@ dsrnumvl.o: dsrnumvl.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -2627,10 +2483,6 @@ dsrpficc.o: dsrpficc.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -2689,10 +2541,6 @@ dsrplicc.o: dsrplicc.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -2750,10 +2598,6 @@ dsrpnmtn.o: dsrpnmtn.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -2825,10 +2669,6 @@ dsrposcn.o: dsrposcn.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -2886,10 +2726,6 @@ dsrprdcc.o: dsrprdcc.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -2948,10 +2784,6 @@ dsrprocc.o: dsrprocc.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -3010,10 +2842,6 @@ dsrrefin.o: dsrrefin.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -3078,10 +2906,6 @@ dsrreftn.o: dsrreftn.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -3149,10 +2973,6 @@ dsrrrdcc.o: dsrrrdcc.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -3211,10 +3031,6 @@ dsrrsdcc.o: dsrrsdcc.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -3274,10 +3090,6 @@ dsrrtpl.o: dsrrtpl.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -3360,10 +3172,6 @@ dsrsaecc.o: dsrsaecc.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -3422,10 +3230,6 @@ dsrsc3gr.o: dsrsc3gr.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -3486,10 +3290,6 @@ dsrsc3tn.o: dsrsc3tn.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -3557,10 +3357,6 @@ dsrsc3vl.o: dsrsc3vl.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -3624,10 +3420,6 @@ dsrscogr.o: dsrscogr.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -3688,10 +3480,6 @@ dsrscotn.o: dsrscotn.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -3759,10 +3547,6 @@ dsrscovl.o: dsrscovl.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -3826,10 +3610,6 @@ dsrsoprf.o: dsrsoprf.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -3899,10 +3679,6 @@ dsrspecc.o: dsrspecc.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -3962,10 +3738,6 @@ dsrstpl.o: dsrstpl.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -4046,10 +3818,6 @@ dsrstrvl.o: dsrstrvl.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -4109,10 +3877,6 @@ dsrtcodt.o: dsrtcodt.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -4178,10 +3942,6 @@ dsrtcosp.o: dsrtcosp.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -4242,10 +4002,6 @@ dsrtcotn.o: dsrtcotn.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -4314,10 +4070,6 @@ dsrtcoto.o: dsrtcoto.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -4380,10 +4132,6 @@ dsrtcovl.o: dsrtcovl.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -4445,10 +4193,6 @@ dsrtextn.o: dsrtextn.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -4518,10 +4262,6 @@ dsrtimtn.o: dsrtimtn.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -4591,10 +4331,6 @@ dsrtpltn.o: dsrtpltn.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -4679,10 +4415,6 @@ dsrtree.o: dsrtree.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -4743,10 +4475,6 @@ dsrtypes.o: dsrtypes.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -4850,10 +4578,6 @@ dsruidtn.o: dsruidtn.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -4923,10 +4647,6 @@ dsrwavch.o: dsrwavch.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -4988,10 +4708,6 @@ dsrwavtn.o: dsrwavtn.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -5060,10 +4776,6 @@ dsrwavvl.o: dsrwavvl.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -5134,10 +4846,6 @@ dsrxmld.o: dsrxmld.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \
@@ -5197,10 +4905,6 @@ dsrxrdcc.o: dsrxrdcc.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcitem.h \
  ../../ofstd/include/dcmtk/ofstd/offile.h \

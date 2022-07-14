@@ -3,7 +3,7 @@ include_directories("${dcmjpls_SOURCE_DIR}/include" "${ofstd_SOURCE_DIR}/include
 
 # declare executables
 foreach(PROGRAM dcmcjpls dcmdjpls dcml2pnm)
-  DCMTK_ADD_EXECUTABLE(${PROGRAM} ${PROGRAM}.cc)
+  DCMTK_ADD_EXECUTABLE(${PROGRAM} ${PROGRAM})
 endforeach()
 
 # make sure executables are linked to the corresponding libraries

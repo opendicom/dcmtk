@@ -681,11 +681,8 @@ sendDcmDataset(
     Uint32 bytesTransmitted = 0;
     DUL_PDVLIST pdvList;
     DUL_PDV pdv;
-
-#if 0
     /* the following variable is currently unused, leave it for future use */
     unsigned long pdvCount = 0;
-#endif
     DcmWriteCache wcache;
 
     /* initialize some local variables (we want to use the association's send buffer */
@@ -803,9 +800,7 @@ sendDcmDataset(
 
             /* count the bytes and the amount of PDVs which were transmitted */
             bytesTransmitted += OFstatic_cast(Uint32, rtnLength);
-#if 0
             pdvCount += pdvList.count;
-#endif
 
             /* execute callback function to indicate progress */
             if (callback) {

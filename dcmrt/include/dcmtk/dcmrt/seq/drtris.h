@@ -54,7 +54,7 @@ class DCMTK_DCMRT_EXPORT DRTReferencedInstanceSequence
          */
         virtual ~Item();
 
-        /** assignment operator
+        /** assigment operator
          *  @param copy item object to be copied
          *  @return reference to this object
          */
@@ -166,7 +166,7 @@ class DCMTK_DCMRT_EXPORT DRTReferencedInstanceSequence
      */
     virtual ~DRTReferencedInstanceSequence();
 
-    /** assignment operator
+    /** assigment operator
      *  @param copy sequence object to be copied
      *  @return reference to this object
      */

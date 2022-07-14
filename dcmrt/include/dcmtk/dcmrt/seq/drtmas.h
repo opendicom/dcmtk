@@ -53,7 +53,7 @@ class DCMTK_DCMRT_EXPORT DRTModifiedAttributesSequence
          */
         virtual ~Item();
 
-        /** assignment operator
+        /** assigment operator
          *  @param copy item object to be copied
          *  @return reference to this object
          */
@@ -113,7 +113,7 @@ class DCMTK_DCMRT_EXPORT DRTModifiedAttributesSequence
      */
     virtual ~DRTModifiedAttributesSequence();
 
-    /** assignment operator
+    /** assigment operator
      *  @param copy sequence object to be copied
      *  @return reference to this object
      */

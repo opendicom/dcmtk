@@ -148,7 +148,7 @@ lossless JPEG codec selection:
   +tl   --true-lossless
           true lossless codec (default)
 
-  # This option selects an encoder, that guarantees truly lossless
+  # This option selects an encoder, that guarantees truely lossless
   # image compression. See NOTES for further information.
 
   +pl   --pseudo-lossless
@@ -701,6 +701,6 @@ It is an error if no data dictionary can be loaded.
 
 \section dcmcjpeg_copyright COPYRIGHT
 
-Copyright (C) 2001-2022 by OFFIS e.V., Escherweg 2, 26121 Oldenburg, Germany.
+Copyright (C) 2001-2018 by OFFIS e.V., Escherweg 2, 26121 Oldenburg, Germany.
 
 */

@@ -1,12 +1,12 @@
 /*
  *
- *  Copyright (C) 2015-2022, J. Riesmeier, Oldenburg, Germany
+ *  Copyright (C) 2015-2021, J. Riesmeier, Oldenburg, Germany
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  Header file for class CID100_QuantitativeDiagnosticImagingProcedures
  *
- *  Generated automatically from DICOM PS 3.16-2022b
- *  File created on 2022-04-12 13:01:10 by J. Riesmeier
+ *  Generated automatically from DICOM PS 3.16-2021a
+ *  File created on 2021-02-03 21:06:15 by J. Riesmeier
  *
  */
 
@@ -28,7 +28,7 @@
 
 /** Implementation of DCMR Context Group:
  *  CID 100 - Quantitative Diagnostic Imaging Procedures.
- *  (type: extensible, version: 20210905)
+ *  (type: extensible, version: 20190817)
  */
 class DCMTK_CMR_EXPORT CID100_QuantitativeDiagnosticImagingProcedures
   : public DSRContextGroup
@@ -46,7 +46,7 @@ class DCMTK_CMR_EXPORT CID100_QuantitativeDiagnosticImagingProcedures
         MagneticResonanceImagingGuidance,
         /// (126020,DCM,"Multiparametric MRI")
         MultiparametricMRI,
-        /// (719178004,SCT,"Multiparametric MRI of prostate")
+        /// (126021,DCM,"Multiparametric MRI of prostate")
         MultiparametricMRIOfProstate,
         /// (126022,DCM,"Multiparametric MRI of whole body")
         MultiparametricMRIOfWholeBody,

@@ -744,7 +744,7 @@ PlannedImagingAgentAdministrationSRStorage           1.2.840.10008.5.1.4.1.1.88.
 PerformedImagingAgentAdministrationSRStorage         1.2.840.10008.5.1.4.1.1.88.75
 EnhancedXRayRadiationDoseSRStorage                   1.2.840.10008.5.1.4.1.1.88.76
 ContentAssessmentResultsStorage                      1.2.840.10008.5.1.4.1.1.90.1
-MicroscopyBulkSimpleAnnotationsStorage               1.2.840.10008.5.1.4.1.1.91.1
+MicroscopyBulkSimpleAnnotationsStorage               1.2.840.10008.5.1.4.1.1.91.1​
 EncapsulatedPDFStorage                               1.2.840.10008.5.1.4.1.1.104.1
 EncapsulatedCDAStorage                               1.2.840.10008.5.1.4.1.1.104.2
 EncapsulatedSTLStorage                               1.2.840.10008.5.1.4.1.1.104.3
@@ -777,8 +777,6 @@ RTRadiationSalvageRecordStorage                      1.2.840.10008.5.1.4.1.1.481
 TomotherapeuticRadiationRecordStorage                1.2.840.10008.5.1.4.1.1.481.18
 CArmPhotonElectronRadiationRecordStorage             1.2.840.10008.5.1.4.1.1.481.19
 RoboticRadiationRecordStorage                        1.2.840.10008.5.1.4.1.1.481.20
-RTRadiationSetDeliveryInstructionStorage             1.2.840.10008.5.1.4.1.1.481.21
-RTTreatmentPreparationStorage                        1.2.840.10008.5.1.4.1.1.481.22
 DICOS_CTImageStorage                                 1.2.840.10008.5.1.4.1.1.501.1
 DICOS_DigitalXRayImageStorageForPresentation         1.2.840.10008.5.1.4.1.1.501.2.1
 DICOS_DigitalXRayImageStorageForProcessing           1.2.840.10008.5.1.4.1.1.501.2.2
@@ -951,6 +949,6 @@ It is an error if no data dictionary can be loaded.
 
 \section storescp_copyright COPYRIGHT
 
-Copyright (C) 1996-2022 by OFFIS e.V., Escherweg 2, 26121 Oldenburg, Germany.
+Copyright (C) 1996-2021 by OFFIS e.V., Escherweg 2, 26121 Oldenburg, Germany.
 
 */

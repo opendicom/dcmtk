@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 1998-2022, OFFIS e.V.
+ *  Copyright (C) 1998-2018, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -58,7 +58,7 @@ class DCMTK_DCMPSTAT_EXPORT DVInterface: public DVConfiguration
     *     If a non-existing filename (or NULL) is passed, an empty configuration file
     *     is assumed.
     *  @param useLog (optional) flag specifying whether a general log file should be used
-    *     (config entry GENERAL\\APPLICATION\\LOGFILE).
+    *     (config entry GENERAL\APPLICATION\LOGFILE).
     */
     DVInterface(const char *config_file = NULL, OFBool useLog = OFFalse);
 
@@ -137,7 +137,7 @@ class DCMTK_DCMPSTAT_EXPORT DVInterface: public DVConfiguration
 
     /** loads a structured reporting "template".
      *  This "template" is just a DICOM Structured Reporting file which resides in a
-     *  special sub-folder and is referenced by the configuration file.  This mechanism
+     *  special sub-folder and is referenced by the configuration file.  This meachanism
      *  should facilitate the creation of new reports since one does not have to start
      *  with a completely empty report.
      *  Please note that the current structured report is replaced by the specified
@@ -752,7 +752,7 @@ class DCMTK_DCMPSTAT_EXPORT DVInterface: public DVConfiguration
      *  stored print objects and hardcopy grayscale images.
      *  The configuration file which is required for the query/retrieve process will be created
      *  automatically from the 'global' configuration file each time this method is called, unless
-     *  this automatic creation is disabled (entry: [QUERYRETIUEVE] AutoCreateConfigFile = false).
+     *  this automatical creation is disabled (entry: [QUERYRETIUEVE] AutoCreateConfigFile = false).
      *  Attention: Successful return of this method is no guarantee that the query/retrieve server
      *  has successfully started, because certain errors (i.e. incorrect settings in the config file)
      *  will only be noted in the query/retrieve process when running. On Unix platform, successful
@@ -1081,7 +1081,7 @@ class DCMTK_DCMPSTAT_EXPORT DVInterface: public DVConfiguration
      *  Larger images are scaled down (according to the pixel aspect ratio) to fit into
      *  the specified rectangle.
      *  Attention: If the values differ from the the previous ones the currently loaded
-     *  hardcopy grayscale image (preview) is automatically destroyed and has to be re-loaded.
+     *  hardcopy grayscale image (preview) is automatically detroyed and has to be re-loaded.
      *  @param width maximum width of preview bitmap (in pixels)
      *  @param height maximum height of preview bitmap (in pixels)
      */
@@ -1327,7 +1327,7 @@ class DCMTK_DCMPSTAT_EXPORT DVInterface: public DVConfiguration
 
     /** starts the print server process (Basic Grayscale Print Management SCP).
      *  The print server process will wait for incoming DICOM associations, handle the
-     *  DICOM print protocol, store data in file and register stored print and grayscale
+     *  DICOM print protcol, store data in file and register stored print and grayscale
      *  image objects in the database index file.
      *  Attention: Successful return of this method is no guarantee that the print
      *  server has successfully started, because certain errors (i.e. incorrect settings
@@ -1554,7 +1554,7 @@ private:
      */
     OFCondition lockDatabase();
 
-    /** creates an exclusive lock on the database if none exists.
+    /** creates an exlusive lock on the database if none exists.
      *  The lock will remain until explicitly released with releaseDatabase()
      *  or unlockExclusive().
      *  This method also clears the index cache.
@@ -1562,7 +1562,7 @@ private:
      */
     OFCondition lockExclusive();
 
-    /** removes an exclusive lock on the database if any.
+    /** removes an exlusive lock on the database if any.
      *  @return EC_Normal upon success, an error code otherwise.
      */
     OFCondition unlockExclusive();
@@ -1690,18 +1690,12 @@ private:
     void clearIndexCache();
 
     /** clears specified index record (and makes pos invalid)
-     *  @param record the index record to clear
-     *  @param recpos the position
      */
     void clearIndexRecord(IdxRecord &record,
                           int &recpos);
 
     /** reads specified index record (comparing pos with oldpos to avoid redundant
      *  loading)
-     *  @param pos the position
-     *  @param record the index record
-     *  @param oldpos the old position
-     *  @return OFTrue on success, OFFalse otherwise
      */
     OFBool readIndexRecord(const int pos,
                            IdxRecord &record,
@@ -1713,46 +1707,28 @@ private:
     void updateStatusCache();
 
     /** returns pointer to study struct specified by given UIDs or to current study
-     *  @param studyUID the UID of the study
-     *  @param seriesUID the UID of the series
-     *  @return pointer to study struct specified by given UIDs or to current study or NULL
      */
     DVStudyCache::ItemStruct *getStudyStruct(const char *studyUID = NULL,
                                              const char *seriesUID = NULL);
 
     /** returns pointer to series struct specified by given UIDs or to current series
-     *  @param studyUID the UID of the study
-     *  @param seriesUID the UID of the series
-     *  @param instanceUID the UID of the instance
-     *  @return pointer to series struct specified by given UIDs or to current series or NULL
      */
     DVSeriesCache::ItemStruct *getSeriesStruct(const char *studyUID = NULL,
                                                const char *seriesUID = NULL,
                                                const char *instanceUID = NULL);
 
     /** returns pointer to instance struct specified by given UIDs or to current instance
-     *  @param studyUID the UID of the study
-     *  @param seriesUID the UID of the series
-     *  @param instanceUID the UID of the instance
-     *  @return pointer to instance struct specified by given UIDs or to current instance or NULL
      */
     DVInstanceCache::ItemStruct *getInstanceStruct(const char *studyUID = NULL,
                                                    const char *seriesUID = NULL,
                                                    const char *instanceUID = NULL);
 
     /** returns index of specified study within study description record
-     *  @param study the study description records to search in
-     *  @param uid the id of the study
-     *  @return the study index if found, -1 otherwise
      */
     int findStudyIdx(StudyDescRecord *study,
                      const char *uid);
 
     /** conditionally deletes given image file (only if file resides in index.dat directory)
-     *  @param filename the path to the file
-     *  @return 0: given filename is invalid
-     *          1: image file has been deleted
-     *          2: image file has not been deleted
      */
     int deleteImageFile(const char *filename);
 
@@ -1763,8 +1739,6 @@ private:
 
     /** modifies the review flag for one instance in the database (see method with three UID
      *  parameters)
-     *  @param idx index
-     *  @return EC_Normal upon success, an error code otherwise
      */
     OFCondition instanceReviewed(int pos);
 

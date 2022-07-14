@@ -12,7 +12,6 @@ configdir = @top_srcdir@/@configdir@
 
 include $(configdir)/@common_makefile@
 
-oficonvdir = $(top_srcdir)/../oficonv
 ofstddir = $(top_srcdir)/../ofstd
 oflogdir = $(top_srcdir)/../oflog
 dcmdatadir = $(top_srcdir)/../dcmdata
@@ -20,10 +19,9 @@ dcmioddir = $(top_srcdir)/../dcmiod
 dcmfgdir = $(top_srcdir)/../dcmfg
 
 LIBDIRS = -L$(top_srcdir)/libsrc -L$(ofstddir)/libsrc -L$(oflogdir)/libsrc \
-	-L$(dcmdatadir)/libsrc -L$(dcmioddir)/libsrc -L$(dcmfgdir)/libsrc \
-	-L$(oficonvdir)/libsrc
-LOCALLIBS = -ldcmect -ldcmfg -ldcmiod -ldcmdata -loflog -lofstd -loficonv \
-	$(ZLIBLIBS) $(CHARCONVLIBS) $(MATHLIBS)
+	-L$(dcmdatadir)/libsrc -L$(dcmioddir)/libsrc -L$(dcmfgdir)/libsrc
+LOCALLIBS = -ldcmect -ldcmfg -ldcmiod -ldcmdata -loflog -lofstd $(ZLIBLIBS) \
+	$(CHARCONVLIBS) $(MATHLIBS)
 LOCALINCLUDES = -I$(top_srcdir)/include -I$(ofstddir)/include -I$(oflogdir)/include \
 	-I$(dcmdatadir)/include -I$(dcmioddir)/include -I$(dcmfgdir)/include
 

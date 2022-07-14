@@ -12,7 +12,6 @@ configdir = @top_srcdir@/@configdir@
 
 include $(configdir)/@common_makefile@
 
-oficonvdir = $(top_srcdir)/../oficonv
 ofstddir = $(top_srcdir)/../ofstd
 oflogdir = $(top_srcdir)/../oflog
 dcmdatadir = $(top_srcdir)/../dcmdata
@@ -31,10 +30,10 @@ LOCALINCLUDES = -I$(dcmnetdir)/include -I$(ofstddir)/include -I$(oflogdir)/inclu
 LIBDIRS = -L$(top_srcdir)/libsrc -L$(dcmnetdir)/libsrc -L$(ofstddir)/libsrc \
 	-L$(oflogdir)/libsrc -L$(dcmdatadir)/libsrc -L$(dcmsigndir)/libsrc \
 	-L$(dcmtlsdir)/libsrc -L$(dcmqrdbdir)/libsrc -L$(dcmimgledir)/libsrc \
-	-L$(dcmimagedir)/libsrc -L$(dcmsrdir)/libsrc -L$(oficonvdir)/libsrc
+	-L$(dcmimagedir)/libsrc -L$(dcmsrdir)/libsrc
 LOCALLIBS = -ldcmpstat -ldcmdsig -ldcmsr -ldcmimage -ldcmimgle -ldcmqrdb -ldcmnet \
-	-ldcmtls -ldcmdata -loflog -lofstd -loficonv $(TIFFLIBS) $(PNGLIBS) $(XMLLIBS) \
-	$(ZLIBLIBS) $(TCPWRAPPERLIBS) $(OPENSSLLIBS) $(CHARCONVLIBS) $(MATHLIBS)
+	-ldcmtls -ldcmdata -loflog -lofstd $(TIFFLIBS) $(PNGLIBS) $(XMLLIBS) $(ZLIBLIBS) \
+	$(TCPWRAPPERLIBS) $(OPENSSLLIBS) $(CHARCONVLIBS) $(MATHLIBS)
 
 objs = msgserv.o
 progs = msgserv
@@ -49,7 +48,6 @@ msgserv: msgserv.o
 check:
 
 check-exhaustive:
-
 
 install: all
 

@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 2011-2022, OFFIS e.V.
+ *  Copyright (C) 2011-2016, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -61,7 +61,6 @@ OFTEST(ofstd_OFCharacterEncoding_1)
         OFCHECK_EQUAL(resultStr, OFString(" \0 ", 3));
         OFCHECK(charEnc.selectEncoding("ASCII", "DCMTK").bad());
         OFCHECK(charEnc.selectEncoding("DCMTK", "ASCII").bad());
-#if DCMTK_ENABLE_CHARSET_CONVERSION != DCMTK_CHARSET_CONVERSION_OFICONV
         // some implementations of iconv_open() in the C standard library do
         // not understand the "" argument
         if (OFCharacterEncoding::hasDefaultEncoding())
@@ -71,17 +70,11 @@ OFTEST(ofstd_OFCharacterEncoding_1)
             OFCHECK(charEnc.selectEncoding("ASCII", charEnc.getLocaleEncoding()).good());
         }
         else
-#endif
         {
             OFCHECK(charEnc.selectEncoding("ASCII", "UTF-8").good());
         }
         checkConversionFlags(OFCharacterEncoding::AbortTranscodingOnIllegalSequence);
-#if DCMTK_ENABLE_CHARSET_CONVERSION != DCMTK_CHARSET_CONVERSION_OFICONV
-        // in oficonv, OFCharacterEncoding::DiscardIllegalSequences and
-        // OFCharacterEncoding::TransliterateIllegalSequences | OFCharacterEncoding::DiscardIllegalSequences
-        // is the same and cannot be distinguished in the getConversionFlags() result.
         checkConversionFlags(OFCharacterEncoding::DiscardIllegalSequences);
-#endif
         checkConversionFlags(OFCharacterEncoding::TransliterateIllegalSequences);
         checkConversionFlags(OFCharacterEncoding::TransliterateIllegalSequences
                              | OFCharacterEncoding::DiscardIllegalSequences);
@@ -156,12 +149,7 @@ OFTEST(ofstd_OFCharacterEncoding_4)
         {
             OFCHECK(charEnc.setConversionFlags(OFCharacterEncoding::TransliterateIllegalSequences).good());
             OFCHECK(charEnc.convertString("J\366rg", resultStr).good());
-
-#if DCMTK_ENABLE_CHARSET_CONVERSION == DCMTK_CHARSET_CONVERSION_OFICONV
-            OFCHECK_EQUAL(resultStr, "J?rg");
-#else
             OFCHECK_EQUAL(resultStr, "J\"org");
-#endif
         }
     }
 }
@@ -178,11 +166,7 @@ OFTEST(ofstd_OFCharacterEncoding_5)
         {
             OFCHECK(charEnc.setConversionFlags(OFCharacterEncoding::TransliterateIllegalSequences).good());
             OFCHECK(charEnc.convertString("J\366rg", resultStr).good());
-#if DCMTK_ENABLE_CHARSET_CONVERSION == DCMTK_CHARSET_CONVERSION_OFICONV
-            OFCHECK_EQUAL(resultStr, "J?rg");
-#else
             OFCHECK_EQUAL(resultStr, "J\"org");
-#endif
         }
         if (OFCharacterEncoding::supportsConversionFlags(OFCharacterEncoding::DiscardIllegalSequences))
         {

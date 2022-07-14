@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 2017-2022, J. Riesmeier, Oldenburg, Germany
+ *  Copyright (C) 2017-2019, J. Riesmeier, Oldenburg, Germany
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  Source file for class TID300_Measurement
@@ -14,11 +14,10 @@
 
 #include "dcmtk/dcmsr/cmr/tid300.h"
 #include "dcmtk/dcmsr/cmr/tid15def.h"
-#include "dcmtk/dcmsr/cmr/cid218e.h"
 #include "dcmtk/dcmsr/cmr/cid6147.h"
 #include "dcmtk/dcmsr/cmr/cid7181.h"
 #include "dcmtk/dcmsr/cmr/cid7464.h"
-#include "dcmtk/dcmsr/cmr/cid7551.h"
+#include "dcmtk/dcmsr/cmr/cid7469.h"
 #include "dcmtk/dcmsr/cmr/logger.h"
 #include "dcmtk/dcmsr/codes/dcm.h"
 #include "dcmtk/dcmsr/codes/sct.h"
@@ -53,8 +52,8 @@
 #define TEMPLATE_ORDER       OFTrue  /* significant */
 
 
-template<typename T_Measurement, typename T2, typename T3, typename T4, typename T5>
-TID300_Measurement<T_Measurement, T2, T3, T4, T5>::TID300_Measurement()
+template<typename T_Measurement, typename T2, typename T3, typename T4>
+TID300_Measurement<T_Measurement, T2, T3, T4>::TID300_Measurement()
   : DSRSubTemplate(TEMPLATE_NUMBER, MAPPING_RESOURCE, MAPPING_RESOURCE_UID)
 {
     setExtensible(TEMPLATE_TYPE);
@@ -64,10 +63,10 @@ TID300_Measurement<T_Measurement, T2, T3, T4, T5>::TID300_Measurement()
 }
 
 
-template<typename T_Measurement, typename T2, typename T3, typename T4, typename T5>
-TID300_Measurement<T_Measurement, T2, T3, T4, T5>::TID300_Measurement(const T_Measurement &conceptName,
-                                                                      const MeasurementValue &numericValue,
-                                                                      const OFBool check)
+template<typename T_Measurement, typename T2, typename T3, typename T4>
+TID300_Measurement<T_Measurement, T2, T3, T4>::TID300_Measurement(const T_Measurement &conceptName,
+                                                                  const MeasurementValue &numericValue,
+                                                                  const OFBool check)
   : DSRSubTemplate(TEMPLATE_NUMBER, MAPPING_RESOURCE, MAPPING_RESOURCE_UID)
 {
     setExtensible(TEMPLATE_TYPE);
@@ -79,33 +78,33 @@ TID300_Measurement<T_Measurement, T2, T3, T4, T5>::TID300_Measurement(const T_Me
 }
 
 
-template<typename T1, typename T2, typename T3, typename T4, typename T5>
-void TID300_Measurement<T1, T2, T3, T4, T5>::clear()
+template<typename T1, typename T2, typename T3, typename T4>
+void TID300_Measurement<T1, T2, T3, T4>::clear()
 {
     DSRSubTemplate::clear();
 }
 
 
-template<typename T1, typename T2, typename T3, typename T4, typename T5>
-OFBool TID300_Measurement<T1, T2, T3, T4, T5>::isValid() const
+template<typename T1, typename T2, typename T3, typename T4>
+OFBool TID300_Measurement<T1, T2, T3, T4>::isValid() const
 {
     /* check whether base class is valid and all required content items are present */
     return DSRSubTemplate::isValid() && hasMeasurement();
 }
 
 
-template<typename T1, typename T2, typename T3, typename T4, typename T5>
-OFBool TID300_Measurement<T1, T2, T3, T4, T5>::hasMeasurement() const
+template<typename T1, typename T2, typename T3, typename T4>
+OFBool TID300_Measurement<T1, T2, T3, T4>::hasMeasurement() const
 {
     /* check for content item at TID 300 (Measurement) Row 1 */
     return (getEntryFromNodeList(MEASUREMENT) > 0);
 }
 
 
-template<typename T_Measurement, typename T2, typename T3, typename T4, typename T5>
-OFCondition TID300_Measurement<T_Measurement, T2, T3, T4, T5>::createNewMeasurement(const T_Measurement &conceptName,
-                                                                                    const MeasurementValue &numericValue,
-                                                                                    const OFBool check)
+template<typename T_Measurement, typename T2, typename T3, typename T4>
+OFCondition TID300_Measurement<T_Measurement, T2, T3, T4>::createNewMeasurement(const T_Measurement &conceptName,
+                                                                                const MeasurementValue &numericValue,
+                                                                                const OFBool check)
 {
     clear();
     /* TID 300 (Measurement) Row 1 */
@@ -113,10 +112,10 @@ OFCondition TID300_Measurement<T_Measurement, T2, T3, T4, T5>::createNewMeasurem
 }
 
 
-template<typename T1, typename T2, typename T_Method, typename T4, typename T5>
-OFCondition TID300_Measurement<T1, T2, T_Method, T4, T5>::addModifier(const DSRCodedEntryValue &conceptName,
-                                                                      const DSRCodedEntryValue &modifier,
-                                                                      const OFBool check)
+template<typename T1, typename T2, typename T_Method, typename T4>
+OFCondition TID300_Measurement<T1, T2, T_Method, T4>::addModifier(const DSRCodedEntryValue &conceptName,
+                                                                  const DSRCodedEntryValue &modifier,
+                                                                  const OFBool check)
 {
     OFCondition result = EC_IllegalParameter;
     /* basic check of parameters */
@@ -150,9 +149,9 @@ OFCondition TID300_Measurement<T1, T2, T_Method, T4, T5>::addModifier(const DSRC
 }
 
 
-template<typename T1, typename T2, typename T_Method, typename T4, typename T5>
-OFCondition TID300_Measurement<T1, T2, T_Method, T4, T5>::setMeasurementMethod(const T_Method &method,
-                                                                               const OFBool check)
+template<typename T1, typename T2, typename T_Method, typename T4>
+OFCondition TID300_Measurement<T1, T2, T_Method, T4>::setMeasurementMethod(const T_Method &method,
+                                                                           const OFBool check)
 {
     OFCondition result = EC_IllegalParameter;
     /* basic check of parameter */
@@ -171,9 +170,9 @@ OFCondition TID300_Measurement<T1, T2, T_Method, T4, T5>::setMeasurementMethod(c
 }
 
 
-template<typename T1, typename T2, typename T3, typename T_Derivation, typename T5>
-OFCondition TID300_Measurement<T1, T2, T3, T_Derivation, T5>::setDerivation(const T_Derivation &derivation,
-                                                                            const OFBool check)
+template<typename T1, typename T2, typename T3, typename T_Derivation>
+OFCondition TID300_Measurement<T1, T2, T3, T_Derivation>::setDerivation(const T_Derivation &derivation,
+                                                                        const OFBool check)
 {
     OFCondition result = EC_IllegalParameter;
     /* basic check of parameter */
@@ -192,11 +191,11 @@ OFCondition TID300_Measurement<T1, T2, T3, T_Derivation, T5>::setDerivation(cons
 }
 
 
-template<typename T1, typename T2, typename T3, typename T4, typename T5>
-OFCondition TID300_Measurement<T1, T2, T3, T4, T5>::addFindingSite(const DSRCodedEntryValue &site,
-                                                                   const CID244e_Laterality &laterality,
-                                                                   const DSRCodedEntryValue &siteModifier,
-                                                                   const OFBool check)
+template<typename T1, typename T2, typename T3, typename T4>
+OFCondition TID300_Measurement<T1, T2, T3, T4>::addFindingSite(const DSRCodedEntryValue &site,
+                                                               const CID244e_Laterality &laterality,
+                                                               const DSRCodedEntryValue &siteModifier,
+                                                               const OFBool check)
 {
     OFCondition result = EC_Normal;
     /* basic check of mandatory parameter */
@@ -260,10 +259,10 @@ OFCondition TID300_Measurement<T1, T2, T3, T4, T5>::addFindingSite(const DSRCode
 }
 
 
-template<typename T1, typename T2, typename T3, typename T4, typename T5>
-OFCondition TID300_Measurement<T1, T2, T3, T4, T5>::addDerivationParameter(const DSRCodedEntryValue &conceptName,
-                                                                           const CMR_SRNumericMeasurementValue &numericValue,
-                                                                           const OFBool check)
+template<typename T1, typename T2, typename T3, typename T4>
+OFCondition TID300_Measurement<T1, T2, T3, T4>::addDerivationParameter(const DSRCodedEntryValue &conceptName,
+                                                                       const CMR_SRNumericMeasurementValue &numericValue,
+                                                                       const OFBool check)
 {
     OFCondition result = EC_IllegalParameter;
     /* basic check of parameters */
@@ -292,14 +291,14 @@ OFCondition TID300_Measurement<T1, T2, T3, T4, T5>::addDerivationParameter(const
 }
 
 
-template<typename T1, typename T2, typename T3, typename T4, typename T_Purpose>
-OFCondition TID300_Measurement<T1, T2, T3, T4, T_Purpose>::addImage(const T_Purpose &purpose,
-                                                                    const DSRImageReferenceValue &imageReference,
-                                                                    const OFBool check)
+template<typename T1, typename T2, typename T3, typename T4>
+OFCondition TID300_Measurement<T1, T2, T3, T4>::addImage(const DSRCodedEntryValue &conceptName,
+                                                         const DSRImageReferenceValue &imageReference,
+                                                         const OFBool check)
 {
     OFCondition result = EC_IllegalParameter;
     /* basic check of parameters */
-    if (purpose.hasSelectedValue() && imageReference.isComplete())
+    if (conceptName.isComplete() && imageReference.isComplete())
     {
         /* check whether measurement exists */
         if (hasMeasurement())
@@ -308,10 +307,10 @@ OFCondition TID300_Measurement<T1, T2, T3, T4, T_Purpose>::addImage(const T_Purp
             if (gotoLastEntryFromNodeList(this, LAST_IMAGE_OR_SCOORD) == getEntryFromNodeList(MEASUREMENT))
             {
                 /* insert TID 320 (Image or Spatial Coordinates) Row 1 below root */
-                STORE_RESULT(addChildContentItem(RT_inferredFrom, VT_Image, purpose, check));
+                STORE_RESULT(addChildContentItem(RT_inferredFrom, VT_Image, conceptName, check));
             } else {
                /* insert TID 320 (Image or Spatial Coordinates) Row 1 after current position */
-                STORE_RESULT(addContentItem(RT_inferredFrom, VT_Image, purpose, check));
+                STORE_RESULT(addContentItem(RT_inferredFrom, VT_Image, conceptName, check));
             }
             CHECK_RESULT(getCurrentContentItem().setImageReference(imageReference, check));
             CHECK_RESULT(getCurrentContentItem().setAnnotationText("TID 320 - Row 1"));
@@ -324,29 +323,29 @@ OFCondition TID300_Measurement<T1, T2, T3, T4, T_Purpose>::addImage(const T_Purp
 }
 
 
-template<typename T1, typename T2, typename T3, typename T4, typename T_Purpose>
-OFCondition TID300_Measurement<T1, T2, T3, T4, T_Purpose>::addImage(const T_Purpose &purpose,
-                                                                    DcmItem &dataset,
-                                                                    const OFBool check)
+template<typename T1, typename T2, typename T3, typename T4>
+OFCondition TID300_Measurement<T1, T2, T3, T4>::addImage(const DSRCodedEntryValue &conceptName,
+                                                         DcmItem &dataset,
+                                                         const OFBool check)
 {
     DSRImageReferenceValue imageReference;
     /* first, create the referenced image object */
     OFCondition result = imageReference.setReference(dataset, check);
     /* then, add/set the corresponding content item */
-    CHECK_RESULT(addImage(purpose, imageReference, check));
+    CHECK_RESULT(addImage(conceptName, imageReference, check));
     return result;
 }
 
 
-template<typename T1, typename T2, typename T3, typename T4, typename T_Purpose>
-OFCondition TID300_Measurement<T1, T2, T3, T4, T_Purpose>::addSpatialCoordinates(const T_Purpose &purpose,
-                                                                                 const DSRSpatialCoordinatesValue &coordinatesValue,
-                                                                                 const DSRImageReferenceValue &imageReference,
-                                                                                 const OFBool check)
+template<typename T1, typename T2, typename T3, typename T4>
+OFCondition TID300_Measurement<T1, T2, T3, T4>::addSpatialCoordinates(const DSRCodedEntryValue &conceptName,
+                                                                      const DSRSpatialCoordinatesValue &coordinatesValue,
+                                                                      const DSRImageReferenceValue &imageReference,
+                                                                      const OFBool check)
 {
     OFCondition result = EC_IllegalParameter;
     /* basic check of parameters */
-    if (purpose.hasSelectedValue() && imageReference.isComplete())
+    if (conceptName.isComplete() && imageReference.isComplete())
     {
         /* check whether measurement exists */
         if (hasMeasurement())
@@ -356,7 +355,7 @@ OFCondition TID300_Measurement<T1, T2, T3, T4, T_Purpose>::addSpatialCoordinates
             if (subTree != NULL)
             {
                 /* TID 320 (Image or Spatial Coordinates) Row 3 */
-                STORE_RESULT(subTree->addContentItem(RT_inferredFrom, VT_SCoord, purpose, check));
+                STORE_RESULT(subTree->addContentItem(RT_inferredFrom, VT_SCoord, conceptName, check));
                 CHECK_RESULT(subTree->getCurrentContentItem().setSpatialCoordinates(coordinatesValue, check));
                 CHECK_RESULT(subTree->getCurrentContentItem().setAnnotationText("TID 320 - Row 3"));
                 const size_t lastNode = subTree->getNodeID();
@@ -393,9 +392,9 @@ OFCondition TID300_Measurement<T1, T2, T3, T4, T_Purpose>::addSpatialCoordinates
 }
 
 
-template<typename T1, typename T2, typename T3, typename T4, typename T5>
-OFCondition TID300_Measurement<T1, T2, T3, T4, T5>::setEquivalentMeaningOfConceptName(const OFString &meaning,
-                                                                                      const OFBool check)
+template<typename T1, typename T2, typename T3, typename T4>
+OFCondition TID300_Measurement<T1, T2, T3, T4>::setEquivalentMeaningOfConceptName(const OFString &meaning,
+                                                                                  const OFBool check)
 {
     OFCondition result = EC_Normal;
     /* basic check of parameter */
@@ -415,9 +414,9 @@ OFCondition TID300_Measurement<T1, T2, T3, T4, T5>::setEquivalentMeaningOfConcep
 }
 
 
-template<typename T1, typename T2, typename T3, typename T4, typename T5>
-OFCondition TID300_Measurement<T1, T2, T3, T4, T5>::setRealWorldValueMap(const DSRCompositeReferenceValue &valueMap,
-                                                                         const OFBool check)
+template<typename T1, typename T2, typename T3, typename T4>
+OFCondition TID300_Measurement<T1, T2, T3, T4>::setRealWorldValueMap(const DSRCompositeReferenceValue &valueMap,
+                                                                     const OFBool check)
 {
     OFCondition result = EC_Normal;
     /* basic check of parameter */
@@ -447,9 +446,9 @@ OFCondition TID300_Measurement<T1, T2, T3, T4, T5>::setRealWorldValueMap(const D
 }
 
 
-template<typename T1, typename T2, typename T3, typename T4, typename T5>
-OFCondition TID300_Measurement<T1, T2, T3, T4, T5>::setRealWorldValueMap(DcmItem &dataset,
-                                                                         const OFBool check)
+template<typename T1, typename T2, typename T3, typename T4>
+OFCondition TID300_Measurement<T1, T2, T3, T4>::setRealWorldValueMap(DcmItem &dataset,
+                                                                     const OFBool check)
 {
     DSRCompositeReferenceValue valueMap;
     /* first, create the referenced composite object */
@@ -462,10 +461,10 @@ OFCondition TID300_Measurement<T1, T2, T3, T4, T5>::setRealWorldValueMap(DcmItem
 
 // protected methods
 
-template<typename T_Measurement, typename T2, typename T3, typename T4, typename T5>
-OFCondition TID300_Measurement<T_Measurement, T2, T3, T4, T5>::createMeasurement(const T_Measurement &conceptName,
-                                                                                 const MeasurementValue &numericValue,
-                                                                                 const OFBool check)
+template<typename T_Measurement, typename T2, typename T3, typename T4>
+OFCondition TID300_Measurement<T_Measurement, T2, T3, T4>::createMeasurement(const T_Measurement &conceptName,
+                                                                             const MeasurementValue &numericValue,
+                                                                             const OFBool check)
 {
     OFCondition result = EC_IllegalParameter;
     /* basic check of parameters */
@@ -486,13 +485,13 @@ OFCondition TID300_Measurement<T_Measurement, T2, T3, T4, T5>::createMeasurement
 }
 
 
-template<typename T1, typename T2, typename T3, typename T4, typename T5>
-OFCondition TID300_Measurement<T1, T2, T3, T4, T5>::addOrReplaceContentItem(const size_t nodePos,
-                                                                            const E_RelationshipType relationshipType,
-                                                                            const E_ValueType valueType,
-                                                                            const DSRCodedEntryValue &conceptName,
-                                                                            const OFString &annotationText,
-                                                                            const OFBool check)
+template<typename T1, typename T2, typename T3, typename T4>
+OFCondition TID300_Measurement<T1, T2, T3, T4>::addOrReplaceContentItem(const size_t nodePos,
+                                                                        const E_RelationshipType relationshipType,
+                                                                        const E_ValueType valueType,
+                                                                        const DSRCodedEntryValue &conceptName,
+                                                                        const OFString &annotationText,
+                                                                        const OFBool check)
 {
     OFCondition result = EC_Normal;
     /* check concept name and coded entry value */
@@ -549,8 +548,7 @@ OFCondition TID300_Measurement<T1, T2, T3, T4, T5>::addOrReplaceContentItem(cons
 
 
 // explicit template instantiation (needed for use in TID 1501)
-template class TID300_Measurement<CID218e_QuantitativeImageFeatures,
+template class TID300_Measurement<CID7469_GenericIntensityAndSizeMeasurements,
                                   CID7181_AbstractMultiDimensionalImageModelComponentUnits,
                                   CID6147_ResponseCriteria,
-                                  CID7464_GeneralRegionOfInterestMeasurementModifiers,
-                                  CID7551_GenericPurposeOfReferenceToImagesAndCoordinatesInMeasurements>;
+                                  CID7464_GeneralRegionOfInterestMeasurementModifiers>;

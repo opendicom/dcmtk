@@ -118,9 +118,7 @@ public:
    */
   DcmInputFileStreamFactory(const OFFilename &filename, offile_off_t offset);
 
-  /** copy constructor
-   * @param arg the factory to copy
-   */
+  /// copy constructor
   DcmInputFileStreamFactory(const DcmInputFileStreamFactory &arg);
 
   /// destructor
@@ -297,9 +295,7 @@ public:
    */
   DcmInputTempFileStreamFactory(DcmTempFileHandler *handler);
 
-  /** copy constructor
-   * @param arg the factory to copy
-   */
+  /// copy constructor
   DcmInputTempFileStreamFactory(const DcmInputTempFileStreamFactory &arg);
 
   /// destructor, decreases reference counter of temporary file handler

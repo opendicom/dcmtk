@@ -22,7 +22,6 @@ install:
 		done \
 	done
 
-
 clean:
 	rm -f $(TRASH)
 

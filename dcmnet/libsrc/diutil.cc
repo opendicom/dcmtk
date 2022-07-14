@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 1994-2022, OFFIS e.V.
+ *  Copyright (C) 1994-2021, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were partly developed by
@@ -171,8 +171,7 @@ DU_getStringDOElement(DcmItem *obj, DcmTagKey t, char *s, size_t bufsize)
             s[0] = '\0';
         } else {
             ec =  elem->getString(aString);
-            if (ec == EC_Normal)
-                OFStandard::strlcpy(s, aString, bufsize);
+            OFStandard::strlcpy(s, aString, bufsize);
         }
     }
     return (ec == EC_Normal);
@@ -361,8 +360,8 @@ DU_cfindStatusString(Uint16 statusCode)
       case STATUS_FIND_Refused_SOPClassNotSupported:
           s = "Refused: SOPClassNotSupported";
           break;
-      case STATUS_FIND_Error_DataSetDoesNotMatchSOPClass:
-          s = "Error: DataSetDoesNotMatchSOPClass";
+      case STATUS_FIND_Failed_IdentifierDoesNotMatchSOPClass:
+          s = "Failed: IdentifierDoesNotMatchSOPClass";
           break;
       case STATUS_FIND_Cancel_MatchingTerminatedDueToCancelRequest:
           s = "Cancel: MatchingTerminatedDueToCancelRequest";
@@ -405,14 +404,14 @@ DU_cmoveStatusString(Uint16 statusCode)
       case STATUS_MOVE_Refused_OutOfResourcesSubOperations:
           s = "Refused: OutOfResourcesSubOperations";
           break;
-      case STATUS_MOVE_Refused_SOPClassNotSupported:
-          s = "Refused: SOPClassNotSupported";
+      case STATUS_MOVE_Failed_SOPClassNotSupported:
+          s = "Failed: SOPClassNotSupported";
           break;
-      case STATUS_MOVE_Refused_MoveDestinationUnknown:
-          s = "Refused: MoveDestinationUnknown";
+      case STATUS_MOVE_Failed_MoveDestinationUnknown:
+          s = "Failed: MoveDestinationUnknown";
           break;
-      case STATUS_MOVE_Error_DataSetDoesNotMatchSOPClass:
-          s = "Error: DataSetDoesNotMatchSOPClass";
+      case STATUS_MOVE_Failed_IdentifierDoesNotMatchSOPClass:
+          s = "Failed: IdentifierDoesNotMatchSOPClass";
           break;
       case STATUS_MOVE_Cancel_SubOperationsTerminatedDueToCancelIndication:
           s = "Cancel: SubOperationsTerminatedDueToCancelIndication";
@@ -456,11 +455,11 @@ DU_cgetStatusString(Uint16 statusCode)
       case STATUS_GET_Refused_OutOfResourcesSubOperations:
           s = "Refused: OutOfResourcesSubOperations";
           break;
-      case STATUS_GET_Refused_SOPClassNotSupported:
-          s = "Refused: SOPClassNotSupported";
+      case STATUS_GET_Failed_SOPClassNotSupported:
+          s = "Failed: SOPClassNotSupported";
           break;
-      case STATUS_GET_Error_DataSetDoesNotMatchSOPClass:
-          s = "Error: DataSetDoesNotMatchSOPClass";
+      case STATUS_GET_Failed_IdentifierDoesNotMatchSOPClass:
+          s = "Failed: IdentifierDoesNotMatchSOPClass";
           break;
       case STATUS_GET_Cancel_SubOperationsTerminatedDueToCancelIndication:
           s = "Cancel: SubOperationsTerminatedDueToCancelIndication";
@@ -507,8 +506,8 @@ DU_ncreateStatusString(Uint16 statusCode)
       case STATUS_N_InvalidAttributeValue:
           s = "Failure: InvalidAttributeValue";
           break;
-      case STATUS_N_InvalidSOPInstance:
-          s = "Failure: InvalidSOPInstance";
+      case STATUS_N_InvalidObjectInstance:
+          s = "Failure: InvalidObjectInstance";
           break;
       case STATUS_N_MissingAttribute:
           s = "Failure: MissingAttribute";
@@ -525,8 +524,8 @@ DU_ncreateStatusString(Uint16 statusCode)
       case STATUS_N_NoSuchSOPClass:
           s = "Failure: NoSuchSOPClass";
           break;
-      case STATUS_N_NoSuchSOPInstance:
-          s = "Failure: NoSuchSOPInstance";
+      case STATUS_N_NoSuchObjectInstance:
+          s = "Failure: NoSuchObjectInstance";
           break;
       case STATUS_N_ProcessingFailure:
           s = "Failure: ProcessingFailure";
@@ -572,8 +571,8 @@ DU_ngetStatusString(Uint16 statusCode)
       case STATUS_N_DuplicateInvocation:
           s = "Failure: DuplicateInvocation";
           break;
-      case STATUS_N_InvalidSOPInstance:
-          s = "Failure: InvalidSOPInstance";
+      case STATUS_N_InvalidObjectInstance:
+          s = "Failure: InvalidObjectInstance";
           break;
       case STATUS_N_MistypedArgument:
           s = "Failure: MistypedArgument";
@@ -581,8 +580,8 @@ DU_ngetStatusString(Uint16 statusCode)
       case STATUS_N_NoSuchSOPClass:
           s = "Failure: NoSuchSOPClass";
           break;
-      case STATUS_N_NoSuchSOPInstance:
-          s = "Failure: NoSuchSOPInstance";
+      case STATUS_N_NoSuchObjectInstance:
+          s = "Failure: NoSuchObjectInstance";
           break;
       case STATUS_N_ProcessingFailure:
           s = "Failure: ProcessingFailure";
@@ -634,8 +633,8 @@ DU_nsetStatusString(Uint16 statusCode)
       case STATUS_N_MistypedArgument:
           s = "Failure: MistypedArgument";
           break;
-      case STATUS_N_InvalidSOPInstance:
-          s = "Failure: InvalidSOPInstance";
+      case STATUS_N_InvalidObjectInstance:
+          s = "Failure: InvalidObjectInstance";
           break;
       case STATUS_N_MissingAttributeValue:
           s = "Failure: MissingAttributeValue";
@@ -646,8 +645,8 @@ DU_nsetStatusString(Uint16 statusCode)
       case STATUS_N_NoSuchSOPClass:
           s = "Failure: NoSuchSOPClass";
           break;
-      case STATUS_N_NoSuchSOPInstance:
-          s = "Failure: NoSuchSOPInstance";
+      case STATUS_N_NoSuchObjectInstance:
+          s = "Failure: NoSuchObjectInstance";
           break;
       case STATUS_N_ProcessingFailure:
           s = "Failure: ProcessingFailure";
@@ -696,8 +695,8 @@ DU_nactionStatusString(Uint16 statusCode)
       case STATUS_N_InvalidArgumentValue:
           s = "Failure: InvalidArgumentValue";
           break;
-      case STATUS_N_InvalidSOPInstance:
-          s = "Failure: InvalidSOPInstance";
+      case STATUS_N_InvalidObjectInstance:
+          s = "Failure: InvalidObjectInstance";
           break;
       case STATUS_N_MistypedArgument:
           s = "Failure: MistypedArgument";
@@ -711,8 +710,8 @@ DU_nactionStatusString(Uint16 statusCode)
       case STATUS_N_NoSuchSOPClass:
           s = "Failure: NoSuchSOPClass";
           break;
-      case STATUS_N_NoSuchSOPInstance:
-          s = "Failure: NoSuchSOPInstance";
+      case STATUS_N_NoSuchObjectInstance:
+          s = "Failure: NoSuchObjectInstance";
           break;
       case STATUS_N_ProcessingFailure:
           s = "Failure: ProcessingFailure";
@@ -755,8 +754,8 @@ DU_ndeleteStatusString(Uint16 statusCode)
       case STATUS_N_DuplicateInvocation:
           s = "Failure: DuplicateInvocation";
           break;
-      case STATUS_N_InvalidSOPInstance:
-          s = "Failure: InvalidSOPInstance";
+      case STATUS_N_InvalidObjectInstance:
+          s = "Failure: InvalidObjectInstance";
           break;
       case STATUS_N_MistypedArgument:
           s = "Failure: MistypedArgument";
@@ -764,8 +763,8 @@ DU_ndeleteStatusString(Uint16 statusCode)
       case STATUS_N_NoSuchSOPClass:
           s = "Failure: NoSuchSOPClass";
           break;
-      case STATUS_N_NoSuchSOPInstance:
-          s = "Failure: NoSuchSOPInstance";
+      case STATUS_N_NoSuchObjectInstance:
+          s = "Failure: NoSuchObjectInstance";
           break;
       case STATUS_N_ProcessingFailure:
           s = "Failure: ProcessingFailure";
@@ -811,8 +810,8 @@ DU_neventReportStatusString(Uint16 statusCode)
       case STATUS_N_InvalidArgumentValue:
           s = "Failure: InvalidArgumentValue";
           break;
-      case STATUS_N_InvalidSOPInstance:
-          s = "Failure: InvalidSOPInstance";
+      case STATUS_N_InvalidObjectInstance:
+          s = "Failure: InvalidObjectInstance";
           break;
       case STATUS_N_MistypedArgument:
           s = "Failure: MistypedArgument";
@@ -826,8 +825,8 @@ DU_neventReportStatusString(Uint16 statusCode)
       case STATUS_N_NoSuchSOPClass:
           s = "Failure: NoSuchSOPClass";
           break;
-      case STATUS_N_NoSuchSOPInstance:
-          s = "Failure: NoSuchSOPInstance";
+      case STATUS_N_NoSuchObjectInstance:
+          s = "Failure: NoSuchObjectInstance";
           break;
       case STATUS_N_ProcessingFailure:
           s = "Failure: ProcessingFailure";

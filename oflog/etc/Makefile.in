@@ -22,7 +22,6 @@ install:
 		$(INSTALL_DATA) $$file $(DESTDIR)$(etcdir) ;\
 	done
 
-
 clean:
 	rm -f $(TRASH)
 

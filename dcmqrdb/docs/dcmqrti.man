@@ -67,7 +67,7 @@ peer  peer host name or symbolic name from cfg file
 
   -c    --config  [f]ilename: string
           use specific configuration file
-          (default: /usr/local/etc/dcmtk-<VERSION>/dcmqrscp.cfg)
+          (default: /usr/local/etc/dcmqrscp.cfg)
 \endverbatim
 
 \subsection dcmqrti_network_options network options
@@ -443,6 +443,6 @@ It is an error if no data dictionary can be loaded.
 
 \section dcmqrti_copyright COPYRIGHT
 
-Copyright (C) 1993-2022 by OFFIS e.V., Escherweg 2, 26121 Oldenburg, Germany.
+Copyright (C) 1993-2014 by OFFIS e.V., Escherweg 2, 26121 Oldenburg, Germany.
 
 */

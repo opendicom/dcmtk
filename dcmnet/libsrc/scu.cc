@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 2008-2022, OFFIS e.V.
+ *  Copyright (C) 2008-2021, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -49,7 +49,6 @@ DcmSCU::DcmSCU()
     , m_peerPort(104)
     , m_dimseTimeout(0)
     , m_acseTimeout(30)
-    , m_tcpConnectTimeout(dcmConnectionTimeout.get())
     , m_storageDir()
     , m_storageMode(DCMSCU_STORAGE_DISK)
     , m_verbosePCMode(OFFalse)
@@ -121,7 +120,7 @@ OFCondition DcmSCU::initNetwork()
     }
 
     /* initialize association parameters, i.e. create an instance of T_ASC_Parameters*. */
-    cond = ASC_createAssociationParameters(&m_params, m_maxReceivePDULength, m_tcpConnectTimeout);
+    cond = ASC_createAssociationParameters(&m_params, m_maxReceivePDULength);
     if (cond.bad())
     {
         DCMNET_ERROR(DimseCondition::dump(tempStr, cond));
@@ -159,7 +158,7 @@ OFCondition DcmSCU::initNetwork()
     if (!m_assocConfigFilename.empty())
     {
         DcmAssociationConfiguration assocConfig;
-        result = DcmAssociationConfigurationFile::initialize(assocConfig, m_assocConfigFilename.c_str(), OFTrue);
+        result = DcmAssociationConfigurationFile::initialize(assocConfig, m_assocConfigFilename.c_str());
         if (result.bad())
         {
             DCMNET_WARN("Unable to parse association configuration file " << m_assocConfigFilename
@@ -1419,7 +1418,6 @@ OFString DcmSCU::createStorageFilename(DcmDataset* dataset)
     OFString name = dcmSOPClassUIDToModality(sopClassUID.c_str(), "UNKNOWN");
     name += ".";
     name += sopInstanceUID;
-    OFStandard::sanitizeFilename(name);
     OFString returnStr;
     OFStandard::combineDirAndFilename(returnStr, m_storageDir, name, OFTrue);
     return returnStr;
@@ -2082,272 +2080,6 @@ Uint16 DcmSCU::checkEVENTREPORTRequest(T_DIMSE_N_EventReportRQ& /*eventReportReq
     return STATUS_Success;
 }
 
-OFCondition DcmSCU::sendNCREATERequest(const T_ASC_PresentationContextID presID,
-                                       const OFString& affectedSopInstanceUID,
-                                       DcmDataset* reqDataset,
-                                       DcmDataset*& createdInstance,
-                                       Uint16& rspStatusCode)
-{
-    // Do some basic validity checks
-    if (!isConnected())
-        return DIMSE_ILLEGALASSOCIATION;
-
-    if (affectedSopInstanceUID.empty() || (reqDataset == OFnullptr))
-        return DIMSE_NULLKEY;
-
-    // Determine SOP Class from presentation context
-    OFString abstractSyntax, transferSyntax;
-    findPresentationContext(presID, abstractSyntax, transferSyntax);
-    if (abstractSyntax.empty() || transferSyntax.empty())
-        return DIMSE_NOVALIDPRESENTATIONCONTEXTID;
-
-    T_DIMSE_Message request;
-    // Make sure everything is zeroed (especially options)
-    memset((char*)&request, 0, sizeof(request));
-    request.CommandField        = DIMSE_N_CREATE_RQ;
-    T_DIMSE_N_CreateRQ& rqmsg   = request.msg.NCreateRQ;
-    rqmsg.MessageID             = nextMessageID();
-    rqmsg.DataSetType           = DIMSE_DATASET_PRESENT;
-    rqmsg.opts                  = O_NCREATE_AFFECTEDSOPINSTANCEUID;
-
-    OFStandard::strlcpy(rqmsg.AffectedSOPClassUID, abstractSyntax.c_str(), sizeof(rqmsg.AffectedSOPClassUID));
-    OFStandard::strlcpy(rqmsg.AffectedSOPInstanceUID, affectedSopInstanceUID.c_str(), sizeof(rqmsg.AffectedSOPInstanceUID));
-
-    OFString tempStr;
-
-    /* Send request */
-    if (DCM_dcmnetLogger.isEnabledFor(OFLogger::DEBUG_LOG_LEVEL))
-    {
-        DCMNET_INFO("Sending N-CREATE Request");
-        DCMNET_DEBUG(DIMSE_dumpMessage(tempStr, request, DIMSE_OUTGOING, reqDataset, presID));
-    }
-    else
-    {
-        DCMNET_INFO("Sending N-CREATE Request (MsgID " << rqmsg.MessageID << ")");
-    }
-
-    OFCondition result = sendDIMSEMessage(presID, &request, reqDataset);
-    if (result.bad())
-    {
-        DCMNET_ERROR("Failed sending N-CREATE request: " << DimseCondition::dump(tempStr, result));
-        return result;
-    }
-
-    T_DIMSE_Message response;
-    // Make sure everything is zeroed (especially options)
-    memset((char*)&response, 0, sizeof(response));
-    DcmDataset* statusDetail = OFnullptr;
-
-    T_ASC_PresentationContextID pcid = presID;
-    result = receiveDIMSECommand(&pcid, &response, &statusDetail, OFnullptr /* commandSet */);
-
-    rspStatusCode = response.msg.NCreateRSP.DimseStatus;
-
-    if (result.bad())
-    {
-        delete statusDetail;
-        DCMNET_ERROR("Failed receiving DIMSE response: " << DimseCondition::dump(tempStr, result));
-        return result;
-    }
-
-    if (response.CommandField == DIMSE_N_CREATE_RSP)
-    {
-        if (DCM_dcmnetLogger.isEnabledFor(OFLogger::DEBUG_LOG_LEVEL))
-        {
-            DCMNET_INFO("Received N-CREATE Response");
-            DCMNET_DEBUG(DIMSE_dumpMessage(tempStr, response, DIMSE_INCOMING, NULL, pcid));
-        }
-        else
-        {
-            DCMNET_INFO("Received N-CREATE Response (" << DU_ncreateStatusString(rspStatusCode) << ")");
-        }
-    }
-    else
-    {
-        DCMNET_ERROR("Expected N-CREATE response but received DIMSE command 0x"
-            << STD_NAMESPACE hex << STD_NAMESPACE setfill('0') << STD_NAMESPACE setw(4)
-            << OFstatic_cast(unsigned int, response.CommandField));
-        DCMNET_DEBUG(DIMSE_dumpMessage(tempStr, response, DIMSE_INCOMING, NULL, pcid));
-        delete statusDetail;
-        return DIMSE_BADCOMMANDTYPE;
-    }
-
-    if (statusDetail != OFnullptr)
-    {
-        DCMNET_DEBUG("Response has status detail:" << OFendl << DcmObject::PrintHelper(*statusDetail));
-        delete statusDetail;
-    }
-
-    if (pcid != presID)
-    {
-        DCMNET_ERROR("Presentation Context ID of command (" << OFstatic_cast(unsigned int, presID) << ") and data set ("
-            << OFstatic_cast(unsigned int, pcid) << ") differ");
-        return makeDcmnetCondition(DIMSEC_INVALIDPRESENTATIONCONTEXTID,
-            OF_error,
-            "DIMSE: Presentation Contexts of Command and Data Set differ");
-    }
-
-    // If requested, we need to receive the dataset containing the received instance
-    if (response.msg.NCreateRSP.DataSetType == DIMSE_DATASET_PRESENT)
-    {
-        DcmDataset* respDataset = OFnullptr;
-        result = receiveDIMSEDataset(&pcid, &respDataset);
-        if (result.bad())
-        {
-            delete respDataset;
-            DCMNET_ERROR(DIMSE_dumpMessage(tempStr, request, DIMSE_INCOMING, OFnullptr, pcid));
-            return DIMSE_BADDATA;
-        }
-
-        if (presID != pcid)
-        {
-            delete respDataset;
-            DCMNET_ERROR("Presentation Context ID of command (" << OFstatic_cast(unsigned int, presID) << ") and data set ("
-                << OFstatic_cast(unsigned int, pcid) << ") differ");
-            return makeDcmnetCondition(DIMSEC_INVALIDPRESENTATIONCONTEXTID,
-                OF_error,
-                "DIMSE: Presentation Contexts of Command and Data Set differ");
-        }
-        // Provide user with copy of result dataset
-        createdInstance = respDataset;
-    }
-
-    return EC_Normal;
-}
-
-OFCondition DcmSCU::sendNSETRequest(const T_ASC_PresentationContextID presID,
-    const OFString& requestedSopInstanceUID,
-    DcmDataset* modificationList,
-    DcmDataset*& attributeList,
-    Uint16& rspStatusCode)
-{
-
-    // Do some basic validity checks
-    if (!isConnected())
-        return DIMSE_ILLEGALASSOCIATION;
-
-    if (requestedSopInstanceUID.empty() || (modificationList == OFnullptr))
-        return DIMSE_NULLKEY;
-
-    // Determine SOP Class from presentation context
-    OFString abstractSyntax, transferSyntax;
-    findPresentationContext(presID, abstractSyntax, transferSyntax);
-    if (abstractSyntax.empty() || transferSyntax.empty())
-        return DIMSE_NOVALIDPRESENTATIONCONTEXTID;
-
-    T_DIMSE_Message request;
-    memset((char*)&request, 0, sizeof(request));
-    request.CommandField = DIMSE_N_SET_RQ;
-    T_DIMSE_N_SetRQ& rqmsg = request.msg.NSetRQ;
-    rqmsg.MessageID = nextMessageID();
-    rqmsg.DataSetType = DIMSE_DATASET_PRESENT;
-
-    OFStandard::strlcpy(rqmsg.RequestedSOPClassUID, abstractSyntax.c_str(), sizeof(rqmsg.RequestedSOPClassUID));
-    OFStandard::strlcpy(rqmsg.RequestedSOPInstanceUID, requestedSopInstanceUID.c_str(), sizeof(rqmsg.RequestedSOPInstanceUID));
-
-    OFString tempStr;
-
-    /* Send request */
-    if (DCM_dcmnetLogger.isEnabledFor(OFLogger::DEBUG_LOG_LEVEL))
-    {
-        DCMNET_INFO("Sending N-SET Request");
-        DCMNET_DEBUG(DIMSE_dumpMessage(tempStr, request, DIMSE_OUTGOING, modificationList, presID));
-    }
-    else
-    {
-        DCMNET_INFO("Sending N-SET Request (MsgID " << rqmsg.MessageID << ")");
-    }
-
-    OFCondition result = sendDIMSEMessage(presID, &request, modificationList);
-    if (result.bad())
-    {
-        DCMNET_ERROR("Failed sending N-SET request: " << DimseCondition::dump(tempStr, result));
-        return result;
-    }
-
-    T_DIMSE_Message response;
-    // Make sure everything is zeroed (especially options)
-    memset((char*)&response, 0, sizeof(response));
-    DcmDataset* statusDetail = OFnullptr;
-
-    T_ASC_PresentationContextID pcid = presID;
-    result = receiveDIMSECommand(&pcid, &response, &statusDetail, OFnullptr /* commandSet */);
-
-    rspStatusCode = response.msg.NSetRSP.DimseStatus;
-
-    if (result.bad())
-    {
-        delete statusDetail;
-        DCMNET_ERROR("Failed receiving DIMSE response: " << DimseCondition::dump(tempStr, result));
-        return result;
-    }
-
-    if (response.CommandField == DIMSE_N_SET_RSP)
-    {
-        if (DCM_dcmnetLogger.isEnabledFor(OFLogger::DEBUG_LOG_LEVEL))
-        {
-            DCMNET_INFO("Received N-SET Response");
-            DCMNET_DEBUG(DIMSE_dumpMessage(tempStr, response, DIMSE_INCOMING, NULL, pcid));
-        }
-        else
-        {
-            DCMNET_INFO("Received N-SET Response (" << DU_cstoreStatusString(rspStatusCode) << ")");
-        }
-    }
-    else
-    {
-        DCMNET_ERROR("Expected N-SET response but received DIMSE command 0x"
-            << STD_NAMESPACE hex << STD_NAMESPACE setfill('0') << STD_NAMESPACE setw(4)
-            << OFstatic_cast(unsigned int, response.CommandField));
-        DCMNET_DEBUG(DIMSE_dumpMessage(tempStr, response, DIMSE_INCOMING, NULL, pcid));
-        delete statusDetail;
-        return DIMSE_BADCOMMANDTYPE;
-    }
-
-    if (statusDetail != OFnullptr)
-    {
-        DCMNET_DEBUG("Response has status detail:" << OFendl << DcmObject::PrintHelper(*statusDetail));
-        delete statusDetail;
-    }
-
-    if (pcid != presID)
-    {
-        DCMNET_ERROR("Presentation Context ID of command (" << OFstatic_cast(unsigned int, presID) << ") and data set ("
-            << OFstatic_cast(unsigned int, pcid) << ") differ");
-        return makeDcmnetCondition(DIMSEC_INVALIDPRESENTATIONCONTEXTID,
-            OF_error,
-            "DIMSE: Presentation Contexts of Command and Data Set differ");
-    }
-
-    // If requested, we need to receive the dataset containing the received instance
-    if (response.msg.NSetRSP.DataSetType == DIMSE_DATASET_PRESENT)
-    {
-        DcmDataset* respDataset = OFnullptr;
-        result = receiveDIMSEDataset(&pcid, &respDataset);
-        if (result.bad())
-        {
-            delete respDataset;
-            DCMNET_ERROR(DIMSE_dumpMessage(tempStr, request, DIMSE_INCOMING, OFnullptr, pcid));
-            return DIMSE_BADDATA;
-        }
-
-        if (presID != pcid)
-        {
-            delete respDataset;
-            DCMNET_ERROR("Presentation Context ID of command (" << OFstatic_cast(unsigned int, presID) << ") and data set ("
-                << OFstatic_cast(unsigned int, pcid) << ") differ");
-            return makeDcmnetCondition(DIMSEC_INVALIDPRESENTATIONCONTEXTID,
-                OF_error,
-                "DIMSE: Presentation Contexts of Command and Data Set differ");
-        }
-
-        // Provide user with copy of result dataset if desired
-        attributeList = respDataset;
-    }
-
-    return EC_Normal;
-}
-
 OFCondition
 DcmSCU::handleSessionResponseDefault(const Uint16 dimseStatus, const OFString& message, OFBool& waitForNextResponse)
 {
@@ -2546,7 +2278,7 @@ void DcmSCU::setACSETimeout(const Uint32 acseTimeout)
 
 void DcmSCU::setConnectionTimeout(const Sint32 connectionTimeout)
 {
-    m_tcpConnectTimeout = connectionTimeout;
+    dcmConnectionTimeout.set(connectionTimeout);
 }
 
 void DcmSCU::setAssocConfigFileAndProfile(const OFString& filename, const OFString& profile)
@@ -2634,7 +2366,7 @@ Uint32 DcmSCU::getACSETimeout() const
 
 Sint32 DcmSCU::getConnectionTimeout() const
 {
-    return m_tcpConnectTimeout;
+    return dcmConnectionTimeout.get();
 }
 
 OFString DcmSCU::getStorageDir() const

@@ -122,12 +122,8 @@ tlslayer.o: tlslayer.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmnet/include/dcmtk/dcmnet/extneg.h \
  ../../dcmnet/include/dcmtk/dcmnet/dcuserid.h \
  ../include/dcmtk/dcmtls/tlsdefin.h ../include/dcmtk/dcmtls/tlsciphr.h \
- ../include/dcmtk/dcmtls/tlscond.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../include/dcmtk/dcmtls/tlstrans.h \
- ../../dcmnet/include/dcmtk/dcmnet/dcmtrans.h \
- ../../ofstd/include/dcmtk/ofstd/ofrand.h \
- ../../ofstd/include/dcmtk/ofstd/diag/constexp.def
+ ../include/dcmtk/dcmtls/tlscond.h ../include/dcmtk/dcmtls/tlstrans.h \
+ ../../dcmnet/include/dcmtk/dcmnet/dcmtrans.h
 tlsopt.o: tlsopt.cc ../../config/include/dcmtk/config/osconfig.h \
  ../include/dcmtk/dcmtls/tlsopt.h \
  ../../ofstd/include/dcmtk/ofstd/ofstream.h \
@@ -249,10 +245,6 @@ tlsscu.o: tlsscu.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcostrma.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcuid.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcdicent.h \
  ../../dcmdata/include/dcmtk/dcmdata/dchashdi.h \
@@ -346,12 +338,12 @@ tlstrans.o: tlstrans.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../ofstd/include/dcmtk/ofstd/ofcast.h \
  ../../ofstd/include/dcmtk/ofstd/ofdefine.h \
  ../../ofstd/include/dcmtk/ofstd/ofexport.h \
- ../../ofstd/include/dcmtk/ofstd/oftypes.h \
- ../../ofstd/include/dcmtk/ofstd/ofstdinc.h \
- ../../ofstd/include/dcmtk/ofstd/ofstream.h \
  ../include/dcmtk/dcmtls/tlstrans.h \
  ../../dcmnet/include/dcmtk/dcmnet/dcmtrans.h \
  ../../ofstd/include/dcmtk/ofstd/ofcond.h \
+ ../../ofstd/include/dcmtk/ofstd/oftypes.h \
+ ../../ofstd/include/dcmtk/ofstd/ofstdinc.h \
+ ../../ofstd/include/dcmtk/ofstd/ofstream.h \
  ../../ofstd/include/dcmtk/ofstd/ofstring.h \
  ../../ofstd/include/dcmtk/ofstd/ofglobal.h \
  ../../ofstd/include/dcmtk/ofstd/ofthread.h \
@@ -412,10 +404,6 @@ tlstrans.o: tlstrans.cc ../../config/include/dcmtk/config/osconfig.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcvr.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctag.h \
  ../../dcmdata/include/dcmtk/dcmdata/dctagkey.h \
- ../../ofstd/include/dcmtk/ofstd/ofdiag.h \
- ../../ofstd/include/dcmtk/ofstd/diag/push.def \
- ../../ofstd/include/dcmtk/ofstd/diag/ignrattr.def \
- ../../ofstd/include/dcmtk/ofstd/diag/pop.def \
  ../../dcmdata/include/dcmtk/dcmdata/dcstack.h \
  ../../dcmdata/include/dcmtk/dcmdata/dclist.h \
  ../../dcmdata/include/dcmtk/dcmdata/dcpcache.h \

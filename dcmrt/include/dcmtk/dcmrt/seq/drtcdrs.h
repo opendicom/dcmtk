@@ -53,7 +53,7 @@ class DCMTK_DCMRT_EXPORT DRTCalculatedDoseReferenceSequence
          */
         virtual ~Item();
 
-        /** assignment operator
+        /** assigment operator
          *  @param copy item object to be copied
          *  @return reference to this object
          */
@@ -202,7 +202,7 @@ class DCMTK_DCMRT_EXPORT DRTCalculatedDoseReferenceSequence
      */
     virtual ~DRTCalculatedDoseReferenceSequence();
 
-    /** assignment operator
+    /** assigment operator
      *  @param copy sequence object to be copied
      *  @return reference to this object
      */

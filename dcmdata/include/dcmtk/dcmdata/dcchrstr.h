@@ -141,7 +141,7 @@ class DCMTK_DCMDATA_EXPORT DcmCharString
     // ensure inherited overloads of matches take part in overload resolution
     using DcmByteString::matches;
 
-    /// @copydoc DcmByteString::matches(const OFString&,const OFString&,OFBool) const
+    /// @copydoc DcmByteString::matches(OFString,OFString,OFBool)
     virtual OFBool matches(const OFString& key,
                            const OFString& candidate,
                            const OFBool enableWildCardMatching = OFTrue) const;

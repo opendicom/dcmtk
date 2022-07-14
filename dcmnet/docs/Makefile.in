@@ -22,7 +22,6 @@ install:
 		$(INSTALL_DATA) $$file $(DESTDIR)$(docdir) ;\
 	done
 
-
 clean:
 	rm -f $(TRASH)
 

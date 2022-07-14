@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 1994-2022, OFFIS e.V.
+ *  Copyright (C) 1994-2018, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -48,16 +48,6 @@
 #ifndef ENVIRONMENT_PATH_SEPARATOR
 #define ENVIRONMENT_PATH_SEPARATOR '\n' /* at least define something unlikely */
 #endif
-
-/*
-** Loading of default dictionary:
-**  DCM_DICT_DEFAULT_USE_NONE: Do not load any default dictionary on startup
-**  DCM_DICT_DEFAULT_USE_BUILTIN: Load builtin dictionary on startup
-**  DCM_DICT_DEFAULT_USE_EXTERNAL: Load external (i.e. file-based) dictionary on startup
-*/
-#define DCM_DICT_DEFAULT_USE_NONE     0
-#define DCM_DICT_DEFAULT_USE_BUILTIN  1
-#define DCM_DICT_DEFAULT_USE_EXTERNAL 2
 
 
 /** this class implements a loadable DICOM Data Dictionary
@@ -189,13 +179,11 @@ private:
     OFBool loadSkeletonDictionary();
 
     /** looks up the given directory entry in the two dictionaries.
-     *  @param entry the entry to look up
      *  @return pointer to entry if found, NULL otherwise
      */
     const DcmDictEntry* findEntry(const DcmDictEntry& entry) const;
 
     /** deletes the given entry from either dictionary
-     * @param entry the entry to delete
      */
     void deleteEntry(const DcmDictEntry& entry);
 
@@ -280,7 +268,7 @@ private:
   GlobalDcmDataDictionary(const GlobalDcmDataDictionary &);
 
   /** create the data dictionary instance for this class. Used for first
-   * initialization.  The caller must not have dataDictLock locked.
+   * intialization.  The caller must not have dataDictLock locked.
    */
   void createDataDict();
 

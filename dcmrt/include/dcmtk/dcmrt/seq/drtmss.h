@@ -53,7 +53,7 @@ class DCMTK_DCMRT_EXPORT DRTMotionSynchronizationSequence
          */
         virtual ~Item();
 
-        /** assignment operator
+        /** assigment operator
          *  @param copy item object to be copied
          *  @return reference to this object
          */
@@ -181,7 +181,7 @@ class DCMTK_DCMRT_EXPORT DRTMotionSynchronizationSequence
      */
     virtual ~DRTMotionSynchronizationSequence();
 
-    /** assignment operator
+    /** assigment operator
      *  @param copy sequence object to be copied
      *  @return reference to this object
      */

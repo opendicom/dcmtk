@@ -55,7 +55,7 @@ class DCMTK_DCMRT_EXPORT DRTRTROIIdentificationCodeSequence
          */
         virtual ~Item();
 
-        /** assignment operator
+        /** assigment operator
          *  @param copy item object to be copied
          *  @return reference to this object
          */
@@ -389,7 +389,7 @@ class DCMTK_DCMRT_EXPORT DRTRTROIIdentificationCodeSequence
      */
     virtual ~DRTRTROIIdentificationCodeSequence();
 
-    /** assignment operator
+    /** assigment operator
      *  @param copy sequence object to be copied
      *  @return reference to this object
      */

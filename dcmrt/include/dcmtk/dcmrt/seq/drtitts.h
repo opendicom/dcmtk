@@ -54,7 +54,7 @@ class DCMTK_DCMRT_EXPORT DRTIonToleranceTableSequence
          */
         virtual ~Item();
 
-        /** assignment operator
+        /** assigment operator
          *  @param copy item object to be copied
          *  @return reference to this object
          */
@@ -451,7 +451,7 @@ class DCMTK_DCMRT_EXPORT DRTIonToleranceTableSequence
      */
     virtual ~DRTIonToleranceTableSequence();
 
-    /** assignment operator
+    /** assigment operator
      *  @param copy sequence object to be copied
      *  @return reference to this object
      */

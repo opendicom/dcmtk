@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 2002-2022, OFFIS e.V.
+ *  Copyright (C) 2002-2021, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -823,9 +823,7 @@ static E_DirRecType sopClassToRecordType(const OFString &sopClass)
              compare(sopClass, UID_RTRadiationSalvageRecordStorage) ||
              compare(sopClass, UID_TomotherapeuticRadiationRecordStorage) ||
              compare(sopClass, UID_CArmPhotonElectronRadiationRecordStorage) ||
-             compare(sopClass, UID_RoboticRadiationRecordStorage) ||
-             compare(sopClass, UID_RTRadiationSetDeliveryInstructionStorage) ||
-             compare(sopClass, UID_RTTreatmentPreparationStorage))
+             compare(sopClass, UID_RoboticRadiationRecordStorage))
     {
         result = ERT_Radiotherapy;
     }
@@ -1251,40 +1249,32 @@ OFCondition DicomDirInterface::createNewDicomDir(const E_ApplicationProfile prof
                                                  const OFString &filesetID)
 {
     OFCondition result = EC_IllegalParameter;
-    /* check parameters */
-    if (!filename.isEmpty())
+    if (!filename.isEmpty() && checkFilesetID(filesetID))
     {
-        /* remove leading and trailing spaces */
-        OFString normalizedFilesetID(filesetID);
-        normalizeString(normalizedFilesetID, OFFalse /*multiPart*/, OFTrue /*leading*/, OFTrue /*trailing*/);
-        /* check for invalid characters and maximum length */
-        if (checkFilesetID(normalizedFilesetID))
+        FilesetUpdateMode = OFFalse;
+        /* first remove any existing DICOMDIR from memory */
+        cleanup();
+        /* then create a backup if a DICOMDIR file already exists */
+        if (OFStandard::fileExists(filename))
         {
-            FilesetUpdateMode = OFFalse;
-            /* first remove any existing DICOMDIR from memory */
-            cleanup();
-            /* then create a backup if a DICOMDIR file already exists */
-            if (OFStandard::fileExists(filename))
-            {
-                if (BackupMode)
-                    createDicomDirBackup(filename);
-                /* and delete it because otherwise DcmDicomDir will parse it
-                and try to append to existing records */
-                OFStandard::deleteFile(filename);
-            }
-            /* select new application profile */
-            result = selectApplicationProfile(profile);
-            if (result.good())
-            {
-                DCMDATA_INFO("creating DICOMDIR file using " << getProfileName(ApplicationProfile)
-                    << " profile: " << filename);
-                /* finally, create a new DICOMDIR object */
-                DicomDir = new DcmDicomDir(filename, normalizedFilesetID.c_str());
-                if (DicomDir != NULL)
-                    result = DicomDir->error();
-                else
-                    result = EC_MemoryExhausted;
-            }
+            if (BackupMode)
+                createDicomDirBackup(filename);
+            /* and delete it because otherwise DcmDicomDir will parse it
+               and try to append to existing records */
+            OFStandard::deleteFile(filename);
+        }
+        /* select new application profile */
+        result = selectApplicationProfile(profile);
+        if (result.good())
+        {
+            DCMDATA_INFO("creating DICOMDIR file using " << getProfileName(ApplicationProfile)
+                << " profile: " << filename);
+            /* finally, create a new DICOMDIR object */
+            DicomDir = new DcmDicomDir(filename, filesetID.c_str());
+            if (DicomDir != NULL)
+                result = DicomDir->error();
+            else
+                result = EC_MemoryExhausted;
         }
     }
     return result;
@@ -1470,7 +1460,6 @@ OFBool DicomDirInterface::isCharsetValid(const char *charset)
                  (strcmp(charset, "ISO_IR 126") == 0) ||
                  (strcmp(charset, "ISO_IR 138") == 0) ||
                  (strcmp(charset, "ISO_IR 148") == 0) ||
-                 (strcmp(charset, "ISO_IR 203") == 0) ||
                  (strcmp(charset, "ISO_IR 166") == 0) ||
                  (strcmp(charset, "ISO_IR 13")  == 0) ||
                  (strcmp(charset, "ISO_IR 192") == 0);
@@ -2569,7 +2558,7 @@ OFCondition DicomDirInterface::checkMandatoryAttributes(DcmMetaInfo *metainfo,
                     result = EC_MissingAttribute;
             }
             /* StudyDescription is type 2 in DICOMDIR and type 3 in images.
-               We can create an empty attribute in the directory.
+               We can create an empty attribute in the directory
              */
             /* StudyInstanceUID is type 1 in DICOMDIR and images */
             if (!checkExistsWithValue(dataset, DCM_StudyInstanceUID, filename))
@@ -2580,11 +2569,10 @@ OFCondition DicomDirInterface::checkMandatoryAttributes(DcmMetaInfo *metainfo,
                 if (!checkExistsWithValue(dataset, DCM_StudyID, filename))
                     result = EC_MissingAttribute;
             }
-            /* AccessionNumber is type 2 in DICOMDIR and type 3 in images.
-               We can create an empty attribute in the directory.
+            /* AccessionNumber is type 2 in DICOMDIR and type 3 in images
+               We can create an empty attribute in the directory
             */
-            /* Modality is type 1 in DICOMDIR and type 1 in images
-             * (apart from SC Equipment Module where it is type 3) */
+            /* Modality is type 1 in DICOMDIR and type 1 in images */
             if (!checkExistsWithValue(dataset, DCM_Modality, filename))
                 result = EC_MissingAttribute;
             /* SeriesInstanceUID is type 1 in DICOMDIR and type 1 in images */
@@ -5550,8 +5538,7 @@ OFBool DicomDirInterface::checkFilesetID(const OFString &filesetID)
     {
         size_t invalidChar = 0;
         /* are the characters ok? */
-        if (!DcmCodeString::checkVR(filesetID, &invalidChar, OFFalse /*checkLength*/) ||
-            ((invalidChar = filesetID.find_first_of(' ')) != OFString_npos) /* spaces not allowed */)
+        if (!DcmCodeString::checkVR(filesetID, &invalidChar, OFFalse /*checkLength*/))
         {
             /* create error message */
             DCMDATA_ERROR("invalid character(s) in file-set ID: " << filesetID << OFendl

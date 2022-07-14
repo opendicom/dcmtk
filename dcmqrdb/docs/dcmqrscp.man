@@ -70,7 +70,7 @@ port  tcp/ip port number to listen on (default: in config file)
 
   -c    --config  [f]ilename: string
           use specific configuration file
-          (default: /usr/local/etc/dcmtk-<VERSION>/dcmqrscp.cfg)
+          (default: /usr/local/etc/dcmtk/dcmqrscp.cfg)
 
   # This option allows a specific configuration file to be
   # specified.  By default, the configuration file in the
@@ -147,6 +147,7 @@ checking identifier validity:
   -XM   --check-move
           check C-MOVE identifier validity
 
+
   # This option causes dcmqrscp database back-end to perform checks
   # on the Query Identifiers for a C-MOVE command.  With this option,
   # dcmqrscp will reject any queries which do not conform to the very
@@ -187,7 +188,7 @@ association negotiation profiles from configuration file:
 
   -xf   --assoc-config-file
           [f]ilename, [i]n-profile, [o]ut-profile: string
-          use profile i from f for incoming associations,
+          use profile i from f for incoming associations
           use profile o from f for outgoing associations
 
 preferred network transfer syntaxes (incoming associations):
@@ -858,7 +859,7 @@ PlannedImagingAgentAdministrationSRStorage           1.2.840.10008.5.1.4.1.1.88.
 PerformedImagingAgentAdministrationSRStorage         1.2.840.10008.5.1.4.1.1.88.75
 EnhancedXRayRadiationDoseSRStorage                   1.2.840.10008.5.1.4.1.1.88.76
 ContentAssessmentResultsStorage                      1.2.840.10008.5.1.4.1.1.90.1
-MicroscopyBulkSimpleAnnotationsStorage               1.2.840.10008.5.1.4.1.1.91.1
+MicroscopyBulkSimpleAnnotationsStorage               1.2.840.10008.5.1.4.1.1.91.1​
 EncapsulatedPDFStorage                               1.2.840.10008.5.1.4.1.1.104.1
 EncapsulatedCDAStorage                               1.2.840.10008.5.1.4.1.1.104.2
 EncapsulatedSTLStorage                               1.2.840.10008.5.1.4.1.1.104.3
@@ -891,8 +892,6 @@ RTRadiationSalvageRecordStorage                      1.2.840.10008.5.1.4.1.1.481
 TomotherapeuticRadiationRecordStorage                1.2.840.10008.5.1.4.1.1.481.18
 CArmPhotonElectronRadiationRecordStorage             1.2.840.10008.5.1.4.1.1.481.19
 RoboticRadiationRecordStorage                        1.2.840.10008.5.1.4.1.1.481.20
-RTRadiationSetDeliveryInstructionStorage             1.2.840.10008.5.1.4.1.1.481.21
-RTTreatmentPreparationStorage                        1.2.840.10008.5.1.4.1.1.481.22
 DICOS_CTImageStorage                                 1.2.840.10008.5.1.4.1.1.501.1
 DICOS_DigitalXRayImageStorageForPresentation         1.2.840.10008.5.1.4.1.1.501.2.1
 DICOS_DigitalXRayImageStorageForProcessing           1.2.840.10008.5.1.4.1.1.501.2.2
@@ -1089,8 +1088,7 @@ It is an error if no data dictionary can be loaded.
 <em>\<docdir\>/dcmqrcnf.txt</em> - configuration information
 \n<em>\<docdir\>/dcmqrset.txt</em> - setup information
 \n<em>\<etcdir\>/dcmqrscp.cfg</em> - example configuration file
-\n<em>\<etcdir\>/dcmqrprf.cfg</em> - example configuration file for association
-profiles
+\n<em>\<etcdir\>/dcmqrprf.cfg</em> - example configuration file for association profiles
 
 \section dcmqrscp_see_also SEE ALSO
 
@@ -1098,6 +1096,6 @@ profiles
 
 \section dcmqrscp_copyright COPYRIGHT
 
-Copyright (C) 1993-2022 by OFFIS e.V., Escherweg 2, 26121 Oldenburg, Germany.
+Copyright (C) 1993-2021 by OFFIS e.V., Escherweg 2, 26121 Oldenburg, Germany.
 
 */

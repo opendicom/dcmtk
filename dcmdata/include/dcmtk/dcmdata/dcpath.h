@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 2008-2022, OFFIS e.V.
+ *  Copyright (C) 2008-2020, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -195,9 +195,9 @@ public:
     static OFCondition parseTagFromPath(OFString& path, // inout
                                         DcmTag& tag);   // out
 
-    /** Destructor, cleans up memory of path nodes. Does not delete
+    /** Desctructor, cleans up memory of path nodes. Does not delete
      *  the DcmObjects the nodes point to (this is also not done
-     *  by the destructor of the path nodes, so the caller is responsible
+     *  by the desctructor of the path nodes, so the caller is responsible
      *  for freeing any related DICOM objects.
      */
     ~DcmPath();

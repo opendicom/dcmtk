@@ -17,7 +17,7 @@ dcmpsmk [options] dcmfile-in dcmfile-out
 The \b dcmpsmk utility reads a DICOM image file and creates a grayscale
 softcopy presentation state object according to Supplement 33.  The
 presentation state object is written back to file.  A number of command line
-options allow one to specify how certain constructs that might be present in
+options allow to specify how certain constructs that might be present in
 the image file should be referenced or activated in the presentation state.
 The newly created presentation state references the source image and
 contains values that should allow for a "reasonable" display of the image
@@ -61,7 +61,7 @@ dcmfile-out  DICOM presentation state file to be created
          use config file f for the logger
 \endverbatim
 
-\subsection dcmpsmk_input_options input options
+\subsection dcmpsmk_input_options input optons
 \verbatim
 input file format:
 
@@ -245,6 +245,6 @@ It is an error if no data dictionary can be loaded.
 
 \section dcmpsmk_copyright COPYRIGHT
 
-Copyright (C) 1998-2022 by OFFIS e.V., Escherweg 2, 26121 Oldenburg, Germany.
+Copyright (C) 1998-2014 by OFFIS e.V., Escherweg 2, 26121 Oldenburg, Germany.
 
 */

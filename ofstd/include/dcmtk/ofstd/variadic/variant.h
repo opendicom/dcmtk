@@ -283,8 +283,6 @@ struct OFvariant_destroy_invoker
 {
     typedef void return_type;
 
-#include DCMTK_DIAGNOSTIC_PUSH
-#include DCMTK_DIAGNOSTIC_IGNORE_UNREFERENCED_FORMAL_PARAMETER
     template<typename T>
     void invoke( void* content ) const
     {
@@ -294,8 +292,6 @@ struct OFvariant_destroy_invoker
         delete static_cast<T*>( content );
 #endif
     }
-#include DCMTK_DIAGNOSTIC_POP
-
 };
 
 // A functor that invokes the given functor, seriously!

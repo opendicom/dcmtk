@@ -132,7 +132,7 @@ enum DcmTLSCipherKeyExchange
   /// Static RSA key exchange
   TKE_RSA,
 
-  /// Elliptic Curve Diffie-Hellman
+  /// Elliptic Curve Diffie–Hellman
   TKE_ECDH,
 
   /// Fixed ECDH with ECDSA-signed certificates
@@ -141,7 +141,7 @@ enum DcmTLSCipherKeyExchange
   /// Fixed ECDH with RSA signatures
   TKE_ECDH_RSA,
 
-  /// Diffie-Hellman key exchange
+  /// Diffie–Hellman key exchange
   TKE_DH
 
 };
@@ -157,7 +157,7 @@ enum DcmTLSCipherAuthentication
   /// Digital Signature Standard
   TCA_DSS,
 
-  /// Elliptic Curve Diffie-Hellman
+  /// Elliptic Curve Diffie–Hellman
   TCA_ECDH,
 
   /// Elliptic Curve Digital Signature Algorithm
@@ -340,7 +340,7 @@ public:
   static size_t lookupCiphersuite(const char *tlsCipherSuiteName);
 
   /** looks up the index of the given ciphersuite by OpenSSL name
-   *  @param opensslCipherSuiteName ciphersuite name in the form used by OpenSSL
+   *  @param tlsCipherSuiteName ciphersuite name in the form used by OpenSSL
    *  @returns index into list of ciphersuites, DcmTLSCiphersuiteHandler::unknownCipherSuiteIndex if ciphersuite unknown
    */
   static size_t lookupCiphersuiteByOpenSSLName(const char *opensslCipherSuiteName);
@@ -401,7 +401,6 @@ public:
   static size_t getCipherSuiteEffectiveKeySize(size_t idx);
 
   /** look up the name of the given security profile
-   *  @param profile the given security profile
    *  @return name of security profile, never NULL.
    */
   static const char *lookupProfileName(DcmTLSSecurityProfile profile);

@@ -53,7 +53,7 @@ class DCMTK_DCMRT_EXPORT DRTChannelShieldSequence
          */
         virtual ~Item();
 
-        /** assignment operator
+        /** assigment operator
          *  @param copy item object to be copied
          *  @return reference to this object
          */
@@ -257,7 +257,7 @@ class DCMTK_DCMRT_EXPORT DRTChannelShieldSequence
      */
     virtual ~DRTChannelShieldSequence();
 
-    /** assignment operator
+    /** assigment operator
      *  @param copy sequence object to be copied
      *  @return reference to this object
      */

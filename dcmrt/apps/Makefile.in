@@ -12,7 +12,6 @@ configdir = @top_srcdir@/@configdir@
 
 include $(configdir)/@common_makefile@
 
-oficonvdir = $(top_srcdir)/../oficonv
 ofstddir = $(top_srcdir)/../ofstd
 oflogdir = $(top_srcdir)/../oflog
 dcmdatadir = $(top_srcdir)/../dcmdata
@@ -20,8 +19,8 @@ dcmimgledir = $(top_srcdir)/../dcmimgle
 
 LOCALINCLUDES = -I$(dcmdatadir)/include -I$(oflogdir)/include -I$(ofstddir)/include
 LIBDIRS = -L$(top_srcdir)/libsrc -L$(dcmimgledir)/libsrc -L$(dcmdatadir)/libsrc \
-	-L$(oflogdir)/libsrc -L$(ofstddir)/libsrc -L$(oficonvdir)/libsrc
-LOCALLIBS = -ldcmrt -ldcmimgle -ldcmdata -loflog -lofstd -loficonv \
+	-L$(oflogdir)/libsrc -L$(ofstddir)/libsrc
+LOCALLIBS = -ldcmrt -ldcmimgle -ldcmdata -loflog -lofstd \
 	$(TIFFLIBS) $(PNGLIBS) $(ZLIBLIBS) $(CHARCONVLIBS) $(MATHLIBS)
 
 objs = drtdump.o
@@ -34,7 +33,9 @@ drtdump: drtdump.o
 	$(CXX) $(CXXFLAGS) $(LIBDIRS) $(LDFLAGS) -o $@ $@.o $(LOCALLIBS) $(LIBS)
 
 
-install: all
+install: install-bin
+
+install-bin: all
 	$(configdir)/mkinstalldirs $(DESTDIR)$(bindir)
 	for prog in $(progs); do \
 		$(INSTALL_PROGRAM) $$prog$(BINEXT) $(DESTDIR)$(bindir) && $(STRIP) $(DESTDIR)$(bindir)/$$prog$(BINEXT) ;\

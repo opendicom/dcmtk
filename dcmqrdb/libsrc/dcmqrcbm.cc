@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 1993-2022, OFFIS e.V.
+ *  Copyright (C) 1993-2021, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -96,7 +96,7 @@ void DcmQueryRetrieveMoveContext::callbackHandler(
              */
             cond = buildSubAssociation(request);
             if (cond == QR_EC_InvalidPeer) {
-                dbStatus.setStatus(STATUS_MOVE_Refused_MoveDestinationUnknown);
+                dbStatus.setStatus(STATUS_MOVE_Failed_MoveDestinationUnknown);
             } else if (cond.bad()) {
                 /* failed to build association, must fail move */
                 failAllSubOperations(&dbStatus);
@@ -312,7 +312,7 @@ OFCondition DcmQueryRetrieveMoveContext::buildSubAssociation(T_DIMSE_C_MoveRQ *r
         return QR_EC_InvalidPeer;
     }
     if (cond.good()) {
-        cond = ASC_createAssociationParameters(&params, ASC_DEFAULTMAXPDU, dcmConnectionTimeout.get());
+        cond = ASC_createAssociationParameters(&params, ASC_DEFAULTMAXPDU);
         if (cond.bad()) {
             DCMQRDB_ERROR("moveSCP: Cannot create Association-params for sub-ops: " << DimseCondition::dump(temp_str, cond));
         }

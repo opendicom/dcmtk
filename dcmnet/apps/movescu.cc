@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 1994-2022, OFFIS e.V.
+ *  Copyright (C) 1994-2021, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -779,7 +779,7 @@ main(int argc, char *argv[])
     }
 
     /* set up main association */
-    cond = ASC_createAssociationParameters(&params, opt_maxPDU, dcmConnectionTimeout.get());
+    cond = ASC_createAssociationParameters(&params, opt_maxPDU);
     if (cond.bad()) {
         OFLOG_FATAL(movescuLogger, DimseCondition::dump(temp_str, cond));
         exit(EXITCODE_CANNOT_CREATE_ASSOC_PARAMETERS);
@@ -1425,7 +1425,6 @@ static OFCondition storeSCP(
         sprintf(imageFileName, "%s.%s",
             dcmSOPClassUIDToModality(req->AffectedSOPClassUID),
             req->AffectedSOPInstanceUID);
-        OFStandard::sanitizeFilename(imageFileName);
     }
 
     OFString temp_str;

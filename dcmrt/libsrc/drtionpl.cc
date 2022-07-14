@@ -8,7 +8,6 @@
  *
  *  Generated automatically from DICOM PS 3.3-2017e
  *  File created on 2017-12-05 09:30:54
- *  Last modified on 2022-01-26 by Riesmeier
  *
  */
 
@@ -157,7 +156,7 @@ DRTIonPlanIOD::DRTIonPlanIOD()
     RTPlanTime(DCM_RTPlanTime),
     TreatmentProtocols(DCM_TreatmentProtocols),
     PlanIntent(DCM_PlanIntent),
-    TreatmentSites(DCM_RETIRED_TreatmentSites),
+    TreatmentSites(DCM_TreatmentSites),
     RTPlanGeometry(DCM_RTPlanGeometry),
     ReferencedStructureSetSequence(),
     ReferencedDoseSequence(),

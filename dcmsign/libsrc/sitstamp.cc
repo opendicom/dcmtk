@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 2019-2022, OFFIS e.V.
+ *  Copyright (C) 2019-2020, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -43,43 +43,16 @@ BEGIN_EXTERN_C
 #include <openssl/x509.h>
 END_EXTERN_C
 
-#ifndef HAVE_OPENSSL_PROTOTYPE_X509_GET0_NOTBEFORE
+#if OPENSSL_VERSION_NUMBER < 0x10100000L || defined(LIBRESSL_VERSION_NUMBER)
 #define X509_get0_notBefore(x) X509_get_notBefore(x)
-#endif
-
-#ifndef HAVE_OPENSSL_PROTOTYPE_X509_GET0_NOTAFTER
 #define X509_get0_notAfter(x) X509_get_notAfter(x)
-#endif
-
-#ifndef HAVE_OPENSSL_PROTOTYPE_TS_STATUS_INFO_GET0_STATUS
 #define TS_STATUS_INFO_get0_status(x) (x)->status
-#endif
-
-#ifndef HAVE_OPENSSL_PROTOTYPE_TS_STATUS_INFO_GET0_TEXT
 #define TS_STATUS_INFO_get0_text(x) (x)->text
-#endif
-
-#ifndef HAVE_OPENSSL_PROTOTYPE_TS_STATUS_INFO_GET0_FAILURE_INFO
 #define TS_STATUS_INFO_get0_failure_info(x) (x)->failure_info
-#endif
-
-#ifndef HAVE_OPENSSL_PROTOTYPE_TS_VERIFY_CTS_SET_CERTS
 #define TS_VERIFY_CTS_set_certs(x,y) ((x)->certs = (y))
-#endif
-
-#ifndef HAVE_OPENSSL_PROTOTYPE_TS_VERIFY_CTX_SET_DATA
 #define TS_VERIFY_CTX_set_data(x,y) ((x)->data = (y))
-#endif
-
-#ifndef HAVE_OPENSSL_PROTOTYPE_TS_VERIFY_CTX_SET_FLAGS
 #define TS_VERIFY_CTX_set_flags(x,y) ((x)->flags = (y))
-#endif
-
-#ifndef HAVE_OPENSSL_PROTOTYPE_TS_VERIFY_CTX_SET_STORE
 #define TS_VERIFY_CTX_set_store(x,y) ((x)->store = (y))
-#endif
-
-#ifndef HAVE_OPENSSL_PROTOTYPE_ASN1_STRING_GET0_DATA
 #define ASN1_STRING_get0_data(x) ASN1_STRING_data((asn1_string_st*)x)
 #endif
 
@@ -356,7 +329,7 @@ struct StatusMap
   const char *text;
 };
 
-/** status flags for timestamp response failures
+/** status flags for timestamp resonse failures
  *  Source: OpenSSL, ts_rsp_print.c
  */
 static StatusMap failure_map[] =
@@ -641,7 +614,7 @@ OFCondition SiTimeStamp::check_ts_response(
   SiMAC *mac = NULL;
   if (result.good())
   {
-#ifndef HAVE_OPENSSL_X509_ALGOR_GET0_CONST_PARAM
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
     ASN1_OBJECT *mac_oid = NULL;
     void *ppval = NULL;
 #else
@@ -687,7 +660,7 @@ OFCondition SiTimeStamp::check_ts_response(
     }
   }
 
-  // check that the lengths of both MACs are really the same
+  // check that the lenghts of both MACs are really the same
   if (result.good())
   {
     // mac is now guaranteed to point to a valid SiMAC object
@@ -1227,7 +1200,7 @@ OFCondition SiTimeStamp::verifyTSSignature(SiCertificateVerifier& cv)
       DCMSIGN_INFO("      Validity                : not before " << aString);
       cert.getCertValidityNotAfter(aString);
       DCMSIGN_INFO("      Validity                : not after " << aString);
-      OFString ecname;
+      const char *ecname = NULL;
       switch (cert.getKeyType())
       {
         case EKT_RSA:
@@ -1238,7 +1211,7 @@ OFCondition SiTimeStamp::verifyTSSignature(SiCertificateVerifier& cv)
           break;
         case EKT_EC:
           ecname = cert.getCertCurveName();
-          if (ecname.length() > 0)
+          if (ecname)
           {
             DCMSIGN_INFO("      Public key              : EC, curve " << ecname << ", " << cert.getCertKeyBits() << " bits");
           }
@@ -1304,9 +1277,12 @@ OFCondition SiTimeStamp::verifyTSToken(
 
     if (result.good())
     {
-      // In OpenSSL 1.0.1 and earlier, the first parameter was not const
-      // We cast the const away, which should work with old and new versions
+
+#if OPENSSL_VERSION_NUMBER < 0x10002000L || defined(LIBRESSL_VERSION_NUMBER)
       BIO *bio = BIO_new_mem_buf(OFconst_cast(Uint8 *, signature), sigLength);
+#else
+      BIO *bio = BIO_new_mem_buf(signature, sigLength);
+#endif
       if (bio)
       {
         // set the digital signature as the raw data against which

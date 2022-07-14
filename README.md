@@ -24,7 +24,6 @@ DCMTK contains the following sub-packages, each in its own sub-directory:
 - **dcmtls**   - security extensions for the network library
 - **dcmtract** - a library for working with tractography results
 - **dcmwlm**   - a modality worklist database server
-- **oficonv**  - a character set conversion library
 - **oflog**    - a logging library based on log4cplus
 - **ofstd**    - a library of general purpose classes
 

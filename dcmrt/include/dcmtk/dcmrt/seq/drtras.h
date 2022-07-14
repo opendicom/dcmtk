@@ -58,7 +58,7 @@ class DCMTK_DCMRT_EXPORT DRTRequestAttributesSequence
          */
         virtual ~Item();
 
-        /** assignment operator
+        /** assigment operator
          *  @param copy item object to be copied
          *  @return reference to this object
          */
@@ -306,7 +306,7 @@ class DCMTK_DCMRT_EXPORT DRTRequestAttributesSequence
      */
     virtual ~DRTRequestAttributesSequence();
 
-    /** assignment operator
+    /** assigment operator
      *  @param copy sequence object to be copied
      *  @return reference to this object
      */

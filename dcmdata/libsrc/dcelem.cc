@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 1994-2022, OFFIS e.V.
+ *  Copyright (C) 1994-2021, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -1419,7 +1419,7 @@ OFCondition DcmElement::write(DcmOutputStream &outStream,
                     /* written to the stream) */
                     len = OFstatic_cast(Uint32, outStream.write(&value[getTransferredBytes()], getLengthField() - getTransferredBytes()));
 
-                    /* increase the amount of bytes which have been transferred correspondingly */
+                    /* increase the amount of bytes which have been transfered correspondingly */
                     incTransferredBytes(len);
 
                     /* see if there is something fishy with the stream */
@@ -1440,7 +1440,7 @@ OFCondition DcmElement::write(DcmOutputStream &outStream,
                         // write as many bytes from cache buffer to stream as possible
                         len = wcache->writeBuffer(outStream);
 
-                        /* increase the amount of bytes which have been transferred correspondingly */
+                        /* increase the amount of bytes which have been transfered correspondingly */
                         incTransferredBytes(len);
 
                         /* see if there is something fishy with the stream */
@@ -1654,7 +1654,7 @@ void DcmElement::writeJsonOpener(STD_NAMESPACE ostream &out,
 {
     DcmVR vr(getTag().getVR());
     DcmTag tag = getTag();
-    /* increase indentation level */
+    /* increase indention level */
     /* write attribute tag */
     out << ++format.indent() << "\""
         << STD_NAMESPACE hex << STD_NAMESPACE setfill('0')
@@ -1665,7 +1665,7 @@ void DcmElement::writeJsonOpener(STD_NAMESPACE ostream &out,
     out << STD_NAMESPACE setw(4) << STD_NAMESPACE uppercase << tag.getETag() << "\":"
         << format.space() << "{" << STD_NAMESPACE dec << STD_NAMESPACE setfill(' ');
     out << STD_NAMESPACE nouppercase;
-    /* increase indentation level */
+    /* increase indention level */
     /* value representation = VR */
     out << format.newline() << ++format.indent() << "\"vr\":" << format.space() << "\""
         << vr.getValidVRName() << "\"";
@@ -1675,7 +1675,7 @@ void DcmElement::writeJsonOpener(STD_NAMESPACE ostream &out,
 void DcmElement::writeJsonCloser(STD_NAMESPACE ostream &out,
                                  DcmJsonFormat &format)
 {
-    /* output JSON ending and decrease indentation level */
+    /* output JSON ending and decrease indention level */
     out << format.newline() << --format.indent() << "}";
     --format.indent();
 }
@@ -1813,21 +1813,14 @@ OFCondition DcmElement::getPartialValue(void *targetBuffer,
     // initialize the cache with new stream
     if (!readStream)
     {
-      // create input stream object
       readStream = fLoadValue->create();
 
       // check that read stream is non-NULL
       if (readStream == NULL) return EC_InvalidStream;
 
       // check that stream status is OK
-      if (readStream->status().bad())
-      {
-        OFCondition result = readStream->status();
-        delete readStream;
-        return result;
-      }
+      if (readStream->status().bad()) return readStream->status();
 
-      // readStream will be deleted when the cache is deleted
       cache->init(readStream, this);
     }
 

@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 2019-2022, Open Connections GmbH
+ *  Copyright (C) 2019-2020, Open Connections GmbH
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation are maintained by
@@ -242,6 +242,7 @@ ConcatenationLoader::load(const OFString& concatenationUID, DcmDataset* dataset,
             if (result.good())
             {
                 OFListIterator(ConcatenationLoader::Info::Instance) inst = c->m_Files.begin();
+                inst++; // first instance already handled
                 while (result.good() && (inst != c->m_Files.end()))
                 {
                     DcmFileFormat dcmff;
@@ -302,15 +303,7 @@ OFCondition ConcatenationLoader::prepareTemplate(ConcatenationLoader::Info& firs
             result = m_Result->putAndInsertOFStringArray(DCM_SOPInstanceUID, srcUID);
         if (result.good())
         {
-            // Clear Per-Frame Functional Groups Sequence
-            result = m_Result->findAndDeleteElement(DCM_PerFrameFunctionalGroupsSequence);
-            if (result.good())
-            {
-                result = m_Result->insertEmptyElement(DCM_PerFrameFunctionalGroupsSequence);
-            }
-        }
-        if (result.good())
-        {
+            result = extractFrames(*m_Result, firstInstance, firstInstance.m_Files.front().m_NumberOfFrames);
             m_Result->findAndDeleteElement(DCM_PixelData);
         }
     }
@@ -337,8 +330,8 @@ OFCondition ConcatenationLoader::extractFrames(DcmItem& item, Info& info, const 
     OFCondition result   = item.findAndGetUint8Array(DCM_PixelData, pixData);
     if (result.good() && pixData)
     {
-        size_t bytesPerFrame = 0;
-        result                 = computeBytesPerFrame(info.m_Rows, info.m_Cols, info.m_BitsAlloc, bytesPerFrame);
+        size_t bytes_per_frame = 0;
+        result                 = computeBytesPerFrame(info.m_Rows, info.m_Cols, info.m_BitsAlloc, bytes_per_frame);
         if (result.good())
         {
             const Uint8* ptr = pixData;
@@ -347,7 +340,7 @@ OFCondition ConcatenationLoader::extractFrames(DcmItem& item, Info& info, const 
                 DcmIODTypes::Frame* frame = new DcmIODTypes::Frame();
                 if (frame)
                 {
-                    frame->length  = bytesPerFrame;
+                    frame->length  = bytes_per_frame;
                     frame->pixData = new Uint8[frame->length];
                     if (frame->pixData)
                     {
@@ -452,7 +445,7 @@ OFCondition ConcatenationLoader::insertDestinationAttributes()
         char buf[100];
         dcmGenerateUniqueIdentifier(buf, SITE_INSTANCE_UID_ROOT);
         uid = buf;
-        DCMFG_WARN("SOP Instance UID of Concatenation Source (0020,0242) not set, created new SOP Instance UID "
+        DCMFG_WARN("SOP Instance UID of Concatentation Source (0020,0242)​ not set, created new SOP Instance UID "
                    << uid);
     }
     OFCondition result = m_Result->putAndInsertOFStringArray(DCM_SOPInstanceUID, uid);
@@ -558,8 +551,8 @@ void ConcatenationLoader::Info::print(OFStringStream& out)
 {
     out << "Concatenation UID*           : " << m_ConcatenationUID << OFendl;
     out << "  SOP Class UID*             : " << m_SOPClassUID << OFendl;
-    out << "  Concatenation Source UID*  : " << m_SourceUID << OFendl;
-    out << "  Concatenation Source File  : " << m_FileConatenationSource << OFendl;
+    out << "  Concatentation Source UID* : " << m_SourceUID << OFendl;
+    out << "  Concatentation Source File : " << m_FileConatenationSource << OFendl;
     out << "  Number of Frames (computed): " << m_NumTotalFrames << OFendl;
     out << "  In-conc. Total Number      : " << m_inConcatTotalNumber << OFendl;
     out << "  Patient ID                 : " << m_PatientID << OFendl;

@@ -12,10 +12,6 @@ configdir = @top_srcdir@/@configdir@
 
 include $(configdir)/@common_makefile@
 
-oficonvdir = $(top_srcdir)/../oficonv
-oficonvinc = -I$(oficonvdir)/include
-oficonvlibdir = -L$(oficonvdir)/libsrc
-oficonvlib = -loficonv
 
 ofstddir =$(top_srcdir)/../ofstd
 ofstdinc = -I$(ofstddir)/include
@@ -51,10 +47,9 @@ dcmjpeglib = -ldcmjpeg -lijg8 -lijg12 -lijg16
 LOCALINCLUDES = $(dcmjpeginc) $(ofstdinc) $(ofloginc) $(dcmdatainc) $(dcmimageinc) \
 	$(dcmimgleinc)
 LIBDIRS = -L$(top_srcdir)/libsrc $(dcmjpeglibdir) $(dcmimagelibdir) $(dcmimglelibdir) \
-	$(dcmdatalibdir) $(ofloglibdir) $(ofstdlibdir) $(oficonvlibdir)
+	$(dcmdatalibdir) $(ofloglibdir) $(ofstdlibdir)
 LOCALLIBS = $(dcmjpeglib) $(dcmimagelib) $(dcmimglelib) $(dcmdatalib) $(ofloglib) \
-	$(ofstdlib) $(oficonvlib) $(TIFFLIBS) $(PNGLIBS) $(ZLIBLIBS) $(CHARCONVLIBS) \
-	$(MATHLIBS)
+	$(ofstdlib) $(TIFFLIBS) $(PNGLIBS) $(ZLIBLIBS) $(CHARCONVLIBS) $(MATHLIBS)
 
 objs = dcmdjpeg.o dcmcjpeg.o dcmj2pnm.o dcmmkdir.o
 progs = dcmdjpeg dcmcjpeg dcmj2pnm dcmmkdir

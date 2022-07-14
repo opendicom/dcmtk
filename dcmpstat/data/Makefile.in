@@ -22,7 +22,6 @@ install:
 		$(INSTALL_DATA) $$file $(DESTDIR)$(datadir) ;\
 	done
 
-
 clean:
 	rm -f $(objs) $(progs) $(TRASH)
 

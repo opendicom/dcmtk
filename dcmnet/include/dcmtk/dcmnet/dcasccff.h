@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 2003-2022, OFFIS e.V.
+ *  Copyright (C) 2003-2013, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -41,20 +41,17 @@ public:
    *  contained therein into the association configuration object.
    *  @param cfg association configuration object to initialize
    *  @param filename name of config file
-   *  @param scuMode true if the configuration is intended for an SCU (i.e. the
-   *   limit of 128 presentation contexts must be preserved), false otherwise
    *  @return EC_Normal if successful, an error code otherwise
    */
   static OFCondition initialize(
     DcmAssociationConfiguration& cfg,
-    const char *filename,
-    OFBool scuMode);
+    const char *filename);
 
 private:
 
   /** parses the transfer syntax lists in the config file.
    *  @param cfg association configuration object to initialize
-   *  @param config filename name of config file
+   *  @param filename name of config file
    *  @return EC_Normal if successful, an error code otherwise
    */
   static OFCondition parseTransferSyntaxes(
@@ -63,19 +60,16 @@ private:
 
   /** parses the presentation context lists in the config file.
    *  @param cfg association configuration object to initialize
-   *  @param config filename name of config file
-   *  @param scuMode true if the configuration is intended for an SCU (i.e. the
-   *     limit of 128 presentation contexts must be preserved), false otherwise
+   *  @param filename name of config file
    *  @return EC_Normal if successful, an error code otherwise
    */
   static OFCondition parsePresentationContexts(
     DcmAssociationConfiguration& cfg,
-    OFConfigFile& config,
-    OFBool scuMode);
+    OFConfigFile& config);
 
   /** parses the role selection lists in the config file.
    *  @param cfg association configuration object to initialize
-   *  @param config filename name of config file
+   *  @param filename name of config file
    *  @return EC_Normal if successful, an error code otherwise
    */
   static OFCondition parseRoleSelectionItems(
@@ -84,7 +78,7 @@ private:
 
   /** parses the extended negotiation lists in the config file.
    *  @param cfg association configuration object to initialize
-   *  @param config filename name of config file
+   *  @param filename name of config file
    *  @return EC_Normal if successful, an error code otherwise
    */
   static OFCondition parseExtendedNegotiationItems(
@@ -93,7 +87,7 @@ private:
 
   /** parses the association configuration profile lists in the config file.
    *  @param cfg association configuration object to initialize
-   *  @param config filename name of config file
+   *  @param filename name of config file
    *  @return EC_Normal if successful, an error code otherwise
    */
   static OFCondition parseProfiles(

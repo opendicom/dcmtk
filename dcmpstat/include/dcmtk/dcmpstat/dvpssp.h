@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 1999-2022, OFFIS e.V.
+ *  Copyright (C) 1999-2012, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -119,7 +119,7 @@ class DCMTK_DCMPSTAT_EXPORT DVPSStoredPrint
    */
   OFCondition setPrinterName(const char *name);
 
-  /** sets the image display format to 'STANDARD\\columns,rows'.
+  /** sets the image display format to 'STANDARD\columns,rows'.
    *  The caller must make sure that the column and row values are
    *  valid for the selected printer.
    *  @param columns number of columns
@@ -232,7 +232,7 @@ class DCMTK_DCMPSTAT_EXPORT DVPSStoredPrint
    *  are reset to default. For all registered images, magnification, smoothing type
    *  and configuration information are also set back to default.
    *  @param name name of the new printer (optional)
-   *  @param destinationAE aetitle of the new printer (optional)
+   *  @param aetitle of the new printer (optional)
    *  @return EC_Normal if successful, an error code otherwise.
    */
   OFCondition newPrinter(const char *name = NULL, const char *destinationAE = NULL); // short cut, delete all optional settings
@@ -314,7 +314,7 @@ class DCMTK_DCMPSTAT_EXPORT DVPSStoredPrint
    */
   const char *getConfigurationInformation();
 
-  /** gets the (optional) requested resolution ID
+  /** gets the (optional) requestes resolution ID
    *  @return requested resolution ID, may be NULL.
    */
   const char *getResolutionID();
@@ -1091,7 +1091,7 @@ class DCMTK_DCMPSTAT_EXPORT DVPSStoredPrint
 
   /** the current presentation LUT instance. If used as Print SCU, the
    *  content of this string can differ from referencedPresentationLUTInstanceUID
-   *  which contains the UID from the Stored Print object whereas this
+   *  which contains the UID from the Stored Print object wheras this
    *  string contains the UID assigned by the remote Print SCP.
    *  If used as Print SCP, these strings should always be equal.
    */

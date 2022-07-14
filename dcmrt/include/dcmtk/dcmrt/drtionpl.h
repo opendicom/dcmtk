@@ -105,7 +105,7 @@ class DCMTK_DCMRT_EXPORT DRTIonPlanIOD
      */
     virtual ~DRTIonPlanIOD();
 
-    /** assignment operator
+    /** assigment operator
      *  @param copy IOD object to be copied
      *  @return reference to this object
      */

@@ -116,7 +116,6 @@ public:
     DVPSStoredPrint_PList& basicFilmBoxList);
 
   /** compares the SOP instance UID with the given UID string.
-   *  @param uid the uid to compare with
    *  @return OFTrue if UIDs are equal, OFFalse otherwise.
    */
   OFBool isInstance(const char *uid);

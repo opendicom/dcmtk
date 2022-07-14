@@ -114,8 +114,6 @@ private:
 
   /** Retrieves the specified item from the hash table.
    *  If the item has not been created a new item is created and is returned.
-   *  @param colorP the item in the hash table
-   *  @return the retrieved, or created object
    */
   DcmQuantHistogramItemList& item(const DcmQuantPixel& colorP)
   {

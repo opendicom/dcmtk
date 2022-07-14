@@ -14,14 +14,13 @@ include $(configdir)/@common_makefile@
 
 ofstddir = $(top_srcdir)/../ofstd
 oflogdir = $(top_srcdir)/../oflog
-oficonvdir = $(top_srcdir)/../oficonv
 
-LOCALINCLUDES = -I$(oficonvdir)/include -I$(ofstddir)/include -I$(oflogdir)/include
-LIBDIRS = -L$(oficonvdir)/libsrc -L$(ofstddir)/libsrc -L$(oflogdir)/libsrc
-LOCALLIBS = -loflog -lofstd -loficonv $(CHARCONVLIBS)
+LOCALINCLUDES = -I$(ofstddir)/include -I$(oflogdir)/include
+LIBDIRS = -L$(ofstddir)/libsrc -L$(oflogdir)/libsrc
+LOCALLIBS = -loflog -lofstd $(CHARCONVLIBS)
 LOCALDEFS =
 
-# Clear environment variable in the scope of this makefile
+# clear environment variable in the scope of this makefile
 DCMDICTPATH =
 
 # Special defines for the Library, define them in LOCALDEFS
@@ -49,7 +48,7 @@ objs = dcpixseq.o dcpxitem.o dcuid.o dcerror.o dcencdoc.o\
 	dcvrut.o dcvrur.o dcvruc.o dctypes.o dcpcache.o dcddirif.o dcistrma.o \
 	dcistrmb.o dcistrmf.o dcistrms.o dcistrmz.o dcostrma.o dcostrmb.o \
 	dcostrmf.o dcostrms.o dcostrmz.o dcwcache.o dcpath.o vrscan.o vrscanl.o \
-	dcfilter.o dcmatch.o dcjson.o
+	dcfilter.o dcmatch.o dcjson.o xml2dcm.o
 
 support_objs = mkdeftag.o mkdictbi.o
 support_progs = mkdeftag mkdictbi
@@ -61,6 +60,14 @@ library = libdcmdata.$(LIBEXT)
 
 
 all: $(library)
+
+install: install-lib install-support
+
+install-lib: $(library)
+	$(configdir)/mkinstalldirs $(DESTDIR)$(libdir)
+	$(INSTALL_DATA) $(library) $(DESTDIR)$(libdir)/$(library)
+	$(RANLIB) $(DESTDIR)$(libdir)/$(library)
+
 
 $(library): $(objs)
 	$(AR) $(ARFLAGS) $@ $(objs)
@@ -77,19 +84,17 @@ mkvrscan:
 
 
 # Generate a new include file of defined tags
+
 updatedeftag: mkdeftag $(dicomdic) $(privatedic)
 	`pwd`/mkdeftag -o $(top_srcdir)/include/dcmtk/dcmdata/dcdeftag.h $(dicomdic) $(privatedic)
 
 # Generate a builtin data dictionary from $(dicomdic) and $(privatedic)
+
 updatebuiltindict: mkdictbi $(dicomdic) $(privatedic)
 	`pwd`/mkdictbi $(dicomdic) $(privatedic) > dcdictbi.cc
 
 
-install: $(library)
-	$(configdir)/mkinstalldirs $(DESTDIR)$(libdir)
-	$(INSTALL_DATA) $(library) $(DESTDIR)$(libdir)/$(library)
-	$(RANLIB) $(DESTDIR)$(libdir)/$(library)
-
+# Clean-up
 
 clean:
 	rm -f $(support_progs) $(support_objs) $(objs) $(library) $(TRASH)
@@ -97,6 +102,8 @@ clean:
 distclean: clean
 	rm -f $(DISTTRASH)
 
+
+# Dependencies
 
 dependencies:
 	$(CXX) -MM $(defines) $(includes) $(CPPFLAGS) $(CXXFLAGS) *.cc  > $(DEP)

@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 1994-2022, OFFIS e.V.
+ *  Copyright (C) 1994-2021, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -730,9 +730,6 @@ OFCondition DcmFileFormat::readUntilTag(DcmInputStream &inStream,
                 // do read meta header not in given transfer syntax (always Little Endian Explicit)
                 errorFlag = metaInfo->read(inStream, EXS_Unknown, glenc, maxReadLength);
             }
-
-            // bail out if the meta-header is still incomplete or an error occurred
-            if (errorFlag.bad()) return errorFlag;
 
             // determine xfer from tag (0002,0010) in the meta header
             newxfer = lookForXfer(metaInfo);
