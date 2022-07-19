@@ -87,12 +87,17 @@ static char rcsid[] = "$dcmtk: " OFFIS_CONSOLE_APPLICATION " v" OFFIS_DCMTK_VERS
 #define CALLING_AETITLE_PLACEHOLDER "#a"
 #define CALLED_AETITLE_PLACEHOLDER "#c"
 #define CALLING_PRESENTATION_ADDRESS_PLACEHOLDER "#r"
-
+//jf
+#define PID_PLACEHOLDER "#i"
+#define EUID_PLACEHOLDER "#e"
+#define SUID_PLACEHOLDER "#s"
+#define NOF_PLACEHOLDER "#m"
+///jf
 static OFCondition processCommands(T_ASC_Association *assoc);
 static OFCondition acceptAssociation(T_ASC_Network *net, DcmAssociationConfiguration& asccfg, OFBool secureConnection);
 static OFCondition echoSCP(T_ASC_Association * assoc, T_DIMSE_Message * msg, T_ASC_PresentationContextID presID);
 static OFCondition storeSCP(T_ASC_Association * assoc, T_DIMSE_Message * msg, T_ASC_PresentationContextID presID);
-static void executeOnReception();
+static void executeOnReception( const OFString &jfPatientID,  const OFString &jfStudyInstanceUID,  const OFString &jfSeriesInstanceUID,  const OFString &jfNumberOfFrames );
 static void executeEndOfStudyEvents();
 static void executeOnEndOfStudy();
 static void renameOnEndOfStudy();
@@ -2137,10 +2142,32 @@ static OFCondition storeSCP(
   }
 #endif
 
+    
   // if everything was successful so far and option --exec-on-reception is set,
   // we want to execute a certain command which was passed to the application
   if( cond.good() && opt_execOnReception != NULL )
-    executeOnReception();
+  {
+      //JF
+      
+      OFString p;
+      if (dset->findAndGetOFString(DCM_PatientID, p).bad() || p.empty())
+      OFLOG_ERROR(storescpLogger, "element PatientID " << DCM_PatientID << " absent or empty in data set");
+      
+     OFString e;
+      if (dset->findAndGetOFString(DCM_StudyInstanceUID, e).bad() || e.empty())
+      OFLOG_ERROR(storescpLogger, "element StudyInstanceUID " << DCM_StudyInstanceUID << " absent or empty in data set");
+      
+      OFString s;
+      if (dset->findAndGetOFString(DCM_SeriesInstanceUID, s).bad() || s.empty())
+          OFLOG_ERROR(storescpLogger, "element SeriesInstanceUID " << DCM_SeriesInstanceUID << " absent or empty in data set");
+      
+      OFString f;
+      if (dset->findAndGetOFString(DCM_NumberOfFrames, f).bad() || f.empty())
+          f = '1';
+    
+      executeOnReception( p , e , s , f );
+      ///JF
+  }
 
   // if everything was successful so far, go ahead and handle possible end-of-study events
   if( cond.good() )
@@ -2187,7 +2214,7 @@ static void executeEndOfStudyEvents()
 }
 
 
-static void executeOnReception()
+static void executeOnReception( const OFString &jfPatientID,  const OFString &jfStudyInstanceUID,  const OFString &jfSeriesInstanceUID,  const OFString &jfNumberOfFrames )
     /*
      * This function deals with the execution of the command line which was passed
      * to option --exec-on-reception of the storescp. This command line is captured
@@ -2200,6 +2227,22 @@ static void executeOnReception()
      * Parameters:
      *   none.
      */
+//JF
+/*
+ dcmmtk placeholders
+ #p: complete path to the output directory into which the last DICOM object was stored (not available with option –ignore though)
+ #f: filename of the current output file (not available with option –ignore though)
+ #a: calling application entity title of the peer Storage SCU
+ #c: called application entity title used by the peer Storage SCU to address storescp
+ #r: calling presentation address, i.e. hostname or IP address of the peer Storage SCU
+ 
+ opendicom placeholders
+ #i: PatientID 00100020
+ #e: StudyInstanceUID 0020000D
+ #s: SeriesInstanceUID 0020000E
+ #m: NumberOfFrames 00280008 (1 or multiframe) IntegerString
+ */
+///JF
 {
   OFString cmd = opt_execOnReception;
 
@@ -2224,6 +2267,18 @@ static void executeOnReception()
 
   // perform substitution for placeholder #r
   cmd = replaceChars( cmd, OFString(CALLING_PRESENTATION_ADDRESS_PLACEHOLDER), callingPresentationAddress );
+
+  // perform substitution for placeholder #i
+  cmd = replaceChars( cmd, OFString(PID_PLACEHOLDER), jfPatientID );
+    
+  // perform substitution for placeholder #e
+  cmd = replaceChars( cmd, OFString(EUID_PLACEHOLDER), jfStudyInstanceUID );
+
+  // perform substitution for placeholder #s
+  cmd = replaceChars( cmd, OFString(SUID_PLACEHOLDER), jfSeriesInstanceUID );
+    
+  // perform substitution for placeholder #m
+  cmd = replaceChars( cmd, OFString(NOF_PLACEHOLDER), jfNumberOfFrames );
 
   // Execute command in a new process
   executeCommand( cmd );
