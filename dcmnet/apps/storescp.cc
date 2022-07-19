@@ -1769,6 +1769,7 @@ storeSCPCallback(
     // is present and the options opt_bitPreserving and opt_ignore are not set.
     if ((imageDataSet != NULL) && (*imageDataSet != NULL) && !opt_bitPreserving && !opt_ignore)
     {
+        
       OFString fileName;
 
       // in case one of the --sort-xxx options is set, we need to perform some particular steps to
@@ -1783,6 +1784,90 @@ storeSCPCallback(
           rsp->DimseStatus = STATUS_STORE_Error_CannotUnderstand;
           return;
         }
+          
+        //jf
+        if (( sopClass == UID_SecondaryCaptureImageStorage ) || ( sopClass == UID_XRayAngiographicImageStorage ))
+        {
+          
+          OFString jfInstitutionName;
+          if ((*imageDataSet)->findAndGetOFString(DCM_InstitutionName, jfInstitutionName).bad() || jfInstitutionName.empty())
+          {
+            OFLOG_ERROR(storescpLogger, "element Institution Name" << DCM_InstitutionName << " absent or empty in data set");
+            rsp->DimseStatus = STATUS_STORE_Error_CannotUnderstand;
+            return;
+          }
+          if  ( jfInstitutionName == "CIVASA - Sanatorio Americano" )
+          {
+
+            OFString jfNumberOfFrames;
+            if ((*imageDataSet)->findAndGetOFString(DCM_NumberOfFrames, jfNumberOfFrames).bad() || jfNumberOfFrames.empty()) jfNumberOfFrames="1";
+            if  ( jfNumberOfFrames != "1" )
+            {
+                OFCondition result = EC_Normal;
+                
+                //create series (based on 00280100 BitsAllocated for monoframe images of any kind
+                OFString jfBitsAllocated;
+                if ((*imageDataSet)->findAndGetOFString(DCM_BitsAllocated, jfBitsAllocated).bad() || jfBitsAllocated.empty())
+                {
+                    OFLOG_ERROR(storescpLogger, "element Bits Allocated " << DCM_BitsAllocated << " absent or empty in data set");
+                    rsp->DimseStatus = STATUS_STORE_Error_CannotUnderstand;
+                    return;
+                }
+
+                //SeriesDate 00080021 = StudyDate 00080020
+                OFString jfStudyDate;
+                if ((*imageDataSet)->findAndGetOFString(DCM_StudyDate, jfStudyDate).bad() || jfStudyDate.empty())
+                {
+                    OFLOG_ERROR(storescpLogger, "element Bits Allocated " << DCM_BitsAllocated << " absent or empty in data set");
+                    rsp->DimseStatus = STATUS_STORE_Error_CannotUnderstand;
+                    return;
+                }
+                dataset->putAndInsertString(DCM_SeriesDate, jfStudyDate);
+                
+                //SeriesDate 00080021 = StudyDate 00080020
+                OFString jfStudyDate;
+                if ((*imageDataSet)->findAndGetOFString(DCM_StudyDate, jfStudyDate).bad() || jfStudyDate.empty())
+                {
+                    OFLOG_ERROR(storescpLogger, "element Bits Allocated " << DCM_BitsAllocated << " absent or empty in data set");
+                    rsp->DimseStatus = STATUS_STORE_Error_CannotUnderstand;
+                    return;
+                }
+                dataset->putAndInsertString(DCM_SeriesDate, jfStudyDate);
+                
+
+                OFString jfSeriesDate;
+                if ((*imageDataSet)->findAndGetOFString(DCM_SeriesDate, jfSeriesDate).bad() || jfSeriesDate.empty())
+                {
+                    OFLOG_ERROR(storescpLogger, "element Bits Allocated " << DCM_BitsAllocated << " absent or empty in data set");
+                    rsp->DimseStatus = STATUS_STORE_Error_CannotUnderstand;
+                    return;
+                }
+
+     
+                
+                
+                
+                char buf[70];
+                
+                // SOP Class UID - always replace
+                if (result.good())
+                
+                // SOP Instance UID - only insert if missing.
+                dcmGenerateUniqueIdentifier(buf);
+                if (result.good()) result = insertStringIfMissing(dataset, DCM_SOPInstanceUID, buf);
+
+
+
+                //SeriesDate 00080021 = StudyDate 00080020
+                //SeriesTime 00080031 = StudyTime 00080030
+                //SeriesDescription 0008103E 'fotofile-16' or 'fotofile-8'
+                //SeriesInstanceUID 0020000E = StudyInstanceUID 0020000D + '.8'  or '.16'
+                //SeriesNumber 00200011 = -8 or -16
+            }
+          }
+        }
+        ///jf
+
 
         // if --sort-on-patientname is active, we need to extract the
         // patient's name (format: last_name^first_name)
