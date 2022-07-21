@@ -2158,7 +2158,6 @@ static OFCondition storeSCP(
    if (dset->findAndGetOFString(DCM_SOPClassUID, jfSOPClassUID).bad() || jfSOPClassUID.empty()) jfSOPClassUID="NOSOPCLASS";
    if (  (jfSOPClassUID == UID_SecondaryCaptureImageStorage)
        ||(jfSOPClassUID == UID_XRayAngiographicImageStorage)
-       ||(jfSOPClassUID == UID_CTImageStorage)
        )
    {
      OFString jfInstitutionName;
