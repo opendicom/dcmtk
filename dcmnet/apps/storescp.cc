@@ -88,16 +88,18 @@ static char rcsid[] = "$dcmtk: " OFFIS_CONSOLE_APPLICATION " v" OFFIS_DCMTK_VERS
 #define CALLED_AETITLE_PLACEHOLDER "#c"
 #define CALLING_PRESENTATION_ADDRESS_PLACEHOLDER "#r"
 //jf
-#define PID_PLACEHOLDER "#i"
+#define PID_PLACEHOLDER "#h"
 #define EUID_PLACEHOLDER "#e"
 #define SUID_PLACEHOLDER "#s"
+#define IUID_PLACEHOLDER "#i"
+#define CUID_PLACEHOLDER "#k"
 #define NOF_PLACEHOLDER "#m"
 ///jf
 static OFCondition processCommands(T_ASC_Association *assoc);
 static OFCondition acceptAssociation(T_ASC_Network *net, DcmAssociationConfiguration& asccfg, OFBool secureConnection);
 static OFCondition echoSCP(T_ASC_Association * assoc, T_DIMSE_Message * msg, T_ASC_PresentationContextID presID);
 static OFCondition storeSCP(T_ASC_Association * assoc, T_DIMSE_Message * msg, T_ASC_PresentationContextID presID);
-static void executeOnReception( const OFString &jfPatientID,  const OFString &jfStudyInstanceUID,  const OFString &jfSeriesInstanceUID,  const OFString &jfNumberOfFrames );
+static void executeOnReception( const OFString &jfPatientID,  const OFString &jfStudyInstanceUID,  const OFString &jfSeriesInstanceUID,  const OFString &jfSOPInstanceUID,  const OFString &jfSOPClassUID,  const OFString &jfNumberOfFrames );
 static void executeEndOfStudyEvents();
 static void executeOnEndOfStudy();
 static void renameOnEndOfStudy();
@@ -2156,6 +2158,7 @@ static OFCondition storeSCP(
    if (metainfo->findAndGetOFString(DCM_SOPClassUID, jfSopClass).bad() || jfSopClass.empty()) jfSopClass="NOSOPCLASS";
    if (  (jfSopClass == UID_SecondaryCaptureImageStorage)
        ||(jfSopClass == UID_XRayAngiographicImageStorage)
+       ||(jfSopClass == UID_CTImageStorage)
        )
    {
      
@@ -2220,23 +2223,31 @@ static OFCondition storeSCP(
   {
       //JF
       
-      OFString p;
-      if (dset->findAndGetOFString(DCM_PatientID, p).bad() || p.empty())
+      OFString h;
+      if (dset->findAndGetOFString(DCM_PatientID, h).bad() || h.empty())
       OFLOG_ERROR(storescpLogger, "element PatientID " << DCM_PatientID << " absent or empty in data set");
       
      OFString e;
-      if (dset->findAndGetOFString(DCM_StudyInstanceUID, e).bad() || e.empty())
+      if (dset->findAndGetOFString(DCM_StudyInstanceUID, h).bad() || e.empty())
       OFLOG_ERROR(storescpLogger, "element StudyInstanceUID " << DCM_StudyInstanceUID << " absent or empty in data set");
       
       OFString s;
       if (dset->findAndGetOFString(DCM_SeriesInstanceUID, s).bad() || s.empty())
           OFLOG_ERROR(storescpLogger, "element SeriesInstanceUID " << DCM_SeriesInstanceUID << " absent or empty in data set");
-      
+     
+     OFString i;
+     if (dset->findAndGetOFString(DCM_SOPInstanceUID, i).bad() || i.empty())
+         OFLOG_ERROR(storescpLogger, "element SOPInstanceUID " << DCM_SeriesInstanceUID << " absent or empty in data set");
+     
+     OFString k;
+     if (dset->findAndGetOFString(DCM_SOPClassUID, k).bad() || k.empty())
+         OFLOG_ERROR(storescpLogger, "element SOPClassUID " << DCM_SeriesInstanceUID << " absent or empty in data set");
+
       OFString f;
       if (dset->findAndGetOFString(DCM_NumberOfFrames, f).bad() || f.empty())
           f = '1';
     
-      executeOnReception( p , e , s , f );
+      executeOnReception( h , e , s , i, k, f );
       ///JF
   }
 
@@ -2285,7 +2296,7 @@ static void executeEndOfStudyEvents()
 }
 
 
-static void executeOnReception( const OFString &jfPatientID,  const OFString &jfStudyInstanceUID,  const OFString &jfSeriesInstanceUID,  const OFString &jfNumberOfFrames )
+static void executeOnReception( const OFString &jfPatientID,  const OFString &jfStudyInstanceUID,  const OFString &jfSeriesInstanceUID,  const OFString &jfSOPInstanceUID,  const OFString &jfSOPClassUID,  const OFString &jfNumberOfFrames )
     /*
      * This function deals with the execution of the command line which was passed
      * to option --exec-on-reception of the storescp. This command line is captured
@@ -2308,9 +2319,11 @@ static void executeOnReception( const OFString &jfPatientID,  const OFString &jf
  #r: calling presentation address, i.e. hostname or IP address of the peer Storage SCU
  
  opendicom placeholders
- #i: PatientID 00100020
+ #h: PatientID 00100020
  #e: StudyInstanceUID 0020000D
  #s: SeriesInstanceUID 0020000E
+ #i: SOPInstanceUID
+ #k: SOPClassUID
  #m: NumberOfFrames 00280008 (1 or multiframe) IntegerString
  */
 ///JF
@@ -2339,7 +2352,7 @@ static void executeOnReception( const OFString &jfPatientID,  const OFString &jf
   // perform substitution for placeholder #r
   cmd = replaceChars( cmd, OFString(CALLING_PRESENTATION_ADDRESS_PLACEHOLDER), callingPresentationAddress );
 
-  // perform substitution for placeholder #i
+  // perform substitution for placeholder #h
   cmd = replaceChars( cmd, OFString(PID_PLACEHOLDER), jfPatientID );
     
   // perform substitution for placeholder #e
@@ -2348,8 +2361,14 @@ static void executeOnReception( const OFString &jfPatientID,  const OFString &jf
   // perform substitution for placeholder #s
   cmd = replaceChars( cmd, OFString(SUID_PLACEHOLDER), jfSeriesInstanceUID );
     
-  // perform substitution for placeholder #m
-  cmd = replaceChars( cmd, OFString(NOF_PLACEHOLDER), jfNumberOfFrames );
+  // perform substitution for placeholder #i
+  cmd = replaceChars( cmd, OFString(NOF_PLACEHOLDER), jfSOPInstanceUID );
+
+   // perform substitution for placeholder #k
+   cmd = replaceChars( cmd, OFString(CUID_PLACEHOLDER), jfSOPClassUID );
+     
+   // perform substitution for placeholder #m
+   cmd = replaceChars( cmd, OFString(NOF_PLACEHOLDER), jfNumberOfFrames );
 
   // Execute command in a new process
   executeCommand( cmd );
