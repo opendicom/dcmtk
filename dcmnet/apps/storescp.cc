@@ -1785,88 +1785,8 @@ storeSCPCallback(
           return;
         }
           
-        //jf
-        if (( sopClass == UID_SecondaryCaptureImageStorage ) || ( sopClass == UID_XRayAngiographicImageStorage ))
-        {
-          
-          OFString jfInstitutionName;
-          if ((*imageDataSet)->findAndGetOFString(DCM_InstitutionName, jfInstitutionName).bad() || jfInstitutionName.empty())
-          {
-            OFLOG_ERROR(storescpLogger, "element Institution Name" << DCM_InstitutionName << " absent or empty in data set");
-            rsp->DimseStatus = STATUS_STORE_Error_CannotUnderstand;
-            return;
-          }
-          if  ( jfInstitutionName == "CIVASA - Sanatorio Americano" )
-          {
+ rsp->DimseStatus = STATUS_STORE_Error_CannotUnderstand;
 
-            OFString jfNumberOfFrames;
-            if ((*imageDataSet)->findAndGetOFString(DCM_NumberOfFrames, jfNumberOfFrames).bad() || jfNumberOfFrames.empty()) jfNumberOfFrames="1";
-            if  ( jfNumberOfFrames != "1" )
-            {
-                OFCondition result = EC_Normal;
-                
-                //create series (based on 00280100 BitsAllocated for monoframe images of any kind
-                OFString jfBitsAllocated;
-                if ((*imageDataSet)->findAndGetOFString(DCM_BitsAllocated, jfBitsAllocated).bad() || jfBitsAllocated.empty())
-                {
-                    OFLOG_ERROR(storescpLogger, "element Bits Allocated " << DCM_BitsAllocated << " absent or empty in data set");
-                    rsp->DimseStatus = STATUS_STORE_Error_CannotUnderstand;
-                    return;
-                }
-
-                //SeriesDate 00080021 = StudyDate 00080020
-                OFString jfStudyDate;
-                if ((*imageDataSet)->findAndGetOFString(DCM_StudyDate, jfStudyDate).bad() || jfStudyDate.empty())
-                {
-                    OFLOG_ERROR(storescpLogger, "element Bits Allocated " << DCM_BitsAllocated << " absent or empty in data set");
-                    rsp->DimseStatus = STATUS_STORE_Error_CannotUnderstand;
-                    return;
-                }
-                dataset->putAndInsertString(DCM_SeriesDate, jfStudyDate);
-                
-                //SeriesDate 00080021 = StudyDate 00080020
-                OFString jfStudyDate;
-                if ((*imageDataSet)->findAndGetOFString(DCM_StudyDate, jfStudyDate).bad() || jfStudyDate.empty())
-                {
-                    OFLOG_ERROR(storescpLogger, "element Bits Allocated " << DCM_BitsAllocated << " absent or empty in data set");
-                    rsp->DimseStatus = STATUS_STORE_Error_CannotUnderstand;
-                    return;
-                }
-                dataset->putAndInsertString(DCM_SeriesDate, jfStudyDate);
-                
-
-                OFString jfSeriesDate;
-                if ((*imageDataSet)->findAndGetOFString(DCM_SeriesDate, jfSeriesDate).bad() || jfSeriesDate.empty())
-                {
-                    OFLOG_ERROR(storescpLogger, "element Bits Allocated " << DCM_BitsAllocated << " absent or empty in data set");
-                    rsp->DimseStatus = STATUS_STORE_Error_CannotUnderstand;
-                    return;
-                }
-
-     
-                
-                
-                
-                char buf[70];
-                
-                // SOP Class UID - always replace
-                if (result.good())
-                
-                // SOP Instance UID - only insert if missing.
-                dcmGenerateUniqueIdentifier(buf);
-                if (result.good()) result = insertStringIfMissing(dataset, DCM_SOPInstanceUID, buf);
-
-
-
-                //SeriesDate 00080021 = StudyDate 00080020
-                //SeriesTime 00080031 = StudyTime 00080030
-                //SeriesDescription 0008103E 'fotofile-16' or 'fotofile-8'
-                //SeriesInstanceUID 0020000E = StudyInstanceUID 0020000D + '.8'  or '.16'
-                //SeriesNumber 00200011 = -8 or -16
-            }
-          }
-        }
-        ///jf
 
 
         // if --sort-on-patientname is active, we need to extract the
@@ -2184,10 +2104,14 @@ static OFCondition storeSCP(
   callbackData.dcmff = &dcmff;
 
   // store SourceApplicationEntityTitle in metaheader
+   
+  //jk
+  DcmMetaInfo *metainfo = dcmff.getMetaInfo();
+
   if (assoc && assoc->params)
   {
     const char *aet = assoc->params->DULparams.callingAPTitle;
-    if (aet) dcmff.getMetaInfo()->putAndInsertString(DCM_SourceApplicationEntityTitle, aet);
+    if (aet) metainfo->putAndInsertString(DCM_SourceApplicationEntityTitle, aet);
   }
 
   // define an address where the information which will be received over the network will be stored
@@ -2227,6 +2151,68 @@ static OFCondition storeSCP(
   }
 #endif
 
+  //jf
+   OFString jfSopClass;
+   if (metainfo->findAndGetOFString(DCM_SOPClassUID, jfSopClass).bad() || jfSopClass.empty()) jfSopClass="NOSOPCLASS";
+   if (  (jfSopClass == UID_SecondaryCaptureImageStorage)
+       ||(jfSopClass == UID_XRayAngiographicImageStorage)
+       )
+   {
+     
+     OFString jfInstitutionName;
+     if (dset->findAndGetOFString(DCM_InstitutionName, jfInstitutionName).bad() || jfInstitutionName.empty()) jfInstitutionName="NOINSTITUTIONNAME";
+     if  ( jfInstitutionName == "CIVASA - Sanatorio Americano" )
+     {
+
+       OFString jfNumberOfFrames;
+       if (dset->findAndGetOFString(DCM_NumberOfFrames, jfNumberOfFrames).bad() || jfNumberOfFrames.empty()) jfNumberOfFrames="1";
+       if  ( jfNumberOfFrames != "1" )
+       {
+          //create series (based on 00280100 BitsAllocated for monoframe images of any kind
+          unsigned short jfBitsAllocatedUS;
+          if (dset->findAndGetUint16(DCM_BitsAllocated, jfBitsAllocatedUS).bad())
+          {
+             jfBitsAllocatedUS=0;
+          }
+          OFString jfBitsAllocated;
+          jfBitsAllocated = printf("%u", jfBitsAllocatedUS);
+
+          //SeriesDate 00080021 = StudyDate 00080020
+          OFString jfStudyDate;
+          dset->findAndGetOFString(DCM_StudyDate, jfStudyDate);
+          dset->findAndDeleteElement(DCM_SeriesDate);
+          dset->putAndInsertOFStringArray(DCM_SeriesDate, jfStudyDate);
+
+          //SeriesTime 00080031 = StudyTime 00080030
+          OFString jfStudyTime;
+          dset->findAndGetOFString(DCM_StudyTime, jfStudyTime);
+          dset->findAndDeleteElement(DCM_SeriesTime);
+          dset->putAndInsertOFStringArray(DCM_SeriesTime, jfStudyTime);
+
+          //SeriesDescription 0008103E 'fotofile-16' or 'fotofile-8'
+          OFString jfSeriesDescription;
+          jfSeriesDescription="fotofile-" + jfBitsAllocated;
+          dset->findAndDeleteElement(DCM_SeriesDescription);
+          dset->putAndInsertOFStringArray(DCM_SeriesDescription, jfSeriesDescription);
+
+          //SeriesInstanceUID 0020000E = StudyInstanceUID 0020000D + '.8'  or '.16'
+          OFString jfStudyInstanceUID;
+          dset->findAndGetOFString(DCM_StudyInstanceUID, jfStudyInstanceUID);
+          OFString jfSeriesInstanceUID;
+          jfSeriesInstanceUID=jfStudyInstanceUID + "." + jfBitsAllocated;
+          dset->findAndDeleteElement(DCM_SeriesInstanceUID);
+          dset->putAndInsertOFStringArray(DCM_SeriesInstanceUID, jfSeriesInstanceUID);
+
+          //SeriesNumber 00200011 = -8 or -16
+          OFString jfSeriesNumber;
+          jfSeriesNumber="-" + jfBitsAllocated;
+          dset->findAndDeleteElement(DCM_SeriesNumber);
+          dset->putAndInsertOFStringArray(DCM_SeriesNumber, jfSeriesNumber);
+
+      }
+    }
+  }
+  ///jf
     
   // if everything was successful so far and option --exec-on-reception is set,
   // we want to execute a certain command which was passed to the application
