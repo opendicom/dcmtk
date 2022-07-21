@@ -2154,11 +2154,11 @@ static OFCondition storeSCP(
 #endif
 
   //jf
-   OFString jfSopClass;
-   if (metainfo->findAndGetOFString(DCM_SOPClassUID, jfSopClass).bad() || jfSopClass.empty()) jfSopClass="NOSOPCLASS";
-   if (  (jfSopClass == UID_SecondaryCaptureImageStorage)
-       ||(jfSopClass == UID_XRayAngiographicImageStorage)
-       ||(jfSopClass == UID_CTImageStorage)
+   OFString jfSOPClassUID;
+   if (dset->findAndGetOFString(DCM_SOPClassUID, jfSOPClassUID).bad() || jfSOPClassUID.empty()) jfSOPClassUID="NOSOPCLASS";
+   if (  (jfSOPClassUID == UID_SecondaryCaptureImageStorage)
+       ||(jfSOPClassUID == UID_XRayAngiographicImageStorage)
+       ||(jfSOPClassUID == UID_CTImageStorage)
        )
    {
      
@@ -2228,7 +2228,7 @@ static OFCondition storeSCP(
       OFLOG_ERROR(storescpLogger, "element PatientID " << DCM_PatientID << " absent or empty in data set");
       
      OFString e;
-      if (dset->findAndGetOFString(DCM_StudyInstanceUID, h).bad() || e.empty())
+      if (dset->findAndGetOFString(DCM_StudyInstanceUID, e).bad() || e.empty())
       OFLOG_ERROR(storescpLogger, "element StudyInstanceUID " << DCM_StudyInstanceUID << " absent or empty in data set");
       
       OFString s;
@@ -2239,15 +2239,11 @@ static OFCondition storeSCP(
      if (dset->findAndGetOFString(DCM_SOPInstanceUID, i).bad() || i.empty())
          OFLOG_ERROR(storescpLogger, "element SOPInstanceUID " << DCM_SeriesInstanceUID << " absent or empty in data set");
      
-     OFString k;
-     if (dset->findAndGetOFString(DCM_SOPClassUID, k).bad() || k.empty())
-         OFLOG_ERROR(storescpLogger, "element SOPClassUID " << DCM_SeriesInstanceUID << " absent or empty in data set");
-
       OFString f;
       if (dset->findAndGetOFString(DCM_NumberOfFrames, f).bad() || f.empty())
           f = '1';
     
-      executeOnReception( h , e , s , i, k, f );
+      executeOnReception( h , e , s , i, jfSOPClassUID, f );
       ///JF
   }
 
@@ -2362,7 +2358,7 @@ static void executeOnReception( const OFString &jfPatientID,  const OFString &jf
   cmd = replaceChars( cmd, OFString(SUID_PLACEHOLDER), jfSeriesInstanceUID );
     
   // perform substitution for placeholder #i
-  cmd = replaceChars( cmd, OFString(NOF_PLACEHOLDER), jfSOPInstanceUID );
+  cmd = replaceChars( cmd, OFString(IUID_PLACEHOLDER), jfSOPInstanceUID );
 
    // perform substitution for placeholder #k
    cmd = replaceChars( cmd, OFString(CUID_PLACEHOLDER), jfSOPClassUID );
