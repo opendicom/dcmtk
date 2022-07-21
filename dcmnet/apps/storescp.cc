@@ -2161,25 +2161,49 @@ static OFCondition storeSCP(
        ||(jfSOPClassUID == UID_CTImageStorage)
        )
    {
-     
      OFString jfInstitutionName;
      if (dset->findAndGetOFString(DCM_InstitutionName, jfInstitutionName).bad() || jfInstitutionName.empty()) jfInstitutionName="NOINSTITUTIONNAME";
-     if  ( jfInstitutionName == "CIVASA - Sanatorio Americano" )
+     if  ( jfInstitutionName == "CIVA SA - Sanatorio Americano" )
      {
-
        OFString jfNumberOfFrames;
        if (dset->findAndGetOFString(DCM_NumberOfFrames, jfNumberOfFrames).bad() || jfNumberOfFrames.empty()) jfNumberOfFrames="1";
-       if  ( jfNumberOfFrames != "1" )
-       {
-          //create series (based on 00280100 BitsAllocated for monoframe images of any kind
-          unsigned short jfBitsAllocatedUS;
-          if (dset->findAndGetUint16(DCM_BitsAllocated, jfBitsAllocatedUS).bad())
-          {
-             jfBitsAllocatedUS=0;
-          }
-          OFString jfBitsAllocated;
-          jfBitsAllocated = printf("%u", jfBitsAllocatedUS);
+       //OFLOG_INFO(storescpLogger, "NumberOfFrames: " + jfNumberOfFrames);
 
+      if  ( jfNumberOfFrames == "1" )
+      {
+         //create series (based on 00280100 BitsAllocated for monoframe images of any kind
+         unsigned short jfBitsAllocatedUS;
+         if (dset->findAndGetUint16(DCM_BitsAllocated, jfBitsAllocatedUS).bad()) jfBitsAllocatedUS=0;
+          
+         OFString jfBitsAllocated;
+         char *str;
+         str = (char *) malloc(2);
+         sprintf(str, "%u", jfBitsAllocatedUS);
+         jfBitsAllocated=str;
+         //SeriesDescription 0008103E 'fotofile-16' or 'fotofile-8'
+         OFString jfSeriesDescription;
+         jfSeriesDescription="fotofile-" + jfBitsAllocated;
+         dset->findAndDeleteElement(DCM_SeriesDescription);
+         dset->putAndInsertOFStringArray(DCM_SeriesDescription, jfSeriesDescription);
+         
+         //SeriesInstanceUID 0020000E = StudyInstanceUID 0020000D + '.8'  or '.16'
+         OFString jfStudyInstanceUID;
+         dset->findAndGetOFString(DCM_StudyInstanceUID, jfStudyInstanceUID);
+         OFString jfSeriesInstanceUID;
+         jfSeriesInstanceUID=jfStudyInstanceUID + "." + jfBitsAllocated;
+         dset->findAndDeleteElement(DCM_SeriesInstanceUID);
+         dset->putAndInsertOFStringArray(DCM_SeriesInstanceUID, jfSeriesInstanceUID);
+         
+         //SeriesNumber 00200011 = -8 or -16
+         OFString jfSeriesNumber;
+         jfSeriesNumber="-" + jfBitsAllocated;
+         dset->findAndDeleteElement(DCM_SeriesNumber);
+         dset->putAndInsertOFStringArray(DCM_SeriesNumber, jfSeriesNumber);
+         OFString jfSeriesyNumber2;
+         dset->findAndGetOFString(DCM_SeriesNumber, jfSeriesyNumber2);
+         //OFLOG_INFO(storescpLogger, "SeriesNumber: " + jfSeriesyNumber2);
+         free(str);
+         
           //SeriesDate 00080021 = StudyDate 00080020
           OFString jfStudyDate;
           dset->findAndGetOFString(DCM_StudyDate, jfStudyDate);
@@ -2191,26 +2215,6 @@ static OFCondition storeSCP(
           dset->findAndGetOFString(DCM_StudyTime, jfStudyTime);
           dset->findAndDeleteElement(DCM_SeriesTime);
           dset->putAndInsertOFStringArray(DCM_SeriesTime, jfStudyTime);
-
-          //SeriesDescription 0008103E 'fotofile-16' or 'fotofile-8'
-          OFString jfSeriesDescription;
-          jfSeriesDescription="fotofile-" + jfBitsAllocated;
-          dset->findAndDeleteElement(DCM_SeriesDescription);
-          dset->putAndInsertOFStringArray(DCM_SeriesDescription, jfSeriesDescription);
-
-          //SeriesInstanceUID 0020000E = StudyInstanceUID 0020000D + '.8'  or '.16'
-          OFString jfStudyInstanceUID;
-          dset->findAndGetOFString(DCM_StudyInstanceUID, jfStudyInstanceUID);
-          OFString jfSeriesInstanceUID;
-          jfSeriesInstanceUID=jfStudyInstanceUID + "." + jfBitsAllocated;
-          dset->findAndDeleteElement(DCM_SeriesInstanceUID);
-          dset->putAndInsertOFStringArray(DCM_SeriesInstanceUID, jfSeriesInstanceUID);
-
-          //SeriesNumber 00200011 = -8 or -16
-          OFString jfSeriesNumber;
-          jfSeriesNumber="-" + jfBitsAllocated;
-          dset->findAndDeleteElement(DCM_SeriesNumber);
-          dset->putAndInsertOFStringArray(DCM_SeriesNumber, jfSeriesNumber);
 
       }
     }
