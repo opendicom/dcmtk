@@ -90,6 +90,7 @@ static char rcsid[] = "$dcmtk: " OFFIS_CONSOLE_APPLICATION " v" OFFIS_DCMTK_VERS
 //jf
 #define PID_PLACEHOLDER "#h"
 #define EUID_PLACEHOLDER "#e"
+#define ACN_PLACEHOLDER "#n"
 #define SUID_PLACEHOLDER "#s"
 #define IUID_PLACEHOLDER "#i"
 #define CUID_PLACEHOLDER "#k"
@@ -99,7 +100,7 @@ static OFCondition processCommands(T_ASC_Association *assoc);
 static OFCondition acceptAssociation(T_ASC_Network *net, DcmAssociationConfiguration& asccfg, OFBool secureConnection);
 static OFCondition echoSCP(T_ASC_Association * assoc, T_DIMSE_Message * msg, T_ASC_PresentationContextID presID);
 static OFCondition storeSCP(T_ASC_Association * assoc, T_DIMSE_Message * msg, T_ASC_PresentationContextID presID);
-static void executeOnReception( const OFString &jfPatientID,  const OFString &jfStudyInstanceUID,  const OFString &jfSeriesInstanceUID,  const OFString &jfSOPInstanceUID,  const OFString &jfSOPClassUID,  const OFString &jfNumberOfFrames );
+static void executeOnReception( const OFString &jfPatientID,  const OFString &jfStudyInstanceUID,  const OFString &jfAccessionNumber,  const OFString &jfSeriesInstanceUID,  const OFString &jfSOPInstanceUID,  const OFString &jfSOPClassUID,  const OFString &jfNumberOfFrames );
 static void executeEndOfStudyEvents();
 static void executeOnEndOfStudy();
 static void renameOnEndOfStudy();
@@ -2233,7 +2234,16 @@ static OFCondition storeSCP(
      OFString e;
       if (dset->findAndGetOFString(DCM_StudyInstanceUID, e).bad() || e.empty())
       OFLOG_ERROR(storescpLogger, "element StudyInstanceUID " << DCM_StudyInstanceUID << " absent or empty in data set");
-      
+     
+     OFString n;
+     OFString nn;
+     if (dset->findAndGetOFString(DCM_AccessionNumber, n).bad() || n.empty())
+     {
+        OFLOG_ERROR(storescpLogger, "element AccessionNumber " << DCM_StudyInstanceUID << " absent or empty in data set");
+        nn = "''";
+     }
+     else nn = "'" + n + "'";
+
       OFString s;
       if (dset->findAndGetOFString(DCM_SeriesInstanceUID, s).bad() || s.empty())
           OFLOG_ERROR(storescpLogger, "element SeriesInstanceUID " << DCM_SeriesInstanceUID << " absent or empty in data set");
@@ -2246,7 +2256,7 @@ static OFCondition storeSCP(
       if (dset->findAndGetOFString(DCM_NumberOfFrames, f).bad() || f.empty())
           f = '1';
     
-      executeOnReception( h , e , s , i, jfSOPClassUID, f );
+      executeOnReception( h , e , nn , s , i, jfSOPClassUID, f );
       ///JF
   }
 
@@ -2295,7 +2305,7 @@ static void executeEndOfStudyEvents()
 }
 
 
-static void executeOnReception( const OFString &jfPatientID,  const OFString &jfStudyInstanceUID,  const OFString &jfSeriesInstanceUID,  const OFString &jfSOPInstanceUID,  const OFString &jfSOPClassUID,  const OFString &jfNumberOfFrames )
+static void executeOnReception( const OFString &jfPatientID,  const OFString &jfStudyInstanceUID,  const OFString &jfAccessionNumber,  const OFString &jfSeriesInstanceUID,  const OFString &jfSOPInstanceUID,  const OFString &jfSOPClassUID,  const OFString &jfNumberOfFrames )
     /*
      * This function deals with the execution of the command line which was passed
      * to option --exec-on-reception of the storescp. This command line is captured
@@ -2320,6 +2330,7 @@ static void executeOnReception( const OFString &jfPatientID,  const OFString &jf
  opendicom placeholders
  #h: PatientID 00100020
  #e: StudyInstanceUID 0020000D
+ #n: AccessionNumber 00080050
  #s: SeriesInstanceUID 0020000E
  #i: SOPInstanceUID
  #k: SOPClassUID
@@ -2356,6 +2367,9 @@ static void executeOnReception( const OFString &jfPatientID,  const OFString &jf
     
   // perform substitution for placeholder #e
   cmd = replaceChars( cmd, OFString(EUID_PLACEHOLDER), jfStudyInstanceUID );
+   
+  // perform substitution for placeholder #n
+  cmd = replaceChars( cmd, OFString(ACN_PLACEHOLDER), jfAccessionNumber );
 
   // perform substitution for placeholder #s
   cmd = replaceChars( cmd, OFString(SUID_PLACEHOLDER), jfSeriesInstanceUID );
