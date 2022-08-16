@@ -2240,12 +2240,22 @@ static OFCondition storeSCP(
       //JF
       
       OFString d;
+      OFString dd;
       if (dset->findAndGetOFString(DCM_StudyDate, d).bad() || d.empty())
+      {
           OFLOG_ERROR(storescpLogger, "element StudyDate " << DCM_StudyDate << " absent or empty in data set");
-      
+          dd="-";
+      }
+      else dd=d;
+
       OFString t;
+      OFString tt;
       if (dset->findAndGetOFString(DCM_StudyTime, t).bad() || t.empty())
+      {
           OFLOG_ERROR(storescpLogger, "element StudyTime " << DCM_StudyTime << " absent or empty in data set");
+          tt="-";
+      }
+      else tt=t;
 
       OFString h;
       OFString hh;
@@ -2253,7 +2263,7 @@ static OFCondition storeSCP(
       
       {
           OFLOG_ERROR(storescpLogger, "element PatientID " << DCM_PatientID << " absent or empty in data set");
-          hh = "'-'";
+          hh = "-";
       }
       else hh = "'" + h + "'";
 
@@ -2263,11 +2273,7 @@ static OFCondition storeSCP(
      
      OFString n;
      OFString nn;
-     if (dset->findAndGetOFString(DCM_AccessionNumber, n).bad() || n.empty())
-     {
-        OFLOG_ERROR(storescpLogger, "element AccessionNumber " << DCM_StudyInstanceUID << " absent or empty in data set");
-        nn = "'-'";
-     }
+     if (dset->findAndGetOFString(DCM_AccessionNumber, n).bad() || n.empty()) nn = "-";
      else nn = "'" + n + "'";
 
       OFString s;
@@ -2282,9 +2288,9 @@ static OFCondition storeSCP(
       if (dset->findAndGetOFString(DCM_NumberOfFrames, f).bad() || f.empty())
       {
           //is it an image
-          int i;
-          for (i = 0; i < numberOfDcmImageSOPClassUIDs; i++) {
-              if (dcmImageSOPClassUIDs[i] != NULL && strcmp( jfSOPClassUID.data(), dcmImageSOPClassUIDs[i]) == 0)
+          int j;
+          for (j = 0; j < numberOfDcmImageSOPClassUIDs; j++) {
+              if (strcmp( jfSOPClassUID.data(), dcmImageSOPClassUIDs[j]) == 0)
               {
                   break;
               }
@@ -2294,7 +2300,7 @@ static OFCondition storeSCP(
           else f = '1';//image
       }
     
-      executeOnReception( d, t, h , e , nn , s , i, jfSOPClassUID, f );
+      executeOnReception( dd, tt, hh , e , nn , s , i, jfSOPClassUID, f );
       ///JF
   }
 
