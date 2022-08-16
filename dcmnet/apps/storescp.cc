@@ -1784,7 +1784,96 @@ storeSCPCallback(
     // is present and the options opt_bitPreserving and opt_ignore are not set.
     if ((imageDataSet != NULL) && (*imageDataSet != NULL) && !opt_bitPreserving && !opt_ignore)
     {
-        
+
+       //jf
+       OFString jfSOPClassUID;
+       if ((*imageDataSet)->findAndGetOFString(DCM_SOPClassUID, jfSOPClassUID).bad() || jfSOPClassUID.empty()) jfSOPClassUID="NOSOPCLASS";
+       if (  (jfSOPClassUID == UID_SecondaryCaptureImageStorage)
+           ||(jfSOPClassUID == UID_XRayAngiographicImageStorage)
+           )
+       {
+           OFString jfInstitutionName;
+           if ((*imageDataSet)->findAndGetOFString(DCM_InstitutionName, jfInstitutionName).bad() || jfInstitutionName.empty()) jfInstitutionName="NOINSTITUTIONNAME";
+           if  ( jfInstitutionName == "CIVASA - Sanatorio Americano" )
+           {
+              
+               OFString jfNumberOfFrames;
+               if ((*imageDataSet)->findAndGetOFString(DCM_NumberOfFrames, jfNumberOfFrames).bad() || jfNumberOfFrames.empty())
+               {
+                  //is it an image?
+                  int j;
+                  for (j = 0; j < numberOfDcmImageSOPClassUIDs; j++) {
+                      if (strcmp( jfSOPClassUID.data(), dcmImageSOPClassUIDs[j]) == 0)
+                      {
+                          break;
+                      }
+                  }
+                  
+                  if ( j == numberOfDcmImageSOPClassUIDs) jfNumberOfFrames = '0'; //other
+                  else jfNumberOfFrames = '1';//image
+               }
+
+                             
+               if  ( jfNumberOfFrames == "1" )
+               {
+                   //create series (based on 00280100 BitsAllocated for monoframe images of any kind
+                   unsigned short jfBitsAllocatedUS;
+                   if ((*imageDataSet)->findAndGetUint16(DCM_BitsAllocated, jfBitsAllocatedUS).bad()) jfBitsAllocatedUS=0;
+                   
+                   OFString jfBitsAllocated;
+                   char *str;
+                   str = (char *) malloc(2);
+                   sprintf(str, "%u", jfBitsAllocatedUS);
+                   jfBitsAllocated=str;
+                   //SeriesDescription 0008103E 'fotofile-16' or 'fotofile-8'
+                   OFString jfSeriesDescription;
+                   jfSeriesDescription="fotofile-" + jfBitsAllocated;
+                   //(*imageDataSet)->findAndDeleteElement(DCM_SeriesDescription);
+                   //delete (*imageDataSet)->remove(DCM_SeriesDescription);
+                   //(*imageDataSet)->putAndInsertOFStringArray(DCM_SeriesDescription, jfSeriesDescription);
+                   //char prueba[]="series description";
+                   (*imageDataSet)->putAndInsertString(DCM_SeriesDescription, jfSeriesDescription.data());
+                   
+                   //SeriesInstanceUID 0020000E = StudyInstanceUID 0020000D + '.8'  or '.16'
+                   OFString jfStudyInstanceUID;
+                   (*imageDataSet)->findAndGetOFString(DCM_StudyInstanceUID, jfStudyInstanceUID);
+                   OFString jfSeriesInstanceUID;
+                   jfSeriesInstanceUID=jfStudyInstanceUID + "." + jfBitsAllocated;
+                   //(*imageDataSet)->findAndDeleteElement(DCM_SeriesInstanceUID);
+                   //delete (*imageDataSet)->remove(DCM_SeriesInstanceUID);
+                   //(*imageDataSet)->putAndInsertOFStringArray(DCM_SeriesInstanceUID, jfSeriesInstanceUID);
+                   (*imageDataSet)->putAndInsertString(DCM_SeriesInstanceUID, jfSeriesInstanceUID.data());
+                   
+                   //SeriesNumber 00200011 = -8 or -16
+                   OFString jfSeriesNumber;
+                   jfSeriesNumber="-" + jfBitsAllocated;
+                   //(*imageDataSet)->findAndDeleteElement(DCM_SeriesNumber);
+                   //delete (*imageDataSet)->remove(DCM_SeriesNumber);
+                   (*imageDataSet)->putAndInsertString(DCM_SeriesNumber, jfSeriesNumber.data());
+                   free(str);
+                   
+                   //SeriesDate 00080021 = StudyDate 00080020
+                   OFString jfStudyDate;
+                   (*imageDataSet)->findAndGetOFString(DCM_StudyDate, jfStudyDate);
+                   //(*imageDataSet)->findAndDeleteElement(DCM_SeriesDate);
+                   //delete (*imageDataSet)->remove(DCM_SeriesDate);
+                   (*imageDataSet)->putAndInsertString(DCM_SeriesDate, jfStudyDate.data());
+                   
+                   //SeriesTime 00080031 = StudyTime 00080030
+                   OFString jfStudyTime;
+                   (*imageDataSet)->findAndGetOFString(DCM_StudyTime, jfStudyTime);
+                   //(*imageDataSet)->findAndDeleteElement(DCM_SeriesTime);
+                   //delete (*imageDataSet)->remove(DCM_SeriesTime);
+                   //(*imageDataSet)->putAndInsertOFStringArray(DCM_SeriesTime, jfStudyTime);
+                   (*imageDataSet)->putAndInsertString(DCM_SeriesTime, jfStudyTime.data());
+                   
+               }
+           }
+       }
+       ///jf
+
+       
+       
       OFString fileName;
 
       // in case one of the --sort-xxx options is set, we need to perform some particular steps to
@@ -2163,71 +2252,7 @@ static OFCondition storeSCP(
   }
 #endif
 
-  //jf
-   OFString jfSOPClassUID;
-   if (dset->findAndGetOFString(DCM_SOPClassUID, jfSOPClassUID).bad() || jfSOPClassUID.empty()) jfSOPClassUID="NOSOPCLASS";
-   if (  (jfSOPClassUID == UID_SecondaryCaptureImageStorage)
-       ||(jfSOPClassUID == UID_XRayAngiographicImageStorage)
-       )
-   {
-     OFString jfInstitutionName;
-     if (dset->findAndGetOFString(DCM_InstitutionName, jfInstitutionName).bad() || jfInstitutionName.empty()) jfInstitutionName="NOINSTITUTIONNAME";
-     if  ( jfInstitutionName == "CIVA SA - Sanatorio Americano" )
-     {
-       OFString jfNumberOfFrames;
-       if (dset->findAndGetOFString(DCM_NumberOfFrames, jfNumberOfFrames).bad() || jfNumberOfFrames.empty()) jfNumberOfFrames="1";
-       //OFLOG_INFO(storescpLogger, "NumberOfFrames: " + jfNumberOfFrames);
 
-      if  ( jfNumberOfFrames == "1" )
-      {
-         //create series (based on 00280100 BitsAllocated for monoframe images of any kind
-         unsigned short jfBitsAllocatedUS;
-         if (dset->findAndGetUint16(DCM_BitsAllocated, jfBitsAllocatedUS).bad()) jfBitsAllocatedUS=0;
-          
-         OFString jfBitsAllocated;
-         char *str;
-         str = (char *) malloc(2);
-         sprintf(str, "%u", jfBitsAllocatedUS);
-         jfBitsAllocated=str;
-         //SeriesDescription 0008103E 'fotofile-16' or 'fotofile-8'
-         OFString jfSeriesDescription;
-         jfSeriesDescription="fotofile-" + jfBitsAllocated;
-         dset->findAndDeleteElement(DCM_SeriesDescription);
-         dset->putAndInsertOFStringArray(DCM_SeriesDescription, jfSeriesDescription);
-         
-         //SeriesInstanceUID 0020000E = StudyInstanceUID 0020000D + '.8'  or '.16'
-         OFString jfStudyInstanceUID;
-         dset->findAndGetOFString(DCM_StudyInstanceUID, jfStudyInstanceUID);
-         OFString jfSeriesInstanceUID;
-         jfSeriesInstanceUID=jfStudyInstanceUID + "." + jfBitsAllocated;
-         dset->findAndDeleteElement(DCM_SeriesInstanceUID);
-         dset->putAndInsertOFStringArray(DCM_SeriesInstanceUID, jfSeriesInstanceUID);
-         
-         //SeriesNumber 00200011 = -8 or -16
-         OFString jfSeriesNumber;
-         jfSeriesNumber="-" + jfBitsAllocated;
-         dset->findAndDeleteElement(DCM_SeriesNumber);
-         dset->putAndInsertOFStringArray(DCM_SeriesNumber, jfSeriesNumber);
-         OFString jfSeriesyNumber2;
-         dset->findAndGetOFString(DCM_SeriesNumber, jfSeriesyNumber2);
-         //OFLOG_INFO(storescpLogger, "SeriesNumber: " + jfSeriesyNumber2);
-         free(str);
-         
-          //SeriesDate 00080021 = StudyDate 00080020
-          OFString jfStudyDate;
-          dset->findAndGetOFString(DCM_StudyDate, jfStudyDate);
-          dset->findAndDeleteElement(DCM_SeriesDate);
-          dset->putAndInsertOFStringArray(DCM_SeriesDate, jfStudyDate);
-
-          //SeriesTime 00080031 = StudyTime 00080030
-          OFString jfStudyTime;
-          dset->findAndGetOFString(DCM_StudyTime, jfStudyTime);
-          dset->findAndDeleteElement(DCM_SeriesTime);
-          dset->putAndInsertOFStringArray(DCM_SeriesTime, jfStudyTime);
-
-      }
-    }
-  }
   ///jf
     
   // if everything was successful so far and option --exec-on-reception is set,
@@ -2280,14 +2305,17 @@ static OFCondition storeSCP(
      OFString i;
      if (dset->findAndGetOFString(DCM_SOPInstanceUID, i).bad() || i.empty())
          OFLOG_ERROR(storescpLogger, "element SOPInstanceUID " << DCM_SOPInstanceUID << " absent or empty in data set");
-     
+
+     OFString k;
+     if (dset->findAndGetOFString(DCM_SOPClassUID, k).bad() || k.empty())
+         OFLOG_ERROR(storescpLogger, "element SOPClassUID " << DCM_SOPClassUID << " absent or empty in data set");
       OFString f;
       if (dset->findAndGetOFString(DCM_NumberOfFrames, f).bad() || f.empty())
       {
           //is it an image
           int j;
           for (j = 0; j < numberOfDcmImageSOPClassUIDs; j++) {
-              if (strcmp( jfSOPClassUID.data(), dcmImageSOPClassUIDs[j]) == 0)
+              if (strcmp( k.data(), dcmImageSOPClassUIDs[j]) == 0)
               {
                   break;
               }
@@ -2297,7 +2325,7 @@ static OFCondition storeSCP(
           else f = '1';//image
       }
     
-      executeOnReception( dd, tt, hh , e , nn , s , i, jfSOPClassUID, f );
+      executeOnReception( dd, tt, hh , e , nn , s , i, k, f );
       ///JF
   }
 
