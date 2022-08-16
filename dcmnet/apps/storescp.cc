@@ -1799,9 +1799,6 @@ storeSCPCallback(
           rsp->DimseStatus = STATUS_STORE_Error_CannotUnderstand;
           return;
         }
-          
- rsp->DimseStatus = STATUS_STORE_Error_CannotUnderstand;
-
 
 
         // if --sort-on-patientname is active, we need to extract the
