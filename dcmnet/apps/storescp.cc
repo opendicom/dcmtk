@@ -1830,29 +1830,32 @@ storeSCPCallback(
                    sprintf(str2, "%u", jfBitsAllocatedUS);
                    jfBitsAllocated=str2;
                    //SeriesDescription 0008103E 'fotofile' or 'fotofile'
+                   /*
                    OFString jfSeriesDescription;
                    if (jfBitsAllocated == 8)       jfSeriesDescription="Photos (small)";
                    else if (jfBitsAllocated == 16) jfSeriesDescription="Photos (large)";
                    else                            jfSeriesDescription="Photos";
                    (*imageDataSet)->putAndInsertString(DCM_SeriesDescription, jfSeriesDescription.data());
-
-                   OFString jfStudyInstanceUID;
-                   (*imageDataSet)->findAndGetOFString(DCM_StudyInstanceUID, jfStudyInstanceUID);
-                   OFString jfNewStudyInstanceUID;
-                   jfNewStudyInstanceUID=jfStudyInstanceUID + "." + jfBitsAllocated;
-                   (*imageDataSet)->putAndInsertString(DCM_StudyInstanceUID, jfNewStudyInstanceUID.data());
-                   OFString jfNewSeriesInstanceUID;
-                   jfNewSeriesInstanceUID=jfNewStudyInstanceUID + "." + jfBitsAllocated;
-                   (*imageDataSet)->putAndInsertString(DCM_SeriesInstanceUID, jfNewSeriesInstanceUID.data());
+*/
+                   OFString jfAcquisitionTime;
+                   (*imageDataSet)->findAndGetOFString(DCM_AcquisitionTime, jfAcquisitionTime);
+                   (*imageDataSet)->putAndInsertString(DCM_InstanceNumber, jfAcquisitionTime.data());
                    
-                   //SeriesNumber 00200011 = -8 or -16
+                   /*SeriesNumber 00200011 = -8 or -16
                    OFString jfSeriesNumber;
                    jfSeriesNumber="-" + jfBitsAllocated;
                    //(*imageDataSet)->findAndDeleteElement(DCM_SeriesNumber);
                    //delete (*imageDataSet)->remove(DCM_SeriesNumber);
                    (*imageDataSet)->putAndInsertString(DCM_SeriesNumber, jfSeriesNumber.data());
+                    */
                    free(str2);
-                   
+
+                   OFString jfSeriesNumber;
+                   jfSeriesNumber="-" + jfBitsAllocated;
+                   //(*imageDataSet)->findAndDeleteElement(DCM_SeriesNumber);
+                   //delete (*imageDataSet)->remove(DCM_SeriesNumber);
+                   (*imageDataSet)->putAndInsertString(DCM_SeriesNumber, jfSeriesNumber.data());
+
                    //SeriesDate 00080021 = StudyDate 00080020
                    OFString jfStudyDate;
                    (*imageDataSet)->findAndGetOFString(DCM_StudyDate, jfStudyDate);
