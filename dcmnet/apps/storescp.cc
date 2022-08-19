@@ -88,6 +88,7 @@ static char rcsid[] = "$dcmtk: " OFFIS_CONSOLE_APPLICATION " v" OFFIS_DCMTK_VERS
 #define CALLED_AETITLE_PLACEHOLDER "#c"
 #define CALLING_PRESENTATION_ADDRESS_PLACEHOLDER "#r"
 //jf
+#define TS_PLACEHOLDER "#x"
 #define EDA_PLACEHOLDER "#d"
 #define ETM_PLACEHOLDER "#t"
 #define PID_PLACEHOLDER "#h"
@@ -97,12 +98,14 @@ static char rcsid[] = "$dcmtk: " OFFIS_CONSOLE_APPLICATION " v" OFFIS_DCMTK_VERS
 #define IUID_PLACEHOLDER "#i"
 #define CUID_PLACEHOLDER "#k"
 #define NOF_PLACEHOLDER "#m"
+#define SCS_PLACEHOLDER "#y"
 ///jf
 static OFCondition processCommands(T_ASC_Association *assoc);
 static OFCondition acceptAssociation(T_ASC_Network *net, DcmAssociationConfiguration& asccfg, OFBool secureConnection);
 static OFCondition echoSCP(T_ASC_Association * assoc, T_DIMSE_Message * msg, T_ASC_PresentationContextID presID);
 static OFCondition storeSCP(T_ASC_Association * assoc, T_DIMSE_Message * msg, T_ASC_PresentationContextID presID);
 static void executeOnReception(
+                               const OFString &jfPresid,
                                const OFString &jfStudyDate,
                                const OFString &jfStudyTime,
                                const OFString &jfPatientID,
@@ -111,7 +114,9 @@ static void executeOnReception(
                                const OFString &jfSeriesInstanceUID,
                                const OFString &jfSOPInstanceUID,
                                const OFString &jfSOPClassUID,
-                               const OFString &jfNumberOfFrames
+                               const OFString &jfNumberOfFrames,
+                               const OFString &jfSpecficCharacterSet
+
                                );
 static void executeEndOfStudyEvents();
 static void executeOnEndOfStudy();
@@ -2261,6 +2266,12 @@ static OFCondition storeSCP(
   {
       //JF
       
+      OFString x;
+      if (metainfo->findAndGetOFString(DCM_TransferSyntaxUID, x).bad() || x.empty())
+      {
+          OFLOG_ERROR(storescpLogger, "transfer syntax UID " << DCM_TransferSyntaxUID << " absent or empty in data set");
+      }
+      
       OFString d;
       OFString dd;
       if (dset->findAndGetOFString(DCM_StudyDate, d).bad() || d.empty())
@@ -2324,8 +2335,12 @@ static OFCondition storeSCP(
           if ( i == numberOfDcmImageSOPClassUIDs) f = '0'; //other
           else f = '1';//image
       }
-    
-      executeOnReception( dd, tt, hh , e , nn , s , i, k, f );
+
+      OFString y;
+      if (dset->findAndGetOFString(DCM_SpecificCharacterSet, y).bad() || y.empty())
+          OFLOG_ERROR(storescpLogger, "element Specific Character Set " << DCM_SpecificCharacterSet << " absent or empty in data set");
+
+      executeOnReception( x, dd, tt, hh , e , nn , s , i, k, f, y );
       ///JF
   }
 
@@ -2374,6 +2389,7 @@ static void executeEndOfStudyEvents()
 }
 
 static void executeOnReception(
+                               const OFString &jfPresid,
                                const OFString &jfStudyDate,
                                const OFString &jfStudyTime,
                                const OFString &jfPatientID,
@@ -2382,7 +2398,8 @@ static void executeOnReception(
                                const OFString &jfSeriesInstanceUID,
                                const OFString &jfSOPInstanceUID,
                                const OFString &jfSOPClassUID,
-                               const OFString &jfNumberOfFrames
+                               const OFString &jfNumberOfFrames,
+                               const OFString &jfSpecficCharacterSet
                                )
     /*
      * This function deals with the execution of the command line which was passed
@@ -2406,15 +2423,17 @@ static void executeOnReception(
  #r: calling presentation address, i.e. hostname or IP address of the peer Storage SCU
  
  opendicom placeholders
- #d: StudyDate          00080020
- #t: StudyTime          00080030
- #h: PatientID          00100020
- #e: StudyInstanceUID   0020000D
- #n: AccessionNumber    00080050
- #s: SeriesInstanceUID  0020000E
- #i: SOPInstanceUID     00080018
- #k: SOPClassUID        00080016
- #m: NumberOfFrames     00280008 (1 or multiframe) IntegerString
+ #x: PresentationID       00020010
+ #d: StudyDate            00080020
+ #t: StudyTime            00080030
+ #h: PatientID            00100020
+ #e: StudyInstanceUID     0020000D
+ #n: AccessionNumber      00080050
+ #s: SeriesInstanceUID    0020000E
+ #i: SOPInstanceUID       00080018
+ #k: SOPClassUID          00080016
+ #m: NumberOfFrames       00280008 (1 or multiframe) IntegerString
+ #y: SpecificCharacterSet 00080005
  */
 ///JF
 {
@@ -2443,6 +2462,9 @@ static void executeOnReception(
   cmd = replaceChars( cmd, OFString(CALLING_PRESENTATION_ADDRESS_PLACEHOLDER), callingPresentationAddress );
 
   // perform substitution for placeholder #d
+  cmd = replaceChars( cmd, OFString(TS_PLACEHOLDER), jfPresid );
+
+  // perform substitution for placeholder #d
   cmd = replaceChars( cmd, OFString(EDA_PLACEHOLDER), jfStudyDate );
     
   // perform substitution for placeholder #t
@@ -2468,6 +2490,9 @@ static void executeOnReception(
      
    // perform substitution for placeholder #m
    cmd = replaceChars( cmd, OFString(NOF_PLACEHOLDER), jfNumberOfFrames );
+    
+   // perform substitution for placeholder #y
+   cmd = replaceChars( cmd, OFString(SCS_PLACEHOLDER), jfSpecficCharacterSet );
 
   // Execute command in a new process
   executeCommand( cmd );
