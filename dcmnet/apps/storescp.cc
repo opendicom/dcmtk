@@ -1801,7 +1801,33 @@ storeSCPCallback(
            if ((*imageDataSet)->findAndGetOFString(DCM_InstitutionName, jfInstitutionName).bad() || jfInstitutionName.empty()) jfInstitutionName="NOINSTITUTIONNAME";
            if  ( jfInstitutionName == "CIVASA - Sanatorio Americano" )
            {
-              
+               
+ //two studies (baja calidad - alta calidad)
+               
+               unsigned short jfBitsAllocatedUS;
+               if ((*imageDataSet)->findAndGetUint16(DCM_BitsAllocated, jfBitsAllocatedUS).bad()) jfBitsAllocatedUS=0;
+               OFString jfBitsAllocated;
+               char *str3;
+               str3 = (char *) malloc(3);
+               sprintf(str3, "%u", jfBitsAllocatedUS);
+               jfBitsAllocated=str3;
+  
+               
+               OFString jfStudyInstanceUID;
+               OFString jfNewStudyInstanceUID;
+               (*imageDataSet)->findAndGetOFString(DCM_StudyInstanceUID, jfStudyInstanceUID);
+               jfNewStudyInstanceUID=jfStudyInstanceUID + "." + jfBitsAllocated;
+               (*imageDataSet)->putAndInsertOFStringArray(DCM_StudyInstanceUID, jfNewStudyInstanceUID);
+               
+ //StudyDescription
+               OFString jfStudyDescription;
+               if (jfBitsAllocatedUS==8)       jfStudyDescription="angio baja res";
+               else if (jfBitsAllocatedUS==16) jfStudyDescription="angio alta res";
+               else                            jfStudyDescription="angio";
+               
+               (*imageDataSet)->putAndInsertOFStringArray(DCM_StudyDescription, jfStudyDescription);
+           
+               
                OFString jfNumberOfFrames;
                if ((*imageDataSet)->findAndGetOFString(DCM_NumberOfFrames, jfNumberOfFrames).bad() || jfNumberOfFrames.empty())
                {
@@ -1818,43 +1844,30 @@ storeSCPCallback(
                   else jfNumberOfFrames = '1';//image
                }
 
+               OFString jfSeriesNumber;
+               (*imageDataSet)->findAndGetOFString(DCM_SeriesNumber, jfSeriesNumber);
+               
+               OFString jfAcquisitionTime;
+               OFString jfAcquisitionTimeMiliseconds;
+               (*imageDataSet)->findAndGetOFString(DCM_AcquisitionTime, jfAcquisitionTimeMiliseconds);
+               
+               jfAcquisitionTime=jfAcquisitionTimeMiliseconds.substr(0,6);
+               OFString jfNewSeriesDescription;
+ 
                if  ( jfNumberOfFrames == "1" )
                {
-                   //create series (based on 00280100 BitsAllocated for monoframe images of any kind
-                   unsigned short jfBitsAllocatedUS;
-                   if ((*imageDataSet)->findAndGetUint16(DCM_BitsAllocated, jfBitsAllocatedUS).bad()) jfBitsAllocatedUS=0;
+ //create series (based on 00280100 BitsAllocated for monoframe images of any kind
                    
-                   OFString jfBitsAllocated;
-                   char *str2;
-                   str2 = (char *) malloc(2);
-                   sprintf(str2, "%u", jfBitsAllocatedUS);
-                   jfBitsAllocated=str2;
-                   //SeriesDescription 0008103E 'fotofile' or 'fotofile'
-                   /*
-                   OFString jfSeriesDescription;
-                   if (jfBitsAllocated == 8)       jfSeriesDescription="Photos (small)";
-                   else if (jfBitsAllocated == 16) jfSeriesDescription="Photos (large)";
-                   else                            jfSeriesDescription="Photos";
-                   (*imageDataSet)->putAndInsertString(DCM_SeriesDescription, jfSeriesDescription.data());
-*/
-                   OFString jfAcquisitionTime;
-                   (*imageDataSet)->findAndGetOFString(DCM_AcquisitionTime, jfAcquisitionTime);
-                   (*imageDataSet)->putAndInsertString(DCM_InstanceNumber, jfAcquisitionTime.data());
+                   //SeriesInstanceUID 0020000E = StudyInstanceUID 0020000D + '.8'  or '.16'
+                   OFString jfSeriesInstanceUID;
+                   jfSeriesInstanceUID=jfNewStudyInstanceUID + "." + jfBitsAllocated;
+                   (*imageDataSet)->putAndInsertOFStringArray(DCM_SeriesInstanceUID, jfSeriesInstanceUID);
                    
-                   /*SeriesNumber 00200011 = -8 or -16
-                   OFString jfSeriesNumber;
-                   jfSeriesNumber="-" + jfBitsAllocated;
-                   //(*imageDataSet)->findAndDeleteElement(DCM_SeriesNumber);
-                   //delete (*imageDataSet)->remove(DCM_SeriesNumber);
-                   (*imageDataSet)->putAndInsertString(DCM_SeriesNumber, jfSeriesNumber.data());
-                    */
-                   free(str2);
-
-                   OFString jfSeriesNumber;
-                   jfSeriesNumber="-" + jfBitsAllocated;
-                   //(*imageDataSet)->findAndDeleteElement(DCM_SeriesNumber);
-                   //delete (*imageDataSet)->remove(DCM_SeriesNumber);
-                   (*imageDataSet)->putAndInsertString(DCM_SeriesNumber, jfSeriesNumber.data());
+                   //SeriesNumber 00200011 = -8 or -16
+                  
+                   OFString jfNewSeriesNumber;
+                   jfNewSeriesNumber="-" + jfBitsAllocated;
+                   (*imageDataSet)->putAndInsertString(DCM_SeriesNumber, jfNewSeriesNumber.data());
 
                    //SeriesDate 00080021 = StudyDate 00080020
                    OFString jfStudyDate;
@@ -1865,7 +1878,19 @@ storeSCPCallback(
                    OFString jfStudyTime;
                    (*imageDataSet)->findAndGetOFString(DCM_StudyTime, jfStudyTime);
                    (*imageDataSet)->putAndInsertString(DCM_SeriesTime, jfStudyTime.data());
+
+                   
+                   (*imageDataSet)->putAndInsertString(DCM_InstanceNumber, jfAcquisitionTime.data());
+                   
+                   jfNewSeriesDescription = "Foto series " + jfSeriesNumber + " @ " + jfAcquisitionTime;
+
                }
+               else jfNewSeriesDescription = jfSeriesNumber + " @ " + jfAcquisitionTime;
+
+                   
+               (*imageDataSet)->putAndInsertString(DCM_SeriesDescription, jfNewSeriesDescription.data());
+
+               free(str3);
            }
        }
        ///jf
