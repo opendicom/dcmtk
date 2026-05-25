@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 1994-2019, OFFIS e.V.
+ *  Copyright (C) 1994-2026, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -33,6 +33,16 @@
 #define DICOMDIR_BACKUP_SUFFIX  ".$$$"
 #define DICOMDIR_TEMP_SUFFIX    ".tmp"
 #define DICOMDIR_DEFAULT_TRANSFERSYNTAX  EXS_LittleEndianExplicit
+
+/** maximum recursion depth in the parser, corresponding to the
+ *  logical hierarchy level in the DICOMDIR. In a well-formed
+ *  DICOMDIR, we only expect depth values of 0-3 to occur,
+ *  corresponding to the patient/study/series/instance hierarchy.
+ *  We permit a few more levels here for possible future extensions
+ *  while still preventing a stack overflow when reading a malformed
+ *  DICOMDIR.
+ */
+#define DICOMDIR_MAX_RECURSION_DEPTH  8
 
 /** helper structure for item offsets
  */
@@ -149,6 +159,7 @@ public:
     OFCondition resolveAllOffsets(   DcmDataset &dset );             // inout
     OFCondition linkMRDRtoRecord(    DcmDirectoryRecord *dRec );     // inout
     OFCondition moveRecordToTree(    DcmDirectoryRecord *startRec,   // in
+                                     size_t depth,                   // in
                                      DcmSequenceOfItems &fromDirSQ,  // inout
                                      DcmDirectoryRecord *toRecord ); // inout
     OFCondition moveMRDRbetweenSQs(  DcmSequenceOfItems &fromSQ,     // in

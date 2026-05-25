@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 1994-2024, OFFIS e.V.
+ *  Copyright (C) 1994-2026, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -369,6 +369,7 @@ OFCondition DcmDicomDir::linkMRDRtoRecord( DcmDirectoryRecord *dRec )
 
 
 OFCondition DcmDicomDir::moveRecordToTree( DcmDirectoryRecord *startRec,
+                                           size_t depth,
                                            DcmSequenceOfItems &fromDirSQ,
                                            DcmDirectoryRecord *toRecord )
 {
@@ -404,6 +405,7 @@ OFCondition DcmDicomDir::moveRecordToTree( DcmDirectoryRecord *startRec,
             DCMDATA_TRACE("DcmDicomDir::moveRecordToTree() Record with"
                 << " offset=" << startRec->getFileOffset()
                 << " p=" << OFstatic_cast(void *, startRec)
+                << " depth=" << depth
                 << " has lower=" << OFstatic_cast(void *, lowerRec)
                 << " and next=" << OFstatic_cast(void *, nextRec) << " Record");
 
@@ -426,12 +428,20 @@ OFCondition DcmDicomDir::moveRecordToTree( DcmDirectoryRecord *startRec,
             }
 
             // recursively call this method for next lower level:
-            l_error = moveRecordToTree( lowerRec, fromDirSQ, startRec );
+            if (depth < DICOMDIR_MAX_RECURSION_DEPTH)
+            {
+                l_error = moveRecordToTree( lowerRec, depth + 1, fromDirSQ, startRec );
 
-            // We handled this record, now move on to the next one on this level.
-            // The next while-loop iteration does the equivalent of the following:
-            // moveRecordToTree( nextRec, fromDirSQ, toRecord );
-            startRec = nextRec;
+                // We handled this record, now move on to the next one on this level.
+                // The next while-loop iteration does the equivalent of the following:
+                // moveRecordToTree( nextRec, depth, fromDirSQ, toRecord );
+                startRec = nextRec;
+            }
+            else
+            {
+                DCMDATA_ERROR("DcmDicomDir: maximum nesting level " << DICOMDIR_MAX_RECURSION_DEPTH << " exceeded");
+                l_error = EC_NestingDepthLimitExceeded;
+            }
         }
     }
 
@@ -481,7 +491,7 @@ OFCondition DcmDicomDir::convertLinearToTree()
         firstRootRecord = OFstatic_cast(DcmDirectoryRecord *, offElem->getNextRecord());
 
     // create tree structure from flat record list:
-    l_error = moveRecordToTree( firstRootRecord, localDirRecSeq, &getRootRecord() );
+    l_error = moveRecordToTree( firstRootRecord, 0, localDirRecSeq, &getRootRecord() );
 
     if (l_error.good())
     {
