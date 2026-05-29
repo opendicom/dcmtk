@@ -312,6 +312,61 @@ AC_ARG_ENABLE(debug,
 )
 
 dnl -------------------------------------------------------
+dnl Check for sanitizer support
+dnl -------------------------------------------------------
+
+dnl --enable-sanitizers turns on AddressSanitizer for compile and link of
+dnl every DCMTK target. On Linux LeakSanitizer is also auto-enabled. The
+dnl feature exists to give the unit tests a real memory-error / leak
+dnl regression net; functional OFCHECK asserts alone cannot detect heap-only
+dnl leaks. CFLAGS, CXXFLAGS and LDFLAGS are appended in place; they flow
+dnl into the generated Makefiles via @CFLAGS@, @CXXFLAGS@, @LDFLAGS@.
+AC_MSG_CHECKING(whether to enable AddressSanitizer)
+AC_ARG_ENABLE(sanitizers,
+[  --enable-sanitizers     compile with AddressSanitizer (and LeakSanitizer on Linux)
+  --disable-sanitizers    compile without sanitizers (default)],
+[ case "$enableval" in
+  yes)
+    dnl AddressSanitizer everywhere; LeakSanitizer additionally on Linux
+    dnl (reliably supported there for GCC/Clang; on macOS/*BSD it is missing
+    dnl or runtime-gated, so we do not auto-enable it).
+    SANITIZER_CFLAGS="-fsanitize=address -fno-omit-frame-pointer -g"
+    case "$host_os" in
+      linux*)
+        SANITIZER_CFLAGS="$SANITIZER_CFLAGS -fsanitize=leak"
+        ;;
+    esac
+    dnl Probe the actual compiler rather than matching its name: the driver
+    dnl may be c++, cc++, CC, a ccache wrapper, etc. Require a successful
+    dnl compile AND link, since the sanitizer runtime is pulled in at link
+    dnl time (a single compile-and-link invocation exercises both).
+    echo 'int main(void){return 0;}' > conftest_san.cc
+    if $CXX $SANITIZER_CFLAGS conftest_san.cc -o conftest_san >/dev/null 2>&1; then
+      CFLAGS="$CFLAGS $SANITIZER_CFLAGS"
+      CXXFLAGS="$CXXFLAGS $SANITIZER_CFLAGS"
+      LDFLAGS="$LDFLAGS $SANITIZER_CFLAGS"
+      case "$host_os" in
+        linux*)
+          AC_MSG_RESULT([yes - AddressSanitizer and LeakSanitizer])
+          ;;
+        *)
+          AC_MSG_RESULT([yes - AddressSanitizer only (LeakSanitizer is only auto-enabled on Linux)])
+          ;;
+      esac
+    else
+      AC_MSG_RESULT(no)
+      AC_MSG_WARN([$CXX does not accept $SANITIZER_CFLAGS; continuing without sanitizer flags])
+    fi
+    rm -f conftest_san.cc conftest_san conftest_san.o
+    ;;
+  *)
+    AC_MSG_RESULT(no)
+    ;;
+  esac ],
+  AC_MSG_RESULT(no)
+)
+
+dnl -------------------------------------------------------
 dnl Check for thread support
 dnl -------------------------------------------------------
 

@@ -718,6 +718,7 @@ ac_subst_files=''
 ac_user_opts='
 enable_option_checking
 enable_debug
+enable_sanitizers
 enable_threads
 enable_lfs
 enable_default_dict
@@ -1384,6 +1385,8 @@ Optional Features:
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --enable-debug          compile with debug code, don't optimize
   --disable-debug         compile without debug code (default)
+  --enable-sanitizers     compile with AddressSanitizer (and LeakSanitizer on Linux)
+  --disable-sanitizers    compile without sanitizers (default)
   --enable-threads=TYPE   compile with MT support (posix/solaris/auto=default)
   --disable-threads       compile without MT support
   --enable-lfs=TYPE       compile with LFS support (lfs/lfs64/auto=default)
@@ -6137,6 +6140,54 @@ else
 $as_echo "no" >&6; }
   DEBUGCXXFLAGS="-O"
   DEBUGCFLAGS="-O"
+
+fi
+
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to enable AddressSanitizer" >&5
+$as_echo_n "checking whether to enable AddressSanitizer... " >&6; }
+# Check whether --enable-sanitizers was given.
+if test "${enable_sanitizers+set}" = set; then :
+  enableval=$enable_sanitizers;  case "$enableval" in
+  yes)
+    SANITIZER_CFLAGS="-fsanitize=address -fno-omit-frame-pointer -g"
+    case "$host_os" in
+      linux*)
+        SANITIZER_CFLAGS="$SANITIZER_CFLAGS -fsanitize=leak"
+        ;;
+    esac
+    echo 'int main(void){return 0;}' > conftest_san.cc
+    if $CXX $SANITIZER_CFLAGS conftest_san.cc -o conftest_san >/dev/null 2>&1; then
+      CFLAGS="$CFLAGS $SANITIZER_CFLAGS"
+      CXXFLAGS="$CXXFLAGS $SANITIZER_CFLAGS"
+      LDFLAGS="$LDFLAGS $SANITIZER_CFLAGS"
+      case "$host_os" in
+        linux*)
+          { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes - AddressSanitizer and LeakSanitizer" >&5
+$as_echo "yes - AddressSanitizer and LeakSanitizer" >&6; }
+          ;;
+        *)
+          { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes - AddressSanitizer only (LeakSanitizer is only auto-enabled on Linux)" >&5
+$as_echo "yes - AddressSanitizer only (LeakSanitizer is only auto-enabled on Linux)" >&6; }
+          ;;
+      esac
+    else
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+      { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: $CXX does not accept $SANITIZER_CFLAGS; continuing without sanitizer flags" >&5
+$as_echo "$as_me: WARNING: $CXX does not accept $SANITIZER_CFLAGS; continuing without sanitizer flags" >&2;}
+    fi
+    rm -f conftest_san.cc conftest_san conftest_san.o
+    ;;
+  *)
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+    ;;
+  esac
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
 
 fi
 

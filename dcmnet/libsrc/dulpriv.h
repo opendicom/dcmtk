@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 1994-2010, OFFIS e.V.
+ *  Copyright (C) 1994-2026, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were partly developed by
@@ -69,6 +69,7 @@
 #define DULPRIVATE_H
 
 #include "dcmtk/config/osconfig.h"    /* make sure OS specific configuration is included first */
+#include "dcmtk/dcmnet/dndefine.h"    /* for DCMTK_DCMNET_EXPORT */
 
 
 #define	PRV_DEFAULTTIMEOUT	-1
@@ -104,7 +105,14 @@ streamRejectReleaseAbortPDU(DUL_REJECTRELEASEABORTPDU * pdu,
 OFCondition
 streamDataPDUHead(DUL_DATAPDU * pdu, unsigned char *buf,
 		  unsigned long maxLength, unsigned long *rtnLen);
-OFCondition
+/* parseAssociate() is exported (although declared in this private header) so
+ * that the dcmnet unit tests can whitebox-test PDU parsing without going
+ * through a real TCP association. The symbol must be visible in shared-library
+ * builds with hidden default visibility; in static builds the export
+ * attribute is a no-op. The declaration stays in this private header to
+ * signal that the function is not part of the documented public API.
+ */
+DCMTK_DCMNET_EXPORT OFCondition
 parseAssociate(unsigned char *buf, unsigned long len,
 	       PRV_ASSOCIATEPDU * pdu);
 OFCondition

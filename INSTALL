@@ -853,6 +853,68 @@ will add the module name as a prefix to this file's name, e.g. "ofstd_tests".
 For more information, call this program with the "--help" option.
 
 
+MEMORY-ERROR DETECTION (SANITIZERS)
+===================================
+
+DCMTK can be built with AddressSanitizer (and, on Linux, LeakSanitizer) to
+turn the unit-test suite into a real memory-safety regression net.  This is
+useful for catching heap-buffer overflows, use-after-free errors, and memory
+leaks that functional assertions alone cannot detect.
+
+To enable sanitizers when configuring with CMake:
+
+    cmake -DDCMTK_WITH_SANITIZERS=ON [...] /path/to/dcmtk
+
+To enable sanitizers when configuring with Autoconf:
+
+    ./configure --ignore-deprecation --enable-sanitizers
+
+Both build systems are off by default.  When enabled, the sanitizer flags
+apply globally to every DCMTK target: library object files, test binaries
+and the command-line applications.
+
+Supported toolchains:
+
+   GNU gcc, Clang and Apple Clang   AddressSanitizer
+                                    LeakSanitizer (Linux only)
+   Microsoft Visual C++ 2019 16.9   AddressSanitizer
+   and newer                        (LeakSanitizer not available on MSVC)
+
+The two build systems decide differently: CMake recognises the toolchains
+above by compiler family and, on any other, prints a warning and continues
+without sanitizer flags.  The Autoconf build instead probes the compiler --
+it enables the flags only if a test compile and link with them succeeds, and
+warns otherwise -- so it is not restricted to the list above (it also works
+with driver names such as "c++" or a ccache wrapper), though those toolchains
+are the tested ones.  When AddressSanitizer is enabled with MSVC, the
+CMake-supplied default flags "/RTC*" (runtime checks) and "/INCREMENTAL"
+(incremental linking) are incompatible with "/fsanitize=address" and are
+removed (resp. forced to "/INCREMENTAL:NO") automatically, since the user
+has explicitly opted into the sanitizer build.
+
+LeakSanitizer reports any heap allocation that is unreachable at process
+exit.  The DCMTK libraries are expected to release their resources properly,
+including global objects, so library code should not be a source of such
+reports.  Some command-line tools, however, allocate objects of their own
+that they do not always free before exiting, relying on the operating system
+to reclaim the memory at process termination.  Running such an instrumented
+tool under LeakSanitizer may therefore produce shutdown leak reports that do
+not indicate a bug in the libraries.  Two common ways to handle this:
+
+- Disable LeakSanitizer for the run by setting "LSAN_OPTIONS=detect_leaks=0"
+  in the environment.  AddressSanitizer remains active and continues to
+  report buffer overflows and use-after-free errors.
+
+- Maintain an LSan suppression file with entries for the affected tool
+  allocations and pass it via
+  "LSAN_OPTIONS=suppressions=PATH:print_suppressions=0".
+
+When running the test suite (ctest, "make test" or "make check") under
+sanitizers, a non-zero process exit code is interpreted as a test failure;
+both AddressSanitizer aborts and LeakSanitizer leak reports therefore fail
+the corresponding test without any extra configuration.
+
+
 CROSS COMPILING WITH CMAKE
 ==========================
 

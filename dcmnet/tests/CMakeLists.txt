@@ -3,6 +3,7 @@ DCMTK_ADD_TEST_EXECUTABLE(dcmnet_tests
   tdimse.cc
   tdump.cc
   tests.cc
+  tparseassoc.cc
   tpool.cc
   tscuscp.cc
   tscusession.cc

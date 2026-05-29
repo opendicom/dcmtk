@@ -25,6 +25,8 @@
 
 OFTEST_REGISTER(dcmnet_dimseDump_nullByte);
 OFTEST_REGISTER(dcmnet_dimseStatusClass);
+OFTEST_REGISTER(dcmnet_parseAssociate_extNeg_truncated);
+OFTEST_REGISTER(dcmnet_parseAssociate_extNeg_malformed_itemLength);
 
 #ifdef WITH_THREADS
 OFTEST_REGISTER(dcmnet_scp_pool);
