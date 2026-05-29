@@ -420,6 +420,12 @@ LICENSE_FILE_EVALUATE_COMMAND_LINE_OPTIONS
       opt_prefer_cooked, opt_fragmentSize, opt_createOffsetTable,
       opt_uidcreation, opt_secondarycapture, opt_interleaveMode, opt_useFFpadding);
 
+    // RAII guard: deregister the codecs on every exit path, including the
+    // error returns below that would otherwise skip the cleanup() call.
+    struct CodecCleanupGuard {
+        ~CodecCleanupGuard() { DJLSEncoderRegistration::cleanup(); }
+    } codecCleanupGuard;
+
     /* make sure data dictionary is loaded */
     if (!dcmDataDict.isDictionaryLoaded())
     {
@@ -504,8 +510,7 @@ LICENSE_FILE_EVALUATE_COMMAND_LINE_OPTIONS
 
     OFLOG_INFO(dcmcjplsLogger, "conversion successful");
 
-    // deregister global codecs
-    DJLSEncoderRegistration::cleanup();
+    // note: the global codecs are deregistered by codecCleanupGuard on return
 
     return 0;
 }

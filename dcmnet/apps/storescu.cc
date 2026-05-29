@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 1996-2024, OFFIS e.V.
+ *  Copyright (C) 1996-2026, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -706,6 +706,19 @@ int main(int argc, char *argv[])
 
     // register RLE decompression codec
     DcmRLEDecoderRegistration::registerCodecs();
+
+    // RAII guard: deregister the codecs on every exit path, including the
+    // error returns below that would otherwise skip the cleanup() calls.
+    struct CodecCleanupGuard {
+        ~CodecCleanupGuard() {
+            DJDecoderRegistration::cleanup();
+            DJEncoderRegistration::cleanup();
+            DJLSDecoderRegistration::cleanup();
+            DJLSEncoderRegistration::cleanup();
+            DcmRLEDecoderRegistration::cleanup();
+            DcmRLEEncoderRegistration::cleanup();
+        }
+    } codecCleanupGuard;
 #endif
 
     /* initialize network, i.e. create an instance of T_ASC_Network*. */
@@ -916,19 +929,8 @@ int main(int argc, char *argv[])
       }
     }
 
-#ifdef ON_THE_FLY_COMPRESSION
-    // deregister JPEG codecs
-    DJDecoderRegistration::cleanup();
-    DJEncoderRegistration::cleanup();
-
-    // deregister JPEG-LS codecs
-    DJLSDecoderRegistration::cleanup();
-    DJLSEncoderRegistration::cleanup();
-
-    // deregister RLE codecs
-    DcmRLEDecoderRegistration::cleanup();
-    DcmRLEEncoderRegistration::cleanup();
-#endif
+    // note: the on-the-fly compression codecs are deregistered by
+    // codecCleanupGuard on return (covers all error paths as well)
 
 #ifdef DEBUG
     dcmDataDict.clear();  /* useful for debugging with dmalloc */

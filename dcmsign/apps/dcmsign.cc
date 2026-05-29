@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 2000-2022, OFFIS e.V.
+ *  Copyright (C) 2000-2026, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -857,6 +857,9 @@ int main(int argc, char *argv[])
   }
 
 cleanup:
+  // close the dump file if an error path jumped here before it was closed
+  // on the normal path above (where it is also set to NULL)
+  if (opt_dumpFile) fclose(opt_dumpFile);
   delete opt_timeStamp;
   delete opt_mac;
   delete opt_profile;

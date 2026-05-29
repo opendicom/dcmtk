@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 2001-2025, OFFIS e.V.
+ *  Copyright (C) 2001-2026, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -279,6 +279,12 @@ int main(int argc, char *argv[])
       opt_forceSingleFragmentPerFrame,
       opt_preserveBitsStored);
 
+    // RAII guard: deregister the codecs on every exit path, including the
+    // error returns below that would otherwise skip the cleanup() call.
+    struct CodecCleanupGuard {
+        ~CodecCleanupGuard() { DJDecoderRegistration::cleanup(); }
+    } codecCleanupGuard;
+
     /* make sure data dictionary is loaded */
     if (!dcmDataDict.isDictionaryLoaded())
     {
@@ -343,8 +349,8 @@ int main(int argc, char *argv[])
 
     OFLOG_INFO(dcmdjpegLogger, "conversion successful");
 
-    // deregister global decompression codecs
-    DJDecoderRegistration::cleanup();
+    // note: the global decompression codecs are deregistered by
+    // codecCleanupGuard on return
 
     return 0;
 }

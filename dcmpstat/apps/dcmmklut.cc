@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 1998-2024, OFFIS e.V.
+ *  Copyright (C) 1998-2026, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -31,6 +31,7 @@
 #include "dcmtk/dcmdata/dcuid.h"      /* for dcmtk version name */
 #include "dcmtk/ofstd/ofconapp.h"
 #include "dcmtk/ofstd/ofstring.h"
+#include "dcmtk/ofstd/ofmem.h"       /* for OFunique_ptr */
 #include "dcmtk/dcmimgle/dicrvfit.h"
 #include "dcmtk/dcmimgle/digsdfn.h"
 #include "dcmtk/dcmimgle/diutils.h"
@@ -864,17 +865,12 @@ int main(int argc, char *argv[])
 
     E_TransferSyntax Xfer= EXS_LittleEndianExplicit;
     OFCondition result = EC_Normal;
-    DcmFileFormat *fileformat = new DcmFileFormat();
-    if (!fileformat)
-    {
-        OFLOG_FATAL(dcmmklutLogger, "memory exhausted");
-        return 1;
-    }
-    DcmDataset *dataset = fileformat->getDataset();
+    DcmFileFormat fileformat;
+    DcmDataset *dataset = fileformat.getDataset();
 
     if (opt_inName != NULL)
     {
-        OFCondition cond = fileformat->loadFile(opt_inName);
+        OFCondition cond = fileformat.loadFile(opt_inName);
         if (! cond.good())
         {
             OFLOG_FATAL(dcmmklutLogger, "cannot open file: " << opt_inName);
@@ -884,7 +880,10 @@ int main(int argc, char *argv[])
     }
 
     /* create Item with LUT */
-    DcmItem *ditem = new DcmItem();
+    // ditem is owned by this OFunique_ptr until it is handed to a sequence via
+    // release() below (the sequence then takes ownership); on every path that does
+    // not insert it (early errors, or when no output file is written) it is freed here.
+    OFunique_ptr<DcmItem> ditem(new DcmItem());
     if (ditem)
     {
         Uint16 *outputData = new Uint16[opt_entries];
@@ -957,7 +956,7 @@ int main(int argc, char *argv[])
                             if (dseq)
                             {
                                 dataset->insert(dseq, OFTrue);
-                                dseq->insert(ditem);
+                                dseq->insert(ditem.release()); // sequence takes ownership
                             } else
                                 result = EC_MemoryExhausted;
                             delete dataset->remove(DCM_RescaleIntercept);
@@ -984,7 +983,9 @@ int main(int argc, char *argv[])
                             result = EC_MemoryExhausted;
                     }
                     if (dseq)
-                        dseq->insert(ditem);
+                    {
+                        dseq->insert(ditem.release()); // sequence takes ownership
+                    }
                     if (opt_replaceMode)
                         delete dataset->remove(DCM_PresentationLUTShape);
                     break;
@@ -1005,7 +1006,9 @@ int main(int argc, char *argv[])
                             result = EC_MemoryExhausted;
                     }
                     if (dseq)
-                        dseq->insert(ditem);
+                    {
+                        dseq->insert(ditem.release()); // sequence takes ownership
+                    }
                     if (opt_replaceMode)
                     {
                         delete dataset->remove(DCM_WindowCenter);
@@ -1024,7 +1027,7 @@ int main(int argc, char *argv[])
 
         OFLOG_INFO(dcmmklutLogger, "writing DICOM file ...");
 
-        result = fileformat->saveFile(opt_outName, Xfer);
+        result = fileformat.saveFile(opt_outName, Xfer);
         if (result.bad())
         {
             OFLOG_FATAL(dcmmklutLogger, result.text() << ": writing file: " <<  opt_outName);

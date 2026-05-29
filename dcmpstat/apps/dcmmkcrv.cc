@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 1998-2023, OFFIS e.V.
+ *  Copyright (C) 1998-2026, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -152,21 +152,16 @@ int main(int argc, char *argv[])
             << DCM_DICT_ENVIRONMENT_VARIABLE);
     }
 
-    DcmFileFormat *fileformat = new DcmFileFormat;
-    if (!fileformat)
-    {
-      OFLOG_FATAL(dcmmkcrvLogger, "memory exhausted");
-      return 1;
-    }
+    DcmFileFormat fileformat;
 
-    OFCondition error = fileformat->loadFile(opt_inName);
+    OFCondition error = fileformat.loadFile(opt_inName);
     if (! error.good())
     {
       OFLOG_FATAL(dcmmkcrvLogger, error.text() << ": reading file: " <<  opt_inName);
       return 1;
     }
 
-    DcmDataset *dataset = fileformat->getDataset();
+    DcmDataset *dataset = fileformat.getDataset();
 
     /* read curve data */
 
@@ -255,6 +250,12 @@ int main(int argc, char *argv[])
       axisUnits->putString(aString.c_str());
       dataset->insert(axisUnits, OFTrue);
     }
+
+    /* the optional description elements are owned by the dataset only if they
+     * were inserted above; otherwise free them here to avoid a leak */
+    if (!opt_description) delete curveDescription;
+    if (!opt_label) delete curveLabel;
+    if (!(opt_axis_x && opt_axis_y)) delete axisUnits;
 
     /* now create the curve itself */
     void *rawData;
@@ -384,9 +385,22 @@ int main(int argc, char *argv[])
         OFLOG_FATAL(dcmmkcrvLogger, "unsupported VR, bailing out");
         return 1;
     }
+
+    /* the raw curve data has been copied into the element above, free it now
+     * (typed delete[] matching the allocation type for the chosen data VR) */
+    switch (opt_data_vr)
+    {
+      case 0: delete[] OFstatic_cast(Uint16 *, rawData); break;
+      case 1: delete[] OFstatic_cast(Sint16 *, rawData); break;
+      case 2: delete[] OFstatic_cast(Float32 *, rawData); break;
+      case 3: delete[] OFstatic_cast(Float64 *, rawData); break;
+      case 4: delete[] OFstatic_cast(Sint32 *, rawData); break;
+      default: break;
+    }
+
     /* write back */
 
-    error = fileformat->saveFile(opt_outName, dataset->getOriginalXfer());
+    error = fileformat.saveFile(opt_outName, dataset->getOriginalXfer());
     if (error != EC_Normal)
     {
       OFLOG_FATAL(dcmmkcrvLogger, error.text()

@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 2002-2022, OFFIS e.V.
+ *  Copyright (C) 2002-2026, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -219,6 +219,11 @@ int main(int argc, char *argv[])
 
     // register global decompression codecs
     DcmRLEDecoderRegistration::registerCodecs(opt_uidcreation, opt_reversebyteorder);
+    // RAII guard: deregister the codec on every exit path, including the
+    // error returns below that would otherwise skip the cleanup() call.
+    struct CodecCleanupGuard {
+        ~CodecCleanupGuard() { DcmRLEDecoderRegistration::cleanup(); }
+    } codecCleanupGuard;
 
     /* make sure data dictionary is loaded */
     if (!dcmDataDict.isDictionaryLoaded())
@@ -285,8 +290,7 @@ int main(int argc, char *argv[])
 
     OFLOG_INFO(dcmdrleLogger, "conversion successful");
 
-    // deregister RLE codec
-    DcmRLEDecoderRegistration::cleanup();
+    // note: the RLE codec is deregistered by codecCleanupGuard on return
 
     return 0;
 }

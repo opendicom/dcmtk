@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 1994-2024, OFFIS e.V.
+ *  Copyright (C) 1994-2026, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -128,6 +128,20 @@ DCMTK_MAIN_FUNCTION
     D2JPEG2000Library::initialize();
     D2DecoderRegistration::registerCodecs();
 */
+    // RAII guard: deregister the codecs on every exit path (including the
+    // AF_Exclusive --help/--version and parse-error returns below).
+    struct CodecCleanupGuard {
+        ~CodecCleanupGuard()
+        {
+            DcmRLEDecoderRegistration::cleanup();
+            DJDecoderRegistration::cleanup();
+            // enable the following lines for JPEG 2000 decompression support
+/*
+            D2DecoderRegistration::cleanup();
+            D2JPEG2000Library::cleanup();
+*/
+        }
+    } codecCleanupGuard;
 #endif
 
     /* DICOMDIR interface (checks for JPEG/RLE availability) */
@@ -644,16 +658,9 @@ DCMTK_MAIN_FUNCTION
             << result.text() << ") " << action << " file: " << opt_output);
     }
 
-#ifdef BUILD_DCMGPDIR_AS_DCMMKDIR
-    // deregister global decompression codecs
-    DcmRLEDecoderRegistration::cleanup();
-    DJDecoderRegistration::cleanup();
-    // enable the following lines for JPEG 2000 decompression support
-/*
-    D2DecoderRegistration::cleanup();
-    D2JPEG2000Library::cleanup();
-*/
-#endif
+    // note: the global decompression codecs registered above are deregistered
+    // by the CodecCleanupGuard declared at the start of main(), which covers
+    // every exit path including the early error returns.
 
 #ifdef DEBUG
     dcmDataDict.clear();  /* useful for debugging with dmalloc */

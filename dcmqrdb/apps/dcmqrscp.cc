@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 1993-2025, OFFIS e.V.
+ *  Copyright (C) 1993-2026, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -894,6 +894,15 @@ main(int argc, char *argv[])
       return 10;
     }
 
+    // RAII guard: drop the network on every error return below that would
+    // otherwise skip the ASC_dropNetwork() call on the normal path further down
+    // (the normal path drops it explicitly, after which this guard is a no-op).
+    struct NetworkGuard {
+      T_ASC_Network *&net;
+      NetworkGuard(T_ASC_Network *&ref) : net(ref) {}
+      ~NetworkGuard() { if (net) ASC_dropNetwork(&net); }
+    } networkGuard(options.net_);
+
     /* drop root privileges now and revert to the calling user id (if we are running as setuid root) */
     if (OFStandard::dropPrivileges().bad())
     {
@@ -969,6 +978,9 @@ main(int argc, char *argv[])
       }
     }
 
+    // Explicit drop so a failure here is logged and surfaced as exit code 10 (the
+    // guard ignores its result). On success it nulls net_, making networkGuard a no-op;
+    // ASC_dropNetwork is NULL-safe and frees only when it nulls, so no double-free.
     cond = ASC_dropNetwork(&options.net_);
     if (cond.bad()) {
       OFLOG_FATAL(dcmqrscpLogger, "cannot drop network: " << DimseCondition::dump(temp_str, cond));

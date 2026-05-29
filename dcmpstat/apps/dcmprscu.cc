@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 1999-2025, OFFIS e.V.
+ *  Copyright (C) 1999-2026, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -54,6 +54,8 @@ END_EXTERN_C
 #include "dcmtk/dcmpstat/dvpssp.h"
 #include "dcmtk/dcmpstat/dvpshlp.h"    /* for class DVPSHelper */
 #include "dcmtk/ofstd/ofstd.h"
+#include "dcmtk/ofstd/ofmem.h"       /* for OFunique_ptr */
+#include "dcmtk/dcmnet/dcmlayer.h"   /* for DcmTransportLayer (complete type needed by OFunique_ptr) */
 
 #ifdef WITH_OPENSSL
 #include "dcmtk/dcmtls/tlstrans.h"
@@ -862,11 +864,13 @@ int main(int argc, char *argv[])
     DcmKeyFileFormat keyFileFormat = DCF_Filetype_PEM;
     if (! dvi.getTLSPEMFormat()) keyFileFormat = DCF_Filetype_ASN1;
 
-    DcmTLSTransportLayer *tLayer = NULL;
+    // OFunique_ptr frees the TLS transport layer on every exit path, including
+    // the error returns below that would otherwise skip the cleanup.
+    OFunique_ptr<DcmTLSTransportLayer> tLayer;
     if (useTLS)
     {
-      tLayer = new DcmTLSTransportLayer(NET_REQUESTOR, tlsRandomSeedFile.c_str(), OFFalse);
-      if (tLayer == NULL)
+      tLayer.reset(new DcmTLSTransportLayer(NET_REQUESTOR, tlsRandomSeedFile.c_str(), OFFalse));
+      if (!tLayer)
       {
         OFLOG_FATAL(dcmprscuLogger, "unable to create TLS transport layer");
         return 1;
@@ -942,7 +946,7 @@ int main(int argc, char *argv[])
     }
 
 #else
-    DcmTransportLayer *tLayer = NULL;
+    OFunique_ptr<DcmTransportLayer> tLayer;
     if (useTLS)
     {
         OFLOG_FATAL(dcmprscuLogger, "not compiled with OpenSSL, cannot use TLS");
@@ -1070,7 +1074,7 @@ int main(int argc, char *argv[])
           return 10;
         }
         // static OFCondition updateJobList(jobList, dvi, terminateFlag, jobNamePrefix.c_str());
-        if (EC_Normal != spoolJobList(jobList, dvi, tLayer)) { /* ignore */ }
+        if (EC_Normal != spoolJobList(jobList, dvi, tLayer.get())) { /* ignore */ }
       } while (! terminateFlag);
       OFLOG_INFO(dcmprscuLogger, "spooler is terminating, goodbye!");
    } else {
@@ -1095,7 +1099,7 @@ int main(int argc, char *argv[])
           }
           if (currentParam)
           {
-            if (EC_Normal != spoolStoredPrintFile(currentParam, dvi, tLayer))
+            if (EC_Normal != spoolStoredPrintFile(currentParam, dvi, tLayer.get()))
             {
               OFLOG_ERROR(dcmprscuLogger, "spooling of file '" << currentParam << "' failed");
             }
@@ -1119,7 +1123,7 @@ int main(int argc, char *argv[])
       OFLOG_WARN(dcmprscuLogger, "cannot write back random seed, ignoring");
     }
   }
-  delete tLayer;
+  // note: tLayer (an OFunique_ptr) frees the transport layer on return
 #endif
 
   OFStandard::shutdownNetwork();

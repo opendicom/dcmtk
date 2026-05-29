@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 2002-2023, OFFIS e.V.
+ *  Copyright (C) 2002-2026, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -27,6 +27,7 @@
 #include "dcmtk/dcmdata/dcuid.h"         /* for dcmtk version name */
 
 #include "dcmtk/ofstd/ofconapp.h"        /* for OFConsoleApplication */
+#include "dcmtk/ofstd/ofmem.h"           /* for OFunique_ptr */
 #include "dcmtk/ofstd/ofcmdln.h"         /* for OFCommandLine */
 
 #include "dcmtk/oflog/oflog.h"           /* for OFLogger */
@@ -387,6 +388,17 @@ int main(int argc, char *argv[])
     // register global decompression codecs
     DJDecoderRegistration::registerCodecs(opt_decompCSconversion);
 #endif
+    // RAII guard: deregister the codecs on every exit path, including the
+    // error returns below that would otherwise skip the cleanup() calls.
+    struct CodecCleanupGuard {
+        ~CodecCleanupGuard()
+        {
+            DcmRLEDecoderRegistration::cleanup();
+#ifdef BUILD_DCMSCALE_AS_DCMJSCAL
+            DJDecoderRegistration::cleanup();
+#endif
+        }
+    } codecCleanupGuard;
 
     // ======================================================================
     // read input file
@@ -449,9 +461,11 @@ int main(int argc, char *argv[])
     OFLOG_INFO(dcmscaleLogger, "preparing pixel data");
 
     const unsigned long flags = (opt_scaleType > 0) ? CIF_MayDetachPixelData : 0;
-    // create DicomImage object
-    DicomImage *di = new DicomImage(dataset, opt_oxfer, flags);
-    if (di == NULL)
+    // create DicomImage object (owned via RAII so the error returns below
+    // release it automatically; explicitly reset on the success path to free
+    // the pixel buffer early, before the dataset is saved)
+    OFunique_ptr<DicomImage> di(new DicomImage(dataset, opt_oxfer, flags));
+    if (!di)
     {
         OFLOG_FATAL(dcmscaleLogger, "memory exhausted");
         return 1;
@@ -462,7 +476,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    DicomImage *newimage = NULL;
+    OFunique_ptr<DicomImage> newimage;
     OFString derivationDescription;
 
     if (opt_useClip)
@@ -473,7 +487,7 @@ int main(int argc, char *argv[])
     {
         if (opt_useClip)
         {
-            newimage = di->createClippedImage(opt_left, opt_top, opt_width, opt_height);
+            newimage.reset(di->createClippedImage(opt_left, opt_top, opt_width, opt_height));
             derivationDescription = "Clipped rectangular image region";
         }
     }
@@ -487,44 +501,44 @@ int main(int argc, char *argv[])
                     << ", Interpolation=" << OFstatic_cast(int, opt_useInterpolation)
                     << ", Aspect Ratio=" << (opt_useAspectRatio ? "yes" : "no"));
                 if (opt_useClip)
-                    newimage = di->createScaledImage(opt_left, opt_top, opt_width, opt_height, opt_scale_factor, 0.0,
-                        OFstatic_cast(int, opt_useInterpolation), opt_useAspectRatio);
+                    newimage.reset(di->createScaledImage(opt_left, opt_top, opt_width, opt_height, opt_scale_factor, 0.0,
+                        OFstatic_cast(int, opt_useInterpolation), opt_useAspectRatio));
                 else
-                    newimage = di->createScaledImage(opt_scale_factor, 0.0, OFstatic_cast(int, opt_useInterpolation),
-                        opt_useAspectRatio);
+                    newimage.reset(di->createScaledImage(opt_scale_factor, 0.0, OFstatic_cast(int, opt_useInterpolation),
+                        opt_useAspectRatio));
                 break;
             case 2:
                 OFLOG_INFO(dcmscaleLogger, "scaling image, Y factor=" << opt_scale_factor
                     << ", Interpolation=" << OFstatic_cast(int, opt_useInterpolation)
                     << ", Aspect Ratio=" << (opt_useAspectRatio ? "yes" : "no"));
                 if (opt_useClip)
-                    newimage = di->createScaledImage(opt_left, opt_top, opt_width, opt_height, 0.0, opt_scale_factor,
-                        OFstatic_cast(int, opt_useInterpolation), opt_useAspectRatio);
+                    newimage.reset(di->createScaledImage(opt_left, opt_top, opt_width, opt_height, 0.0, opt_scale_factor,
+                        OFstatic_cast(int, opt_useInterpolation), opt_useAspectRatio));
                 else
-                    newimage = di->createScaledImage(0.0, opt_scale_factor, OFstatic_cast(int, opt_useInterpolation),
-                        opt_useAspectRatio);
+                    newimage.reset(di->createScaledImage(0.0, opt_scale_factor, OFstatic_cast(int, opt_useInterpolation),
+                        opt_useAspectRatio));
                 break;
             case 3:
                 OFLOG_INFO(dcmscaleLogger, "scaling image, X size=" << opt_scale_size
                     << ", Interpolation=" << OFstatic_cast(int, opt_useInterpolation)
                     << ", Aspect Ratio=" << (opt_useAspectRatio ? "yes" : "no"));
                 if (opt_useClip)
-                    newimage = di->createScaledImage(opt_left, opt_top, opt_width, opt_height, opt_scale_size, 0,
-                        OFstatic_cast(int, opt_useInterpolation), opt_useAspectRatio);
+                    newimage.reset(di->createScaledImage(opt_left, opt_top, opt_width, opt_height, opt_scale_size, 0,
+                        OFstatic_cast(int, opt_useInterpolation), opt_useAspectRatio));
                 else
-                    newimage = di->createScaledImage(opt_scale_size, 0, OFstatic_cast(int, opt_useInterpolation),
-                        opt_useAspectRatio);
+                    newimage.reset(di->createScaledImage(opt_scale_size, 0, OFstatic_cast(int, opt_useInterpolation),
+                        opt_useAspectRatio));
                 break;
             case 4:
                 OFLOG_INFO(dcmscaleLogger, "scaling image, Y size=" << opt_scale_size
                     << ", Interpolation=" << OFstatic_cast(int, opt_useInterpolation)
                     << ", Aspect Ratio=" << (opt_useAspectRatio ? "yes" : "no"));
                 if (opt_useClip)
-                    newimage = di->createScaledImage(opt_left, opt_top, opt_width, opt_height, 0, opt_scale_size,
-                        OFstatic_cast(int, opt_useInterpolation), opt_useAspectRatio);
+                    newimage.reset(di->createScaledImage(opt_left, opt_top, opt_width, opt_height, 0, opt_scale_size,
+                        OFstatic_cast(int, opt_useInterpolation), opt_useAspectRatio));
                 else
-                    newimage = di->createScaledImage(0, opt_scale_size, OFstatic_cast(int, opt_useInterpolation),
-                        opt_useAspectRatio);
+                    newimage.reset(di->createScaledImage(0, opt_scale_size, OFstatic_cast(int, opt_useInterpolation),
+                        opt_useAspectRatio));
                 break;
             default:
                 break;
@@ -536,7 +550,7 @@ int main(int argc, char *argv[])
     }
     if (opt_scaleType > 4)
         OFLOG_ERROR(dcmscaleLogger, "internal error: unknown scaling type");
-    else if (newimage == NULL)
+    else if (!newimage)
     {
         OFLOG_FATAL(dcmscaleLogger, "cannot create new image");
         return 1;
@@ -552,10 +566,9 @@ int main(int argc, char *argv[])
         OFLOG_FATAL(dcmscaleLogger, "cannot write new image to dataset");
         return 1;
     }
-    delete newimage;
-
-    /* cleanup original image */
-    delete di;
+    /* free both images early to release their pixel buffers before saving */
+    newimage.reset();
+    di.reset();
 
     // ======================================================================
     // update some header attributes
@@ -633,12 +646,8 @@ int main(int argc, char *argv[])
 
     OFLOG_INFO(dcmscaleLogger, "conversion successful");
 
-    // deregister RLE decompression codec
-    DcmRLEDecoderRegistration::cleanup();
-#ifdef BUILD_DCMSCALE_AS_DCMJSCAL
-    // deregister global decompression codecs
-    DJDecoderRegistration::cleanup();
-#endif
+    // note: the decompression codecs are deregistered by codecCleanupGuard
+    // on return
 
     return 0;
 }

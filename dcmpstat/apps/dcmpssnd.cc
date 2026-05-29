@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 1999-2025, OFFIS e.V.
+ *  Copyright (C) 1999-2026, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -52,6 +52,7 @@ END_EXTERN_C
 #endif
 
 #include "dcmtk/ofstd/ofstream.h"
+#include "dcmtk/ofstd/ofmem.h"       /* for OFunique_ptr */
 
 #define OFFIS_CONSOLE_APPLICATION "dcmpssnd"
 
@@ -563,11 +564,13 @@ int main(int argc, char *argv[])
 
 #ifdef WITH_OPENSSL
 
-    DcmTLSTransportLayer *tLayer = NULL;
+    // OFunique_ptr frees the TLS transport layer on every exit path, including
+    // the error returns below that would otherwise skip the cleanup.
+    OFunique_ptr<DcmTLSTransportLayer> tLayer;
     if (useTLS)
     {
-      tLayer = new DcmTLSTransportLayer(NET_REQUESTOR, tlsRandomSeedFile.c_str(), OFFalse);
-      if (tLayer == NULL)
+      tLayer.reset(new DcmTLSTransportLayer(NET_REQUESTOR, tlsRandomSeedFile.c_str(), OFFalse));
+      if (!tLayer)
       {
         OFLOG_FATAL(dcmpssndLogger, "unable to create TLS transport layer");
         return 1;
@@ -690,7 +693,7 @@ int main(int argc, char *argv[])
 #ifdef WITH_OPENSSL
     if (tLayer)
     {
-      cond = ASC_setTransportLayer(net, tLayer, 0);
+      cond = ASC_setTransportLayer(net, tLayer.get(), 0);
       if (cond.bad())
       {
         OFLOG_FATAL(dcmpssndLogger, DimseCondition::dump(temp_str, cond));
@@ -949,7 +952,7 @@ int main(int argc, char *argv[])
         OFLOG_WARN(dcmpssndLogger, "cannot write back random seed, ignoring");
       }
     }
-    delete tLayer;
+    // note: tLayer (an OFunique_ptr) frees the transport layer on return
 #endif
 
 #ifdef DEBUG

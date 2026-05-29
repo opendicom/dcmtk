@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 1994-2025, OFFIS e.V.
+ *  Copyright (C) 1994-2026, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -962,6 +962,10 @@ main(int argc, char *argv[])
         // failure to write back the random seed is a warning, not an error
         OFLOG_WARN(movescuLogger, DimseCondition::dump(temp_str, cond));
     }
+
+    /* free the override keys accumulated from --key options */
+    delete overrideKeys;
+    overrideKeys = NULL;
 
     return cmove_status_code;
 }

@@ -248,6 +248,11 @@ int main(int argc, char *argv[])
     // register RLE compression codec
     DcmRLEEncoderRegistration::registerCodecs(opt_uidcreation,
       OFstatic_cast(Uint32, opt_fragmentSize), opt_createOffsetTable, opt_secondarycapture);
+    // RAII guard: deregister the codec on every exit path, including the
+    // error returns below that would otherwise skip the cleanup() call.
+    struct CodecCleanupGuard {
+        ~CodecCleanupGuard() { DcmRLEEncoderRegistration::cleanup(); }
+    } codecCleanupGuard;
 
     /* make sure data dictionary is loaded */
     if (!dcmDataDict.isDictionaryLoaded())
@@ -325,8 +330,7 @@ int main(int argc, char *argv[])
 
     OFLOG_INFO(dcmcrleLogger, "conversion successful");
 
-    // deregister RLE codec
-    DcmRLEEncoderRegistration::cleanup();
+    // note: the RLE codec is deregistered by codecCleanupGuard on return
 
     return 0;
 }

@@ -663,6 +663,16 @@ int main(int argc, char *argv[])
       opt_acrNemaCompatibility,
       opt_trueLossless);
 
+    // RAII guard: deregister the codecs on every exit path, including the
+    // error returns below that would otherwise skip the cleanup() calls.
+    struct CodecCleanupGuard {
+        ~CodecCleanupGuard()
+        {
+            DJDecoderRegistration::cleanup();
+            DJEncoderRegistration::cleanup();
+        }
+    } codecCleanupGuard;
+
     /* make sure data dictionary is loaded */
     if (!dcmDataDict.isDictionaryLoaded())
     {
@@ -745,9 +755,7 @@ int main(int argc, char *argv[])
 
     OFLOG_INFO(dcmcjpegLogger, "conversion successful");
 
-    // deregister global codecs
-    DJDecoderRegistration::cleanup();
-    DJEncoderRegistration::cleanup();
+    // note: the global codecs are deregistered by codecCleanupGuard on return
 
     return 0;
 }

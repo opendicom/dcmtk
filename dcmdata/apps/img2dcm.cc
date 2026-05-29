@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 2007-2025, OFFIS e.V.
+ *  Copyright (C) 2007-2026, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -23,6 +23,7 @@
 #include "dcmtk/config/osconfig.h"
 #include "dcmtk/dcmdata/cmdlnarg.h"
 #include "dcmtk/ofstd/ofconapp.h"
+#include "dcmtk/ofstd/ofmem.h"
 #include "dcmtk/dcmdata/dcuid.h"
 #include "dcmtk/dcmdata/dcfilefo.h"
 #include "dcmtk/dcmdata/dcdict.h"
@@ -221,10 +222,11 @@ static OFCondition startConversion(
 
   // Main class for controlling conversion
   Image2Dcm i2d;
-  // Output plugin to use (i.e. SOP class to write)
-  I2DOutputPlug *outPlug = NULL;
-  // Input plugin to use (i.e. file format to read)
-  I2DImgSource *inputPlug = NULL;
+  // Output plugin to use (i.e. SOP class to write); owned via RAII so that
+  // every (error) return path below releases it automatically
+  OFunique_ptr<I2DOutputPlug> outPlug;
+  // Input plugin to use (i.e. file format to read); owned via RAII
+  OFunique_ptr<I2DImgSource> inputPlug;
   // Group length encoding mode for output DICOM file
   E_GrpLenEncoding grpLengthEnc = EGL_recalcGL;
   // Item and Sequence encoding mode for output DICOM file
@@ -279,32 +281,32 @@ static OFCondition startConversion(
     }
   }
 
-  inputPlug = createInputPlugin(inForm);
+  inputPlug.reset(createInputPlugin(inForm));
   OFLOG_INFO(img2dcmLogger, OFFIS_CONSOLE_APPLICATION ": Instantiated input plugin: " << inputPlug->inputFormat());
 
  // Find out which output plugin to use
   cmd.beginOptionBlock();
   if (cmd.findOption("--sec-capture"))
   {
-    outPlug = new I2DOutputPlugSC();
+    outPlug.reset(new I2DOutputPlugSC());
   }
   if (cmd.findOption("--new-sc"))
   {
-    outPlug = new I2DOutputPlugNewSC();
+    outPlug.reset(new I2DOutputPlugNewSC());
   }
   if (cmd.findOption("--vl-photo"))
   {
-    outPlug = new I2DOutputPlugVLP();
+    outPlug.reset(new I2DOutputPlugVLP());
   }
   if (cmd.findOption("--oph-photo"))
   {
-    outPlug = new I2DOutputPlugOphthalmicPhotography();
+    outPlug.reset(new I2DOutputPlugOphthalmicPhotography());
   }
 
   cmd.endOptionBlock();
   if (!outPlug) // default is the old Secondary Capture object
-    outPlug = new I2DOutputPlugSC();
-  if (outPlug == NULL) return EC_MemoryExhausted;
+    outPlug.reset(new I2DOutputPlugSC());
+  if (!outPlug) return EC_MemoryExhausted;  // inputPlug released by RAII
   OFLOG_INFO(img2dcmLogger, OFFIS_CONSOLE_APPLICATION ": Instantiated output plugin: " << outPlug->ident());
 
   if (inputFiles.size() > 1)
@@ -313,7 +315,6 @@ static OFCondition startConversion(
     if (! outPlug->supportsMultiframe())
     {
       OFLOG_ERROR(img2dcmLogger, outPlug->ident() << " does not support multiframe images");
-      delete outPlug;
       return EC_SOPClassMismatch;
     }
   }
@@ -416,19 +417,15 @@ static OFCondition startConversion(
   cond = evaluateFromFileOptions(app, cmd, i2d);
   if (cond.bad())
   {
-    delete outPlug; outPlug = NULL;
-    delete inputPlug; inputPlug = NULL;
-    return cond;
+    return cond;  // outPlug/inputPlug released by RAII
   }
 
   if (inputPlug->inputFormat() == "JPEG")
   {
-    I2DJpegSource *jpgSource = OFstatic_cast(I2DJpegSource*, inputPlug);
+    I2DJpegSource *jpgSource = OFstatic_cast(I2DJpegSource*, inputPlug.get());
     if (!jpgSource)
     {
-       delete outPlug; outPlug = NULL;
-       delete inputPlug; inputPlug = NULL;
-       return EC_MemoryExhausted;
+       return EC_MemoryExhausted;  // outPlug/inputPlug released by RAII
     }
     if ( cmd.findOption("--disable-progr") )
       jpgSource->setProgrSupport(OFFalse);
@@ -456,17 +453,16 @@ static OFCondition startConversion(
   OFListIterator(OFString) if_last = inputFiles.end();
 
   inputPlug->setImageFile(*if_iter++); // we are guaranteed to have at least one input file
-  cond = i2d.convertFirstFrame(inputPlug, outPlug, inputFiles.size(), resultObject, writeXfer);
+  cond = i2d.convertFirstFrame(inputPlug.get(), outPlug.get(), inputFiles.size(), resultObject, writeXfer);
   size_t frameNum = 1;
 
   // iterate over all extra input filenames
   while (cond.good() && (if_iter != if_last))
   {
     // create a new input format plugin for each file to be processed
-    delete inputPlug;
-    inputPlug = createInputPlugin(inForm);
+    inputPlug.reset(createInputPlugin(inForm));
     inputPlug->setImageFile(*if_iter++);
-    cond = i2d.convertNextFrame(inputPlug, ++frameNum);
+    cond = i2d.convertNextFrame(inputPlug.get(), ++frameNum);
   }
 
   // adjust byte order of pixel data to local OW byte order
@@ -476,7 +472,7 @@ static OFCondition startConversion(
   if (cond.good()) cond = i2d.updateOffsetTable();
 
   // update attributes related to lossy compression
-  if (cond.good()) cond = i2d.updateLossyCompressionInfo(inputPlug, inputFiles.size(), resultObject);
+  if (cond.good()) cond = i2d.updateLossyCompressionInfo(inputPlug.get(), inputFiles.size(), resultObject);
 
   // Save
   if (cond.good())
@@ -486,9 +482,7 @@ static OFCondition startConversion(
     cond = dcmff.saveFile(outputFile, writeXfer, lengthEnc,  grpLengthEnc, padEnc, OFstatic_cast(Uint32, filepad), OFstatic_cast(Uint32, itempad), writeMode);
   }
 
-  // Cleanup and return
-  delete outPlug; outPlug = NULL;
-  delete inputPlug; inputPlug = NULL;
+  // Cleanup and return (outPlug/inputPlug are released by RAII)
   delete resultObject; resultObject = NULL;
 
   return cond;

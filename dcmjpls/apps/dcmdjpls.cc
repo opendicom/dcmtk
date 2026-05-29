@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 2007-2022, OFFIS e.V.
+ *  Copyright (C) 2007-2026, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -260,6 +260,12 @@ LICENSE_FILE_EVALUATE_COMMAND_LINE_OPTIONS
         opt_ignoreOffsetTable,
         opt_forceSingleFragmentPerFrame);
 
+    // RAII guard: deregister the codecs on every exit path, including the
+    // error returns below that would otherwise skip the cleanup() call.
+    struct CodecCleanupGuard {
+        ~CodecCleanupGuard() { DJLSDecoderRegistration::cleanup(); }
+    } codecCleanupGuard;
+
     /* make sure data dictionary is loaded */
     if (!dcmDataDict.isDictionaryLoaded())
     {
@@ -322,8 +328,8 @@ LICENSE_FILE_EVALUATE_COMMAND_LINE_OPTIONS
 
     OFLOG_INFO(dcmdjplsLogger, "conversion successful");
 
-    // deregister global decompression codecs
-    DJLSDecoderRegistration::cleanup();
+    // note: the global decompression codecs are deregistered by
+    // codecCleanupGuard on return
 
     return 0;
 }

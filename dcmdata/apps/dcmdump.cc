@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 1994-2023, OFFIS e.V.
+ *  Copyright (C) 1994-2026, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -282,6 +282,20 @@ DCMTK_MAIN_FUNCTION
 
     /* evaluate command line */
     prepareCmdLineArgs(argc, argv, OFFIS_CONSOLE_APPLICATION);
+
+    // RAII guard: free the per-option print-tag arrays (filled by
+    // addPrintTagName) on every return path from main()
+    struct PrintTagCleanupGuard {
+        ~PrintTagCleanupGuard()
+        {
+            for (int i = 0; i < printTagCount; i++)
+            {
+                delete printTagKeys[i];
+                free(OFconst_cast(char *, printTagNames[i]));
+            }
+        }
+    } printTagCleanupGuard;
+
     if (app.parseCommandLine(cmd, argc, argv))
     {
       /* check exclusive options first */

@@ -1022,6 +1022,7 @@ int main(int argc, char *argv[])
   if (OFStandard::dropPrivileges().bad())
   {
       OFLOG_FATAL(storescpLogger, "setuid() failed, maximum number of processes/threads for uid already running.");
+      ASC_dropNetwork(&net);
       return 1;
   }
 
@@ -1029,6 +1030,7 @@ int main(int argc, char *argv[])
   cond = tlsOptions.createTransportLayer(net, NULL, app, cmd);
   if (cond.bad()) {
       OFLOG_FATAL(storescpLogger, DimseCondition::dump(temp_str, cond));
+      ASC_dropNetwork(&net);
       exit(1);
   }
 

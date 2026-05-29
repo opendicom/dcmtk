@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 1999-2023, OFFIS e.V.
+ *  Copyright (C) 1999-2026, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -564,11 +564,13 @@ int main(int argc, char *argv[])
             if (EC_Normal != dvi.getCurrentPState().getPrintBitmapWidthHeight(width, height))
             {
               OFLOG_FATAL(dcmpsprtLogger, "can't determine bitmap size");
+              delete[] OFstatic_cast(char *, pixelData);
               return 10;
             }
             if (EC_Normal != dvi.getCurrentPState().getPrintBitmap(pixelData, bitmapSize, opt_inverse_plut))
             {
               OFLOG_FATAL(dcmpsprtLogger, "can't create print bitmap");
+              delete[] OFstatic_cast(char *, pixelData);
               return 10;
             }
             pixelAspectRatio = dvi.getCurrentPState().getPrintBitmapPixelAspectRatio();
@@ -590,6 +592,7 @@ int main(int argc, char *argv[])
             if (EC_Normal != dvi.saveHardcopyGrayscaleImage(pixelData, width, height, pixelAspectRatio))
             {
               OFLOG_FATAL(dcmpsprtLogger, "error during creation of DICOM grayscale hardcopy image file");
+              delete[] OFstatic_cast(char *, pixelData);
               return 10;
             }
             delete[] OFstatic_cast(char *, pixelData);

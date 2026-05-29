@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 1999-2017, OFFIS e.V.
+ *  Copyright (C) 1999-2026, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -27,6 +27,7 @@
 
 #include "dcmtk/ofstd/ofconapp.h"
 #include "dcmtk/ofstd/ofcmdln.h"
+#include "dcmtk/ofstd/ofmem.h"           /* for OFunique_ptr */
 
 #include "dcmtk/dcmimgle/digsdfn.h"
 #include "dcmtk/dcmimgle/diciefn.h"
@@ -210,13 +211,13 @@ int main(int argc, char *argv[])
         {
             OFLOG_INFO(dcmdspfnLogger, "creating GSDF display curve ...");
             app.checkValue(cmd.getValue(opt_ofname));
-            DiGSDFunction *disp = NULL;
+            OFunique_ptr<DiGSDFunction> disp;
             if (opt_ifname != NULL)
-                disp = new DiGSDFunction(opt_ifname, deviceType, OFstatic_cast(signed int, opt_polyOrder));
+                disp.reset(new DiGSDFunction(opt_ifname, deviceType, OFstatic_cast(signed int, opt_polyOrder)));
             else
-                disp = new DiGSDFunction(opt_minVal, opt_maxVal, opt_ddlCount, DiDisplayFunction::EDT_Monitor,
-                                        OFstatic_cast(signed int, opt_polyOrder));
-            if ((disp != NULL) && disp->isValid())
+                disp.reset(new DiGSDFunction(opt_minVal, opt_maxVal, opt_ddlCount, DiDisplayFunction::EDT_Monitor,
+                                        OFstatic_cast(signed int, opt_polyOrder)));
+            if (disp && disp->isValid())
             {
                 if (opt_ambLight >= 0)
                 {
@@ -246,13 +247,13 @@ int main(int argc, char *argv[])
                 if (!disp->writeCurveData(opt_ofname, opt_ifname != NULL))
                 {
                     OFLOG_FATAL(dcmdspfnLogger, "can't write output file");
-                    return 1;
+                    return 1;  // disp released by RAII
                 }
             } else {
                 OFLOG_FATAL(dcmdspfnLogger, "can't create display curve");
-                return 1;
+                return 1;  // disp released by RAII
             }
-            delete disp;
+            // disp released by RAII at end of this scope
         }
 
         /* CIELAB display function */
@@ -260,13 +261,13 @@ int main(int argc, char *argv[])
         {
             OFLOG_INFO(dcmdspfnLogger, "creating CIELAB display curve ...");
             app.checkValue(cmd.getValue(opt_ofname));
-            DiCIELABFunction *disp = NULL;
+            OFunique_ptr<DiCIELABFunction> disp;
             if (opt_ifname != NULL)
-                disp = new DiCIELABFunction(opt_ifname, deviceType, OFstatic_cast(signed int, opt_polyOrder));
+                disp.reset(new DiCIELABFunction(opt_ifname, deviceType, OFstatic_cast(signed int, opt_polyOrder)));
             else
-                disp = new DiCIELABFunction(opt_minVal, opt_maxVal, opt_ddlCount, DiDisplayFunction::EDT_Monitor,
-                                            OFstatic_cast(signed int, opt_polyOrder));
-            if ((disp != NULL) && disp->isValid())
+                disp.reset(new DiCIELABFunction(opt_minVal, opt_maxVal, opt_ddlCount, DiDisplayFunction::EDT_Monitor,
+                                            OFstatic_cast(signed int, opt_polyOrder)));
+            if (disp && disp->isValid())
             {
                 if (opt_ambLight >= 0)
                 {
@@ -291,12 +292,13 @@ int main(int argc, char *argv[])
                 if (!disp->writeCurveData(opt_ofname, opt_ifname != NULL))
                 {
                     OFLOG_FATAL(dcmdspfnLogger, "can't write output file");
-                    return 1;
+                    return 1;  // disp released by RAII
                 }
             } else {
                 OFLOG_FATAL(dcmdspfnLogger, "can't create display curve");
-                return 1;
+                return 1;  // disp released by RAII
             }
+            // disp released by RAII at end of this scope
         }
     } else {
         OFLOG_WARN(dcmdspfnLogger, "nothing to do, no output file specified");

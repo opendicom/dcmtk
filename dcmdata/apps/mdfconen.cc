@@ -317,6 +317,7 @@ MdfConsoleEngine::MdfConsoleEngine(int argc, char* argv[], const char* applicati
         if (files->empty())
         {
             OFLOG_ERROR(dcmodifyLogger, "no dicom files given!");
+            delete files;
             delete app;
             delete cmd;
             exit(1);

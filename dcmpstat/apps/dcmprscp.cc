@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 2000-2025, OFFIS e.V.
+ *  Copyright (C) 2000-2026, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -38,6 +38,7 @@ END_EXTERN_C
 #include "dcmtk/dcmpstat/dvpshlp.h"
 #include "dcmtk/oflog/fileap.h"
 #include "dcmtk/ofstd/ofstd.h"
+#include "dcmtk/ofstd/ofmem.h"       /* for OFunique_ptr */
 
 #ifdef WITH_OPENSSL
 #include "dcmtk/dcmtls/tlstrans.h"
@@ -329,11 +330,13 @@ int main(int argc, char *argv[])
     DcmKeyFileFormat keyFileFormat = DCF_Filetype_PEM;
     if (! dvi.getTLSPEMFormat()) keyFileFormat = DCF_Filetype_ASN1;
 
-    DcmTLSTransportLayer *tLayer = NULL;
+    // OFunique_ptr frees the TLS transport layer on every exit path, including
+    // the error returns below that would otherwise skip the cleanup.
+    OFunique_ptr<DcmTLSTransportLayer> tLayer;
     if (targetUseTLS)
     {
-      tLayer = new DcmTLSTransportLayer(NET_ACCEPTOR, tlsRandomSeedFile.c_str(), OFFalse);
-      if (tLayer == NULL)
+      tLayer.reset(new DcmTLSTransportLayer(NET_ACCEPTOR, tlsRandomSeedFile.c_str(), OFFalse));
+      if (!tLayer)
       {
         OFLOG_FATAL(dcmprscpLogger, "unable to create TLS transport layer");
         return 1;
@@ -418,7 +421,7 @@ int main(int argc, char *argv[])
 #ifdef WITH_OPENSSL
     if (tLayer)
     {
-      cond = ASC_setTransportLayer(net, tLayer, 0);
+      cond = ASC_setTransportLayer(net, tLayer.get(), 0);
       if (cond.bad())
       {
         OFString temp_str;
@@ -502,7 +505,7 @@ int main(int argc, char *argv[])
         OFLOG_WARN(dcmprscpLogger, "cannot write back random seed, ignoring");
       }
     }
-    delete tLayer;
+    // note: tLayer (an OFunique_ptr) frees the transport layer on return
 #endif
 
     return 0;
