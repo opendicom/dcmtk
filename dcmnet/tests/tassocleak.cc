@@ -39,6 +39,22 @@
 #include "dcmtk/dcmnet/dulstruc.h"    /* DUL_TYPE* constants, DUL_PROTOCOL */
 #include "dcmtk/dcmnet/dul.h"
 
+#ifdef HAVE_WINDOWS_H
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#elif defined(HAVE_WINSOCK_H)
+#include <winsock.h>  /* include winsock.h directly i.e. on MacOS */
+#endif
+
+BEGIN_EXTERN_C
+#ifdef HAVE_SYS_SOCKET_H
+#include <sys/socket.h>
+#endif
+#ifdef HAVE_NETINET_IN_H
+#include <netinet/in.h>
+#endif
+END_EXTERN_C
+
 
 /* --------------------------------------------------------------------------
  *  Minimal in-process SCP that accepts exactly one association attempt and
