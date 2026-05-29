@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 1996-2025, OFFIS e.V.
+ *  Copyright (C) 1996-2026, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -171,20 +171,23 @@ void WlmDataSourceFileSystem::HandleExistentButEmptyDescriptionAndCodeSequenceAt
 //                codeSequenceTagKey - [in] DcmTagKey of the codeSequence attribute which shall be checked.
 // Return Value : none.
 {
-  DcmElement *codeSequenceAttribute = NULL, *descriptionAttribute = NULL;
+  DcmSequenceOfItems *codeSequenceAttribute = NULL;
+  DcmElement *descriptionAttribute = NULL;
   DcmElement *elementToRemove = NULL, *codeValueAttribute = NULL, *codingSchemeDesignatorAttribute = NULL;
   OFBool codeSequenceAttributeRemoved = OFFalse;
 
-  // only do something with the code sequence attribute if it is contained in the dataset
-  if( dataset->findAndGetElement( codeSequenceTagKey, codeSequenceAttribute ).good() )
+  // only do something with the code sequence attribute if it is contained in the dataset.
+  // Note: findAndGetSequence() verifies the element's VR (SQ); a malformed element with a
+  // dictionary-SQ tag but a non-SQ wire VR is rejected here instead of being cast blindly.
+  if( dataset->findAndGetSequence( codeSequenceTagKey, codeSequenceAttribute ).good() )
   {
     // if the code sequence attribute is empty or contains exactly one item with an empty
     // CodeValue and an empty CodingSchemeDesignator, remove the attribute from the dataset
-    if( ( ((DcmSequenceOfItems*)codeSequenceAttribute)->card() == 0 ) ||
-        ( ((DcmSequenceOfItems*)codeSequenceAttribute)->card() == 1 &&
-          ((DcmSequenceOfItems*)codeSequenceAttribute)->getItem(0)->findAndGetElement( DCM_CodeValue, codeValueAttribute ).good() &&
+    if( ( codeSequenceAttribute->card() == 0 ) ||
+        ( codeSequenceAttribute->card() == 1 &&
+          codeSequenceAttribute->getItem(0)->findAndGetElement( DCM_CodeValue, codeValueAttribute ).good() &&
           codeValueAttribute->getLength() == 0 &&
-          ((DcmSequenceOfItems*)codeSequenceAttribute)->getItem(0)->findAndGetElement( DCM_CodingSchemeDesignator, codingSchemeDesignatorAttribute ).good() &&
+          codeSequenceAttribute->getItem(0)->findAndGetElement( DCM_CodingSchemeDesignator, codingSchemeDesignatorAttribute ).good() &&
           codingSchemeDesignatorAttribute->getLength() == 0 ) )
     {
       elementToRemove = dataset->remove( codeSequenceAttribute );
@@ -221,18 +224,21 @@ void WlmDataSourceFileSystem::HandleExistentButEmptyReferencedStudyOrPatientSequ
 //                sequenceTagKey  - [in] DcmTagKey of the sequence attribute which shall be checked.
 // Return Value : none.
 {
-  DcmElement *sequenceAttribute = NULL, *referencedSOPClassUIDAttribute = NULL, *referencedSOPInstanceUIDAttribute = NULL;
+  DcmSequenceOfItems *sequenceAttribute = NULL;
+  DcmElement *referencedSOPClassUIDAttribute = NULL, *referencedSOPInstanceUIDAttribute = NULL;
 
   // in case the sequence attribute contains exactly one item with an empty
-  // ReferencedSOPClassUID and an empty ReferencedSOPInstanceUID, remove the item
-  if( dataset->findAndGetElement( sequenceTagKey, sequenceAttribute ).good() &&
-      ( (DcmSequenceOfItems*)sequenceAttribute )->card() == 1 &&
-      ( (DcmSequenceOfItems*)sequenceAttribute )->getItem(0)->findAndGetElement( DCM_ReferencedSOPClassUID, referencedSOPClassUIDAttribute ).good() &&
+  // ReferencedSOPClassUID and an empty ReferencedSOPInstanceUID, remove the item.
+  // Note: findAndGetSequence() verifies the element's VR (SQ); a malformed element with a
+  // dictionary-SQ tag but a non-SQ wire VR is rejected here instead of being cast blindly.
+  if( dataset->findAndGetSequence( sequenceTagKey, sequenceAttribute ).good() &&
+      sequenceAttribute->card() == 1 &&
+      sequenceAttribute->getItem(0)->findAndGetElement( DCM_ReferencedSOPClassUID, referencedSOPClassUIDAttribute ).good() &&
       referencedSOPClassUIDAttribute->getLength() == 0 &&
-      ( (DcmSequenceOfItems*)sequenceAttribute )->getItem(0)->findAndGetElement( DCM_ReferencedSOPInstanceUID, referencedSOPInstanceUIDAttribute, OFFalse ).good() &&
+      sequenceAttribute->getItem(0)->findAndGetElement( DCM_ReferencedSOPInstanceUID, referencedSOPInstanceUIDAttribute, OFFalse ).good() &&
       referencedSOPInstanceUIDAttribute->getLength() == 0 )
   {
-    DcmItem *item = ((DcmSequenceOfItems*)sequenceAttribute)->remove( ((DcmSequenceOfItems*)sequenceAttribute)->getItem(0) );
+    DcmItem *item = sequenceAttribute->remove( sequenceAttribute->getItem(0) );
     delete item;
   }
 }
@@ -257,7 +263,7 @@ WlmDataSourceStatusType WlmDataSourceFileSystem::StartFindRequest( const DcmData
 //                WLM_FAILED_IDENTIFIER_DOES_NOT_MATCH_SOP_CLASS - Error in the search mask encountered.
 {
   unsigned long i, j;
-  DcmElement *scheduledProcedureStepSequenceAttribute = NULL;
+  DcmSequenceOfItems *scheduledProcedureStepSequenceAttribute = NULL;
 
   // Initialize offending elements, error elements and error comment.
   delete offendingElements;
@@ -352,9 +358,13 @@ WlmDataSourceStatusType WlmDataSourceFileSystem::StartFindRequest( const DcmData
       }
 
       // if the ScheduledProcedureStepSequence can be found in the current dataset, handle
-      // existent but empty ScheduledProcedureStepDescription and ScheduledProtocolCodeSequence
-      if( resultRecord->findAndGetElement( DCM_ScheduledProcedureStepSequence, scheduledProcedureStepSequenceAttribute, OFFalse ).good() )
-        HandleExistentButEmptyDescriptionAndCodeSequenceAttributes( ((DcmDataset*)((DcmSequenceOfItems*)scheduledProcedureStepSequenceAttribute)->getItem(0)), DCM_ScheduledProcedureStepDescription, DCM_ScheduledProtocolCodeSequence );
+      // existent but empty ScheduledProcedureStepDescription and ScheduledProtocolCodeSequence.
+      // Note: findAndGetSequence() verifies the element's VR (SQ); a malformed element with a
+      // dictionary-SQ tag but a non-SQ wire VR is rejected here instead of being cast blindly.
+      // Also guard against an empty sequence so that getItem(0) does not return NULL.
+      if( resultRecord->findAndGetSequence( DCM_ScheduledProcedureStepSequence, scheduledProcedureStepSequenceAttribute, OFFalse ).good() &&
+          scheduledProcedureStepSequenceAttribute->card() > 0 )
+        HandleExistentButEmptyDescriptionAndCodeSequenceAttributes( scheduledProcedureStepSequenceAttribute->getItem(0), DCM_ScheduledProcedureStepDescription, DCM_ScheduledProtocolCodeSequence );
 
       // handle existent but empty RequestedProcedureDescription and RequestedProcedureCodeSequence
       HandleExistentButEmptyDescriptionAndCodeSequenceAttributes( resultRecord, DCM_RequestedProcedureDescription, DCM_RequestedProcedureCodeSequence );
