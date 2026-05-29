@@ -493,7 +493,7 @@ OFBool WlmFileSystemInteractionManager::DatasetIsComplete( DcmDataset *dataset )
 // Return Value : OFTrue in case the given dataset contains all necessary return type 1 information,
 //                OFFalse otherwise.
 {
-  DcmElement *scheduledProcedureStepSequence = NULL;
+  DcmSequenceOfItems *scheduledProcedureStepSequence = NULL;
 
   // initialize returnValue
   OFBool complete = OFTrue;
@@ -503,7 +503,7 @@ OFBool WlmFileSystemInteractionManager::DatasetIsComplete( DcmDataset *dataset )
   // the dataset is considered to be incomplete...
   // ...if the ScheduledProcedureStepSequence is missing or
   // ...if the ScheduledProcedureStepSequence does not have exactly one item
-  if( dataset->findAndGetElement( DCM_ScheduledProcedureStepSequence, scheduledProcedureStepSequence ).bad() || ((DcmSequenceOfItems*)scheduledProcedureStepSequence)->card() != 1 )
+  if( dataset->findAndGetSequence( DCM_ScheduledProcedureStepSequence, scheduledProcedureStepSequence ).bad() || scheduledProcedureStepSequence->card() != 1 )
   {
     DCMWLM_DEBUG("- ScheduledProcedureStepSequence " << DCM_ScheduledProcedureStepSequence << " is missing or does not have exactly one item");
     complete = OFFalse;
@@ -512,7 +512,7 @@ OFBool WlmFileSystemInteractionManager::DatasetIsComplete( DcmDataset *dataset )
   {
     // so the ScheduledProcedureStepSequence is existent and has exactly one item;
     // get this one and only item from the ScheduledProcedureStepSequence
-    DcmItem *scheduledProcedureStepSequenceItem = ((DcmSequenceOfItems*)scheduledProcedureStepSequence)->getItem(0);
+    DcmItem *scheduledProcedureStepSequenceItem = scheduledProcedureStepSequence->getItem(0);
 
     // the dataset is considered to be incomplete...
     // ...if ScheduledStationAETitle is missing or empty in the ScheduledProcedureStepSequence, or
@@ -563,11 +563,14 @@ OFBool WlmFileSystemInteractionManager::ReferencedStudyOrPatientSequenceIsAbsent
 // Return Value : OFTrue in case the sequence attribute is absent (and cannot be added to the dataset)
 //                or existent but non-empty and incomplete, OFFalse otherwise.
 {
-  DcmElement *sequence = NULL;
+  DcmSequenceOfItems *sequence = NULL;
   OFBool result;
 
   // check whether the type 2 sequence attribute is absent
-  if( dset->findAndGetElement( sequenceTagKey, sequence ).bad() )
+  // (findAndGetSequence also fails if the attribute is present but does not have
+  //  a sequence VR, e.g. due to a VR-spoofed Explicit VR encoding; in that case
+  //  the malformed element is replaced below with a proper empty sequence)
+  if( dset->findAndGetSequence( sequenceTagKey, sequence ).bad() )
   {
     DCMWLM_DEBUG("- " << DcmTag(sequenceTagKey).getTagName() << " " << sequenceTagKey << " is missing");
     // try to add it to the dataset and return OFFalse if successful
@@ -583,17 +586,17 @@ OFBool WlmFileSystemInteractionManager::ReferencedStudyOrPatientSequenceIsAbsent
   {
     // if the sequence attribute is existent but empty, we want to return OFFalse
     // (note that the sequence is actually type 2, so being empty is ok)
-    if( ((DcmSequenceOfItems*)sequence)->card() == 0 )
+    if( sequence->card() == 0 )
       result = OFFalse;
     else
     {
       // if the sequence attribute is existent and non-empty, we need
       // to check every item in the sequence for completeness
       result = OFFalse;
-      for( unsigned long i=0 ; i<((DcmSequenceOfItems*)sequence)->card() && !result ; i++ )
+      for( unsigned long i=0 ; i<sequence->card() && !result ; i++ )
       {
-        if( AttributeIsAbsentOrEmpty( DCM_ReferencedSOPClassUID, ((DcmSequenceOfItems*)sequence)->getItem(i) ) ||
-            AttributeIsAbsentOrEmpty( DCM_ReferencedSOPInstanceUID, ((DcmSequenceOfItems*)sequence)->getItem(i) ) )
+        if( AttributeIsAbsentOrEmpty( DCM_ReferencedSOPClassUID, sequence->getItem(i) ) ||
+            AttributeIsAbsentOrEmpty( DCM_ReferencedSOPInstanceUID, sequence->getItem(i) ) )
           result = OFTrue;
       }
       if ( result )
