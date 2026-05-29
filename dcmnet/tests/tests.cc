@@ -63,6 +63,8 @@ OFTEST_REGISTER(dcmnet_scu_maxNestingDepth_getset);
 OFTEST_REGISTER(dcmnet_scp_maxNestingDepth_rejects_deep);
 OFTEST_REGISTER(dcmnet_scp_maxNestingDepth_accepts_shallow);
 
+OFTEST_REGISTER(dcmnet_scp_assocRQ_zeroTransferSyntax_no_leak);
+
 #endif // WITH_THREADS
 
 OFTEST_MAIN("dcmnet")
