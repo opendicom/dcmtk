@@ -383,6 +383,14 @@ basic offset table encoding:
   # This option causes the creation of an empty offset table
   # for the compressed JPEG fragments.
 
+icon image encoding:
+
+  +ic  --icon-compressed
+         compress icon images (default)
+
+  +iu  --icon-uncompressed
+         keep icon images uncompressed
+
 VOI windowing for monochrome images (not with +tl):
 
   -W    --no-windowing
@@ -707,6 +715,6 @@ It is an error if no data dictionary can be loaded.
 
 \section dcmcjpeg_copyright COPYRIGHT
 
-Copyright (C) 2001-2025 by OFFIS e.V., Escherweg 2, 26121 Oldenburg, Germany.
+Copyright (C) 2001-2026 by OFFIS e.V., Escherweg 2, 26121 Oldenburg, Germany.
 
 */

@@ -215,6 +215,14 @@ basic offset table encoding:
   # This option causes the creation of an empty offset table
   # for the compressed JPEG fragments.
 
+icon image encoding:
+
+  +ic  --icon-compressed
+         compress icon images (default)
+
+  +iu  --icon-uncompressed
+         keep icon images uncompressed
+
 SOP Class UID:
 
   +cd  --class-default
@@ -387,6 +395,6 @@ It is an error if no data dictionary can be loaded.
 
 \section dcmcjpls_copyright COPYRIGHT
 
-Copyright (C) 2009-2025 by OFFIS e.V., Escherweg 2, 26121 Oldenburg, Germany.
+Copyright (C) 2009-2026 by OFFIS e.V., Escherweg 2, 26121 Oldenburg, Germany.
 
 */

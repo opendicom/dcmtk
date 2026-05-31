@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 2001-2024, OFFIS e.V.
+ *  Copyright (C) 2001-2026, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -89,6 +89,7 @@ int main(int argc, char *argv[])
   OFCmdFloat       opt_windowCenter=0.0, opt_windowWidth=0.0;
   E_UIDCreation    opt_uidcreation = EUC_default;
   OFBool           opt_secondarycapture = OFFalse;
+  OFBool           opt_iconImagesUnencapsulated = OFFalse;
   OFCmdUnsignedInt opt_roiLeft = 0, opt_roiTop = 0, opt_roiWidth = 0, opt_roiHeight = 0;
   OFBool           opt_usePixelValues = OFTrue;
   OFBool           opt_useModalityRescale = OFFalse;
@@ -193,6 +194,10 @@ int main(int argc, char *argv[])
     cmd.addSubGroup("basic offset table encoding:");
       cmd.addOption("--offset-table-create", "+ot",    "create offset table (default)");
       cmd.addOption("--offset-table-empty",  "-ot",    "leave offset table empty");
+
+    cmd.addSubGroup("icon image encoding:");
+      cmd.addOption("--icon-compressed",     "+ic",    "compress icon images (default)");
+      cmd.addOption("--icon-uncompressed",   "+iu",    "keep icon images uncompressed");
 
     cmd.addSubGroup("VOI windowing for monochrome images (not with +tl):");
       cmd.addOption("--no-windowing",        "-W",     "no VOI windowing (default)");
@@ -518,6 +523,11 @@ int main(int argc, char *argv[])
       cmd.endOptionBlock();
 
       cmd.beginOptionBlock();
+      if (cmd.findOption("--icon-compressed")) opt_iconImagesUnencapsulated = OFFalse;
+      if (cmd.findOption("--icon-uncompressed")) opt_iconImagesUnencapsulated = OFTrue;
+      cmd.endOptionBlock();
+
+      cmd.beginOptionBlock();
       if (cmd.findOption("--no-windowing")) opt_windowType = 0;
       if (cmd.findOption("--use-window"))
       {
@@ -712,6 +722,7 @@ int main(int argc, char *argv[])
     if (lossless)
         rp = &rp_lossless;
 
+    dataset->setIconImageNonEncapsulationFlag(opt_iconImagesUnencapsulated);
     if (dataset->chooseRepresentation(opt_oxfer, rp).good() && dataset->canWriteXfer(opt_oxfer))
     {
       OFLOG_INFO(dcmcjpegLogger, "Output transfer syntax " << opt_oxferSyn.getXferName() << " can be written");
