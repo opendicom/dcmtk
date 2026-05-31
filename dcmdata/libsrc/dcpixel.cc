@@ -278,22 +278,31 @@ DcmPixelData::chooseRepresentation(
 
     const DcmRepresentationEntry findEntry(repType, repParam, NULL);
     DcmRepresentationListIterator result(repListEnd);
+
+    // check if the desired representation already exists
     if ((toType.usesNativeFormat() && existUnencapsulated) ||
         (toType.usesEncapsulatedFormat() && findRepresentationEntry(findEntry, result) == EC_Normal))
     {
-        // representation found
+        // desired representation found, just activate it
         current = result;
         recalcVR();
         l_error = EC_Normal;
     }
     else
     {
-        if (original == repListEnd)
+        // if the pixel data is native and should stay native, do nothing
+        if ((original == repListEnd) && alwaysUnencapsulated)
+            l_error = EC_Normal;
+        // if the pixel data is native but should be encapsulated, call the encoder
+        else if (original == repListEnd)
             l_error = encode(EXS_LittleEndianExplicit, NULL, NULL,
                              toType, repParam, pixelStack);
+        // if the pixel data is encapsulated, but a different encapsulated
+        // representation is needed, call the transcoder
         else if (toType.usesEncapsulatedFormat())
             l_error = encode((*original)->repType, (*original)->repParam,
                              (*original)->pixSeq, toType, repParam, pixelStack);
+        // otherwise, call the decoder
         else
             l_error = decode((*original)->repType, (*original)->repParam,
                              (*original)->pixSeq, pixelStack);
