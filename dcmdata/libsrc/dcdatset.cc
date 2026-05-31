@@ -957,3 +957,21 @@ void DcmDataset::initializeXfer(const E_TransferSyntax xfer)
   OriginalXfer = xfer;
   CurrentXfer = xfer;
 }
+
+// ********************************
+
+void DcmDataset::setIconImageNonEncapsulationFlag(OFBool flag)
+{
+    DcmItem *icon = NULL;
+    if (findAndGetSequenceItem(DCM_IconImageSequence, icon, 0).good() && icon)
+    {
+        // We do have an icon image sequence. Note that we only process the first
+        // sequence item since only a single item is permitted here.
+        DcmElement *iconpx = NULL;
+        if (icon->findAndGetElement(DCM_PixelData, iconpx).good() && iconpx && (iconpx->ident() == EVR_PixelData))
+        {
+            OFstatic_cast(DcmPixelData *, iconpx)->setNonEncapsulationFlag(flag);
+        }
+    }
+}
+

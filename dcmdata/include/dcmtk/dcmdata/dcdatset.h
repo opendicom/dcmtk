@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 1994-2025, OFFIS e.V.
+ *  Copyright (C) 1994-2026, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -343,6 +343,15 @@ class DCMTK_DCMDATA_EXPORT DcmDataset
                                  const Uint32 subPadLength = 0);
 
     // methods for different pixel representations
+
+    /** If an icon image sequence is present in the dataset, set or clear the flag
+     *  that indicates that this pixel data element will be written in uncompressed
+     *  (defined length) format even if the dataset itself is written in a
+     *  compressed syntax where pixel data is normally written in encapsulated
+     *  (undefined length) format.
+     *  @param flag new value of flag
+     */
+    virtual void setIconImageNonEncapsulationFlag(OFBool flag);
 
     /** select a specific representation (compressed or uncompressed) of the dataset
      *  and create the representation if needed. This may cause compression or decompression
