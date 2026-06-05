@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 2012-2025, OFFIS e.V.
+ *  Copyright (C) 2012-2026, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -50,9 +50,9 @@ DcmBaseSCPPool::~DcmBaseSCPPool()
 {
   // Wait that we are in SHUTDOWN mode
   // Let busy threads finish their work and get moved from the busy list to the idle list.
-  while (m_runMode != SHUTDOWN || DcmBaseSCPPool::numThreads(OFTrue) != 0)
+  while (getRunMode() != SHUTDOWN || DcmBaseSCPPool::numThreads(OFTrue) != 0)
   {
-    DCMNET_DEBUG("DcmBaseSCPPool: Destructor called, waiting for runMode to become SHUTDOWN (currently " << m_runMode << ")");
+    DCMNET_DEBUG("DcmBaseSCPPool: Destructor called, waiting for runMode to become SHUTDOWN (currently " << getRunMode() << ")");
     OFStandard::forceSleep(1);
   }
   DCMNET_DEBUG("DcmBaseSCPPool: Destructor called, cleaning up " << m_workersIdle.size() << " idle worker threads");
@@ -75,7 +75,7 @@ DcmBaseSCPPool::~DcmBaseSCPPool()
 
 OFCondition DcmBaseSCPPool::listen()
 {
-  m_runMode = LISTEN;
+  setRunMode(LISTEN);
 
   /* Copy the config to a shared config that is shared by all workers. */
   DcmSharedSCPConfig sharedConfig(m_cfg);
@@ -90,7 +90,7 @@ OFCondition DcmBaseSCPPool::listen()
   }
 
   /* As long as all is fine (or we have been to busy handling last connection request) keep listening */
-  while ( m_runMode == LISTEN && ( cond.good() || (cond == NET_EC_SCPBusy) ) )
+  while ( getRunMode() == LISTEN && ( cond.good() || (cond == NET_EC_SCPBusy) ) )
   {
     // Reset status
     cond = EC_Normal;
@@ -148,14 +148,15 @@ OFCondition DcmBaseSCPPool::listen()
     }
   }
   // Log why we left the listen loop
+  const runmode mode = getRunMode();
   if (cond.bad())
     DCMNET_DEBUG("DcmBaseSCPPool: Leaving listen loop due to error: " << cond.text());
   else if (cond == NET_EC_SCPBusy)
     DCMNET_DEBUG("DcmBaseSCPPool: Leaving listen loop due to too many concurrent connections (busy).");
-  else if (m_runMode == STOP)
+  else if (mode == STOP)
     DCMNET_DEBUG("DcmBaseSCPPool: Leaving listen loop due to stop request.");
   else
-    DCMNET_DEBUG("DcmBaseSCPPool: Leaving listen loop, result: " << cond.text() << " (runMode: " << m_runMode << ")");
+    DCMNET_DEBUG("DcmBaseSCPPool: Leaving listen loop, result: " << cond.text() << " (runMode: " << mode << ")");
 
   finishListening();
 
@@ -170,6 +171,21 @@ void DcmBaseSCPPool::stopAfterCurrentAssociations()
   m_criticalSection.lock();
   if (m_runMode == LISTEN )
     m_runMode = STOP;
+  m_criticalSection.unlock();
+}
+
+DcmBaseSCPPool::runmode DcmBaseSCPPool::getRunMode()
+{
+  m_criticalSection.lock();
+  const runmode mode = m_runMode;
+  m_criticalSection.unlock();
+  return mode;
+}
+
+void DcmBaseSCPPool::setRunMode(const runmode mode)
+{
+  m_criticalSection.lock();
+  m_runMode = mode;
   m_criticalSection.unlock();
 }
 

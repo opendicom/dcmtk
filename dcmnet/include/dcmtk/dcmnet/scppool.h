@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 2012-2025, OFFIS e.V.
+ *  Copyright (C) 2012-2026, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -264,6 +264,16 @@ private:
 
   /// Set m_runMode to SHUTDOWN on return from listen function
   void finishListening();
+
+  /** Thread-safe read of the current run mode, guarded by m_criticalSection.
+   *  @return the pool's current run mode.
+   */
+  runmode getRunMode();
+
+  /** Thread-safe update of the current run mode, guarded by m_criticalSection.
+   *  @param mode the new run mode to set.
+   */
+  void setRunMode(const runmode mode);
 };
 
 /** Implementation of DICOM SCP server pool. The pool waits for incoming
