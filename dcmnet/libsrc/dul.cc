@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 1994-2025, OFFIS e.V.
+ *  Copyright (C) 1994-2026, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were partly developed by
@@ -120,6 +120,7 @@ END_EXTERN_C
 #include "dcmtk/ofstd/ofconsol.h"
 #include "dcmtk/ofstd/ofstd.h"
 #include "dcmtk/ofstd/ofsockad.h" /* for class OFSockAddr and SOCK_CLOEXEC */
+#include "dcmtk/ofstd/ofthread.h" /* for class OFMutex */
 
 #include "dcmtk/dcmnet/dul.h"
 #include "dcmtk/dcmnet/dulstruc.h"
@@ -138,6 +139,13 @@ OFGlobal<size_t> dcmAssociatePDUSizeLimit(0x100000);
 OFGlobal<T_ASC_ProtocolFamily> dcmIncomingProtocolFamily(ASC_AF_Default);
 
 static int networkInitialized = 0;
+
+// Serializes the one-time DUL initialization below (the networkInitialized flag and
+// the global DUL FSM StateTable filled by DUL_InitializeFSM()). DUL_InitializeNetwork()
+// can be called concurrently from several threads (e.g. an SCP pool plus multiple SCUs);
+// without this lock the FSM table could be read by one thread while still being written
+// by another, and the flag check/update would race.
+static OFMutex dulNetworkInitMutex;
 
 static OFCondition
 createNetworkKey(const char *mode, int timeout, unsigned long opt,
@@ -360,6 +368,11 @@ DUL_InitializeNetwork(const char *mode,
     *networkKey = NULL;
 
     // a few initializations must only be done the first time this function is called.
+    // The lock is taken on every call (not just when initializing) so that callers
+    // which find the network already initialized still synchronize-with the thread
+    // that performed the initialization, giving the global FSM StateTable a proper
+    // happens-before for any state machine running in other (worker) threads.
+    dulNetworkInitMutex.lock();
     if (! networkInitialized)
     {
       // make sure "Broken Pipe" signals don't terminate the application
@@ -372,6 +385,7 @@ DUL_InitializeNetwork(const char *mode,
 
       ++networkInitialized;
     }
+    dulNetworkInitMutex.unlock();
 
     // create PRIVATE_NETWORKKEY structure
     PRIVATE_NETWORKKEY *key = NULL;
