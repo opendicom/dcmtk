@@ -441,6 +441,7 @@ if(WIN32 AND CMAKE_GENERATOR MATCHES "Visual Studio .*|NMake .*")
 endif()
 
 if(BUILD_SHARED_LIBS)
+  set(CMAKE_POSITION_INDEPENDENT_CODE ON)
   set(DCMTK_SHARED ON)
   if(BUILD_SINGLE_SHARED_LIBRARY)
     # We can't build apps, because there is no way to tell CMake to link apps
