@@ -275,8 +275,12 @@ decode_mcus (j_decompress_ptr cinfo, JDIFFIMAGE diff_buf,
       }
       else
       {
-          if (s == 16)  /* special case: always output 32768 */
+          if (s == 16)  /* lossless SSSS = 16: output 32768 (ISO 10918-1 Table H.2) */
             s = 32768;
+          else if (s > 15) {  /* SSSS > 16 is undefined and would overrun extend_test[] */
+            WARNMS(cinfo, JWRN_HUFF_BAD_CODE);
+            s = 0;
+          }
           else {    /* normal case: fetch subsequent bits */
             CHECK_BIT_BUFFER(br_state, s, return mcu_num);
             r = GET_BITS(s);

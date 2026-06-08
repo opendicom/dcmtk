@@ -263,9 +263,18 @@ decode_mcu (j_decompress_ptr cinfo, JBLOCKROW *MCU_data)
       /* Section F.2.2.1: decode the DC coefficient difference */
       HUFF_DECODE(s, br_state, dctbl, return FALSE, label1);
       if (s) {
-    CHECK_BIT_BUFFER(br_state, s, return FALSE);
-    r = GET_BITS(s);
-    s = HUFF_EXTEND(r, s);
+    /* DC categories above 15 are undefined for DCT-based coding */
+    /* (ISO 10918-1 Tables F.1 and F.6) and would index extend_test[]/ */
+    /* extend_offset[] out of bounds; treat such a Huffman code as */
+    /* corrupt data instead of reading past the array. */
+    if (s > 15) {
+      WARNMS(cinfo, JWRN_HUFF_BAD_CODE);
+      s = 0;
+    } else {
+      CHECK_BIT_BUFFER(br_state, s, return FALSE);
+      r = GET_BITS(s);
+      s = HUFF_EXTEND(r, s);
+    }
       }
 
       if (entropy->dc_needed[blkn]) {
