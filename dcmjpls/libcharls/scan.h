@@ -640,9 +640,9 @@ void JlsCodec<TRAITS,STRATEGY>::DoLine(SAMPLE*)
 		Rd = _previousLine[index + 1];
 
         // make sure that values are not out of range
-        if (  (Rd - Rb < RANGE_LOWER) || (Rd - Rb > RANGE_UPPER)
-           || (Rb - Rc < RANGE_LOWER) || (Rb - Rc > RANGE_UPPER)
-           || (Rc - Ra < RANGE_LOWER) || (Rc - Ra > RANGE_UPPER))
+        if (  (Rd - Rb < RANGE_LOWER) || (Rd - Rb >= RANGE_UPPER)
+           || (Rb - Rc < RANGE_LOWER) || (Rb - Rc >= RANGE_UPPER)
+           || (Rc - Ra < RANGE_LOWER) || (Rc - Ra >= RANGE_UPPER))
         {
             throw JlsException(InvalidCompressedData);
         }
@@ -670,12 +670,29 @@ template<class TRAITS, class STRATEGY>
 void JlsCodec<TRAITS,STRATEGY>::DoLine(Triplet<SAMPLE>*)
 {
 	LONG index = 0;
+	LONG RANGE_UPPER = 1 << traits.bpp;
+	LONG RANGE_LOWER = - RANGE_UPPER;
 	while(index < _width)
 	{
 		Triplet<SAMPLE> Ra = _currentLine[index -1];
 		Triplet<SAMPLE> Rc = _previousLine[index-1];
 		Triplet<SAMPLE> Rb = _previousLine[index];
 		Triplet<SAMPLE> Rd = _previousLine[index + 1];
+
+		// make sure that values are not out of range (same as DoLine(SAMPLE*));
+		// each per-component gradient indexes the quantization table the same way
+		if (  (Rd.v1 - Rb.v1 < RANGE_LOWER) || (Rd.v1 - Rb.v1 >= RANGE_UPPER)
+		   || (Rb.v1 - Rc.v1 < RANGE_LOWER) || (Rb.v1 - Rc.v1 >= RANGE_UPPER)
+		   || (Rc.v1 - Ra.v1 < RANGE_LOWER) || (Rc.v1 - Ra.v1 >= RANGE_UPPER)
+		   || (Rd.v2 - Rb.v2 < RANGE_LOWER) || (Rd.v2 - Rb.v2 >= RANGE_UPPER)
+		   || (Rb.v2 - Rc.v2 < RANGE_LOWER) || (Rb.v2 - Rc.v2 >= RANGE_UPPER)
+		   || (Rc.v2 - Ra.v2 < RANGE_LOWER) || (Rc.v2 - Ra.v2 >= RANGE_UPPER)
+		   || (Rd.v3 - Rb.v3 < RANGE_LOWER) || (Rd.v3 - Rb.v3 >= RANGE_UPPER)
+		   || (Rb.v3 - Rc.v3 < RANGE_LOWER) || (Rb.v3 - Rc.v3 >= RANGE_UPPER)
+		   || (Rc.v3 - Ra.v3 < RANGE_LOWER) || (Rc.v3 - Ra.v3 >= RANGE_UPPER))
+		{
+			throw JlsException(InvalidCompressedData);
+		}
 
 		LONG Qs1 = ComputeContextID(QuantizeGratient(Rd.v1 - Rb.v1), QuantizeGratient(Rb.v1 - Rc.v1), QuantizeGratient(Rc.v1 - Ra.v1));
 		LONG Qs2 = ComputeContextID(QuantizeGratient(Rd.v2 - Rb.v2), QuantizeGratient(Rb.v2 - Rc.v2), QuantizeGratient(Rc.v2 - Ra.v2));
