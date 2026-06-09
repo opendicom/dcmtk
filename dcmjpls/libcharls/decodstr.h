@@ -65,11 +65,14 @@ public:
 
 	  void EndScan()
 	  {
+		  if (_current_offset >= *_size)
+			throw JlsException(TooMuchCompressedData);
+
 		  if (current_value() != 0xFF)
 		  {
 			  ReadBit();
 
-			  if (current_value() != 0xFF)
+			  if (_current_offset >= *_size || current_value() != 0xFF)
 				throw JlsException(TooMuchCompressedData);
 		  }
 
