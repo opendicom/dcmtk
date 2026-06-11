@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 2015-2025, Open Connections GmbH
+ *  Copyright (C) 2015-2026, Open Connections GmbH
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation are maintained by
@@ -99,6 +99,10 @@ extern DCMTK_DCMSEG_EXPORT const OFConditionConst SG_EC_OverlappingSegments;
 extern DCMTK_DCMSEG_EXPORT const OFConditionConst SG_EC_CannotConvertMissingCIELab;
 /// error: missing Plane Position (Patient) Functional Group
 extern DCMTK_DCMSEG_EXPORT const OFConditionConst SG_EC_MissingPlanePositionPatient;
+/// error: one or more pixel values in a Labelmap segmentation are not described
+/// by an Item of the Segment Sequence (and the configured background handling
+/// does not permit writing such an object)
+extern DCMTK_DCMSEG_EXPORT const OFConditionConst SG_EC_LabelmapPixelValueUncovered;
 
 ///@}
 
@@ -164,7 +168,38 @@ public:
         SLCM_PALETTE
     };
 
+    /** Policy that governs what happens on writing a Labelmap segmentation when
+     *  one or more pixel values present in the Pixel Data are not described by an
+     *  Item of the Segment Sequence ("uncovered" values). The "background pixel
+     *  value" referenced below is the value configured on DcmSegmentation
+     *  (default 0). Only relevant for Labelmap segmentations.
+     */
+    enum E_BackgroundHandling
+    {
+        /// If only the background pixel value is uncovered, a Background segment
+        /// (Segmented Property Type (DCM,125040,"Background")) is inserted
+        /// automatically (printing a warning and an information). If any other
+        /// value is uncovered, writing fails. Default for objects created from
+        /// scratch via the factory API.
+        BGH_AddSegment,
+        /// Any uncovered pixel value makes writing fail (strict conformance).
+        BGH_Error,
+        /// If exactly one pixel value is uncovered, the object is written as-is
+        /// (printing a warning). If more than one value is uncovered, writing
+        /// fails. Default for objects loaded from a file/dataset.
+        BGH_Warn,
+        /// All uncovered pixel values are reported as warnings, but the object is
+        /// written anyway.
+        BGH_Ignore
+    };
+
     // -- helper functions --
+
+    /** Return string representation of a background handling mode
+     *  @param  value The background handling mode as enum value
+     *  @return The background handling mode as a string
+     */
+    static OFString backgroundHandling2OFString(const DcmSegTypes::E_BackgroundHandling value);
 
     /** Return string representation of algorithm type
      *  @param  algo The algorithm type

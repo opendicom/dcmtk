@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 2015-2025, Open Connections GmbH
+ *  Copyright (C) 2015-2026, Open Connections GmbH
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation are maintained by
@@ -48,6 +48,7 @@ makeOFConditionConst(SG_EC_CannotConvertFractionalToLabelmap, OFM_dcmseg, 12, OF
 makeOFConditionConst(SG_EC_OverlappingSegments, OFM_dcmseg, 13, OF_error, "Binary segmentation contains overlapping segments");
 makeOFConditionConst(SG_EC_CannotConvertMissingCIELab, OFM_dcmseg, 14, OF_error, "Cannot convert to PALETTE color model since not all segments contain Recommended Display CIELab Value Macro");
 makeOFConditionConst(SG_EC_MissingPlanePositionPatient, OFM_dcmseg, 15, OF_error, "Missing Plane Position (Patient) Functional Group");
+makeOFConditionConst(SG_EC_LabelmapPixelValueUncovered, OFM_dcmseg, 16, OF_error, "One or more pixel values in Labelmap segmentation are not described by a Segment");
 
 DcmSegTypes::E_SegmentationType DcmSegTypes::OFString2Segtype(const OFString& value)
 {
@@ -150,6 +151,24 @@ DcmSegTypes::E_SegmentationLabelmapColorModel DcmSegTypes::OFString2LabelmapColo
         return DcmSegTypes::SLCM_PALETTE;
     else
         return DcmSegTypes::SLCM_UNKNOWN;
+}
+
+
+OFString DcmSegTypes::backgroundHandling2OFString(const DcmSegTypes::E_BackgroundHandling value)
+{
+    switch (value)
+    {
+        case DcmSegTypes::BGH_AddSegment:
+            return "AddSegment";
+        case DcmSegTypes::BGH_Error:
+            return "Error";
+        case DcmSegTypes::BGH_Warn:
+            return "Warn";
+        case DcmSegTypes::BGH_Ignore:
+            return "Ignore";
+        default:
+            return "Invalid background handling mode (internal error)";
+    }
 }
 
 SegmentDescriptionMacro::SegmentDescriptionMacro()

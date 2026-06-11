@@ -3,6 +3,7 @@ DCMTK_ADD_TEST_EXECUTABLE(dcmiod_tests
   tchecks.cc
   tcielabutil.cc
   tcodes.cc
+  tequipment.cc
   ticcprofile.cc
   timagepixel.cc
   tmacro.cc

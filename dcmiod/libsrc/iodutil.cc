@@ -150,6 +150,17 @@ DcmIODUtil::addElementToDataset(OFCondition& result, DcmItem& dataset, DcmElemen
     {
         if (rule != NULL)
         {
+            // A rule that is not active on writing is skipped: the related
+            // attribute is not written (and, for type 1/2, its absence is not
+            // treated as an error). We own delem, so free it here.
+            if (!rule->isActiveOnWrite())
+            {
+                DCMIOD_DEBUG(DcmTag(rule->getTagKey()).getTagName()
+                             << " " << rule->getTagKey() << " not written to " << rule->getModule()
+                             << " (rule inactive on write)");
+                delete delem;
+                return EC_Normal;
+            }
             // Create empty type 2 element if required
             OFString type = rule->getType();
             if (delem == NULL)

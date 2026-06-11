@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 2015-2025, Open Connections GmbH
+ *  Copyright (C) 2015-2026, Open Connections GmbH
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation are maintained by
@@ -198,6 +198,19 @@ public:
      */
     virtual DcmIODTypes::IOD_IE getIE() const;
 
+    /** Returns whether this rule is active when writing, i.e.\ whether the
+     *  related attribute is written to the dataset by the IOD writing routines.
+     *  An inactive rule is skipped on writing (the attribute is not written and,
+     *  if it is type 1/2, its absence is not reported as an error); it does not
+     *  affect the value currently held in memory. Rules are active by default.
+     *  @note An inactive rule is also treated as fulfilled by check() (its
+     *        requirements are not validated): a rule deliberately deactivated to
+     *        suppress writing should not cause validation errors. Reading is not
+     *        affected by this flag.
+     *  @return OFTrue if the rule is active on writing, OFFalse otherwise
+     */
+    virtual OFBool isActiveOnWrite() const;
+
     virtual OFBool setPrivateCreator(const OFString& val);
 
     virtual OFBool setType(const OFString& val);
@@ -208,9 +221,17 @@ public:
 
     virtual OFBool setDefaultValue(const OFString& val);
 
+    /** Set whether this rule is active when writing (see isActiveOnWrite()).
+     *  @param  active OFTrue to activate the rule on writing (default), OFFalse
+     *          to skip the related attribute on writing
+     */
+    virtual void setActiveOnWrite(const OFBool active);
+
     /** Check whether the given item fulfills the requirements of
      *  this rule, i.e.\ the related attribute is checked within the
-     *  given item
+     *  given item. If this rule is inactive on writing (see
+     *  setActiveOnWrite()), it is considered fulfilled (EC_Normal) without
+     *  checking.
      *  @param  item The item to check the attribute in
      *  @param  quiet If OFTrue, no error or warning messages will be produced
      *          but only the return code will indicate OK or error.
@@ -253,6 +274,11 @@ private:
 
     /// Private Creator (if private attribute)
     OFString m_PrivateCreator;
+
+    /// Whether this rule is taken into account when writing (default OFTrue).
+    /// If OFFalse, the related attribute is not written and its absence is not
+    /// reported as an error. Reading is not affected by this flag.
+    OFBool m_ActiveOnWrite;
 };
 
 #endif // IODRULES_H

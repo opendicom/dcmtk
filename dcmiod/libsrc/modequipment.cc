@@ -68,6 +68,7 @@ void IODGeneralEquipmentModule::resetRules()
         s_defaultRules->addRule(new IODRule(DCM_ManufacturerModelName, "1", "3", getName(), DcmIODTypes::IE_EQUIPMENT), OFTrue);
         s_defaultRules->addRule(new IODRule(DCM_DeviceSerialNumber, "1", "3", getName(), DcmIODTypes::IE_EQUIPMENT), OFTrue);
         s_defaultRules->addRule(new IODRule(DCM_SoftwareVersions, "1-n", "3", getName(), DcmIODTypes::IE_EQUIPMENT), OFTrue);
+        s_defaultRules->addRule(new IODRule(DCM_PixelPaddingValue, "1", "3", getName(), DcmIODTypes::IE_EQUIPMENT), OFTrue);
     }
     s_defaultRulesMutex.unlock();
     if (!m_ExternalRules)
@@ -133,6 +134,31 @@ OFCondition IODGeneralEquipmentModule::getManufacturerModelName(OFString& value,
 OFCondition IODGeneralEquipmentModule::getSoftwareVersions(OFString& value, const long signed int pos) const
 {
     return DcmIODUtil::getStringValueFromItem(DCM_SoftwareVersions, *m_Item, value, pos);
+}
+
+OFCondition IODGeneralEquipmentModule::getPixelPaddingValue(Uint16& value, const unsigned long pos) const
+{
+    return m_Item->findAndGetUint16(DCM_PixelPaddingValue, value, pos);
+}
+
+OFCondition IODGeneralEquipmentModule::getPixelPaddingValue(Sint16& value, const unsigned long pos) const
+{
+    return m_Item->findAndGetSint16(DCM_PixelPaddingValue, value, pos);
+}
+
+OFCondition IODGeneralEquipmentModule::getPixelPaddingValueVR(DcmEVR& vr) const
+{
+    DcmElement* elem   = NULL;
+    OFCondition result = m_Item->findAndGetElement(DCM_PixelPaddingValue, elem);
+    if (result.good() && (elem != NULL))
+        vr = elem->getVR();
+    return result;
+}
+
+OFBool IODGeneralEquipmentModule::isPixelPaddingValueSigned() const
+{
+    DcmEVR vr = EVR_UN;
+    return getPixelPaddingValueVR(vr).good() && (vr == EVR_SS);
 }
 
 IODGeneralEquipmentModule::EquipmentInfo IODGeneralEquipmentModule::getEquipmentInfo() const
@@ -205,4 +231,16 @@ OFCondition IODGeneralEquipmentModule::setSoftwareVersions(const OFString& value
     if (result.good())
         result = m_Item->putAndInsertOFStringArray(DCM_SoftwareVersions, value);
     return result;
+}
+
+OFCondition IODGeneralEquipmentModule::setPixelPaddingValue(const Uint16 value, const OFBool checkValue)
+{
+    (void)checkValue;
+    return m_Item->putAndInsertUint16(DCM_PixelPaddingValue, value);
+}
+
+OFCondition IODGeneralEquipmentModule::setPixelPaddingValue(const Sint16 value, const OFBool checkValue)
+{
+    (void)checkValue;
+    return m_Item->putAndInsertSint16(DCM_PixelPaddingValue, value);
 }

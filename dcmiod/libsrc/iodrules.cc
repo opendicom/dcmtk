@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 2015-2025, Open Connections GmbH
+ *  Copyright (C) 2015-2026, Open Connections GmbH
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation are maintained by
@@ -173,8 +173,9 @@ void IODRules::dump(STD_NAMESPACE ostream& out)
     IODRules::iterator it = m_Rules.begin();
     while (it != m_Rules.end())
     {
-        out << (*it).first << ": Type \"" << (*it).second->getType() << "\", VM \"" << (*it).second->getType() << "\" Component: " << (*it).second->getModule()
-            << OFendl;
+        out << (*it).first << ": Type \"" << (*it).second->getType() << "\", VM \"" << (*it).second->getVM()
+            << "\", Active on write: " << ((*it).second->isActiveOnWrite() ? "yes" : "no")
+            << ", Component: " << (*it).second->getModule() << OFendl;
         it++;
     }
 }
@@ -198,6 +199,7 @@ IODRule::IODRule(const DcmTagKey& key,
     , m_IE(ie)
     , m_DefaultValue(defaultValue)
     , m_PrivateCreator(privateCreator)
+    , m_ActiveOnWrite(OFTrue)
 {
     // nothing else to do
 }
@@ -209,7 +211,10 @@ IODRule::~IODRule()
 
 IODRule* IODRule::clone()
 {
-    return new IODRule(m_Key, m_VM, m_Type, m_Module, m_IE, m_DefaultValue, m_PrivateCreator);
+    IODRule* copy = new IODRule(m_Key, m_VM, m_Type, m_Module, m_IE, m_DefaultValue, m_PrivateCreator);
+    if (copy != NULL)
+        copy->setActiveOnWrite(m_ActiveOnWrite);
+    return copy;
 }
 
 OFString IODRule::getPrivateCreator() const
@@ -245,6 +250,16 @@ OFString IODRule::getDefaultValue() const
 DcmIODTypes::IOD_IE IODRule::getIE() const
 {
     return m_IE;
+}
+
+OFBool IODRule::isActiveOnWrite() const
+{
+    return m_ActiveOnWrite;
+}
+
+void IODRule::setActiveOnWrite(const OFBool active)
+{
+    m_ActiveOnWrite = active;
 }
 
 OFBool IODRule::setType(const OFString& val)
@@ -296,6 +311,12 @@ OFBool IODRule::setVM(const OFString& val)
 
 OFCondition IODRule::check(DcmItem& item, const OFBool quiet)
 {
+    // A rule that is not active on writing is not enforced: the related
+    // attribute will not be written, so its (in-memory) presence/validity is not
+    // checked here either.
+    if (!m_ActiveOnWrite)
+        return EC_Normal;
+
     OFCondition result;
     const OFString tagName = DcmTag(m_Key).getTagName();
     DcmElement* elem       = NULL;

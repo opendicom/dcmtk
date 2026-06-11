@@ -4,6 +4,7 @@ DCMTK_ADD_TEST_EXECUTABLE(dcmseg_tests
   tconcat_binary.cc
   tests.cc
   tlabelmap.cc
+  tlabelmapbg.cc
   tsegments.cc
   troundtrip.cc
   tutils.cc

@@ -30,8 +30,8 @@ LOCALLIBS = -ldcmseg -ldcmfg -ldcmiod -ldcmimgle -ldcmdata \
 LOCALINCLUDES = -I$(top_srcdir)/include -I$(ofstddir)/include -I$(oflogdir)/include \
 	-I$(dcmdatadir)/include -I$(dcmioddir)/include -I$(dcmfgdir)/include
 
-test_objs = tbigdim.o tconcat_binary.o tests.o tlabelmap.o troundtrip.o \
-	tsegments.o tutils.o
+test_objs = tbigdim.o tconcat_binary.o tests.o tlabelmap.o tlabelmapbg.o \
+	troundtrip.o tsegments.o tutils.o
 objs = $(test_objs)
 progs = tests
 

@@ -13,4 +13,84 @@ Segmentation objects.
 The main class of this module is:
 \li \b DcmSegmentation
 
+\section dcmseg_Labelmap_background Label Map Background / Pixel Padding Value
+
+For Label Map Segmentations every pixel value occurring in the Pixel Data must be
+described by an Item of the Segment Sequence. A single value (typically 0) may be
+designated as \e background by means of Pixel Padding Value (0028,0120) in the
+General Equipment Module, in which case the corresponding Segment carries the
+Segmented Property Type Code (DCM,125040,"Background"). Pixel Padding Range Limit
+(0028,0121) is never used for segmentations.
+
+How DcmSegmentation handles this depends on whether the object is created from
+scratch or read from an existing file.
+
+\par Creating a segmentation from scratch
+Call \c setBackgroundPixelValue() (default value 0) to designate the background.
+It immediately inserts a Background segment at that value, using Segmented Property
+Category Code (SCT,309825002,"Spatial and Relational Concept") and Type Code
+(DCM,125040,"Background"), with Segment Algorithm Type MANUAL, by default; the codes
+can be overridden (overload), and all other attributes (label, Recommended Display
+CIELab Value, algorithm, ...) adjusted afterwards via \c getSegment(). Re-designating
+the same value with different codes refreshes the existing Background segment's codes
+in place (other customizations are preserved). Only a single Background segment is
+kept: changing the background value removes the previously created Background segment
+and inserts a new one at the new value (the Pixel Data is not modified). Only an
+actual Background segment is ever removed this way; designating a value already
+occupied by a \e non-Background segment is rejected (that segment is never clobbered).
+Alternatively, you may leave the background value unassigned: the
+default handling mode for objects created from scratch is DcmSegTypes::BGH_AddSegment,
+which inserts a Background segment automatically on writing \e only for the single
+background value (0 by default), and only if that value occurs in the Pixel Data
+without a Segment. Any \e other pixel value left without a Segment makes writing
+fail in this mode (it must be described explicitly, or a more lenient mode chosen).
+
+\par Reading an existing file
+On reading (including \c loadConcatenation()), Pixel Padding Value is interpreted
+to designate the background, and a warning is emitted for any pixel value not
+described by a Segment, for a Pixel Padding Value that references no Segment, and
+for one that references a Segment not typed as Background (DCM,125040). A Pixel
+Padding Value encoded as SS (signed) is non-conformant for a Labelmap (whose Pixel
+Representation is always unsigned); it is normalized with a warning i.e. a
+non-negative value is converted to US and used, a negative value is removed. The
+default handling mode for loaded objects is DcmSegTypes::BGH_Warn, so a "foreign"
+object is never modified automatically when it is re-written: its Pixel Padding
+Value is preserved (never dropped) and only a warning is issued for a missing
+Background segment. Select DcmSegTypes::BGH_AddSegment to let DcmSegmentation
+insert the missing segment or DcmSegTypes::BGH_Error to make the write fail
+when a Background segment is missing.
+
+\par The background is the single source of truth
+A Labelmap's background is held internally as a single designated pixel value
+(the "lead"). It is set by \c setBackgroundPixelValue(), interpreted from Pixel
+Padding Value when reading, or established automatically under \c BGH_AddSegment.
+Both Pixel Padding Value (0028,0120) and the Background segment are \e derived
+from this lead when writing, so they can never disagree or go stale. A Pixel
+Padding Value that is present but for which no background has been designated yet
+(e.g.\ set directly via \c getEquipment(), or read from a file) is adopted as the
+designated background; once designated, the value leads and a previously written
+(possibly stale) element can never override it.
+
+| Situation (Labelmap) | Pixel Padding Value written | Background segment |
+| --- | --- | --- |
+| background designated, Segment exists at its value | yes (the designated value) | kept |
+| background designated, no Segment at its value | yes | added if mode is \c BGH_AddSegment; \c BGH_Warn / \c BGH_Ignore warn only; \c BGH_Error fails |
+| no background designated | no | (none) |
+| non-Labelmap | no (never written) | (n/a) |
+
+\par Handling modes
+DcmSegTypes::E_BackgroundHandling (set via \c setBackgroundHandlingMode()) controls
+how pixel values not covered by a Segment are treated on writing:
+
+| Mode | Behavior when a pixel value is not described by a Segment | Default for |
+| --- | --- | --- |
+| \c BGH_AddSegment | Adds a Background segment for the background value; any \e other uncovered value fails the write | objects created from scratch |
+| \c BGH_Error | Writing fails if any pixel value is uncovered | (none) |
+| \c BGH_Warn | Tolerates a single uncovered value with a warning; two or more fail the write | objects read from a file or dataset |
+| \c BGH_Ignore | Writes regardless, with a warning per uncovered value | (none) |
+
+So the default is \c BGH_AddSegment when creating a segmentation from scratch and
+\c BGH_Warn when reading an existing file or dataset; \c BGH_Error and \c BGH_Ignore
+are never defaults and must be selected explicitly via \c setBackgroundHandlingMode().
+
 */

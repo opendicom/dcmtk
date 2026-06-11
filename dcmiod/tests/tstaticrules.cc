@@ -22,6 +22,7 @@
  */
 
 #include "dcmtk/config/osconfig.h" /* make sure OS specific configuration is included first */
+#include "dcmtk/dcmdata/dcdeftag.h"
 #include "dcmtk/dcmdata/dcitem.h"
 #include "dcmtk/dcmiod/iodmacro.h"
 #include "dcmtk/dcmiod/iodrules.h"
@@ -126,4 +127,74 @@ OFTEST(dcmiod_static_rules_external_container)
     // (addRule is called with overwriteExisting = OFTrue).
     SOPInstanceReferenceMacro m2(item, rules);
     OFCHECK(rules->getByModule("SOPInstanceReferenceMacro").size() == 2);
+}
+
+
+/** Test the "active on write" flag of IODRule itself, in particular that
+ *  clone() carries the flag (including when it is OFFalse, which is the case
+ *  exercised by the copy-on-write of rule sets).
+ */
+OFTEST(dcmiod_rule_active_on_write_flag)
+{
+    IODRule rule(DCM_PatientName, "1", "2", "PatientModule", DcmIODTypes::IE_PATIENT);
+    // Rules are active on write by default
+    OFCHECK(rule.isActiveOnWrite());
+
+    // Deactivate and clone: the clone must also be inactive
+    rule.setActiveOnWrite(OFFalse);
+    OFCHECK(!rule.isActiveOnWrite());
+    IODRule* inactiveClone = rule.clone();
+    OFCHECK(inactiveClone != NULL);
+    if (inactiveClone)
+    {
+        OFCHECK(!inactiveClone->isActiveOnWrite());
+        delete inactiveClone;
+    }
+
+    // Re-activate and clone: the clone must be active again
+    rule.setActiveOnWrite(OFTrue);
+    IODRule* activeClone = rule.clone();
+    OFCHECK(activeClone != NULL);
+    if (activeClone)
+    {
+        OFCHECK(activeClone->isActiveOnWrite());
+        delete activeClone;
+    }
+}
+
+
+/** Test that a rule which is inactive on write is neither demanded by check()
+ *  nor written by the IOD writing routines, while reading/other attributes are
+ *  unaffected.
+ */
+OFTEST(dcmiod_rule_inactive_on_write_component)
+{
+    // (1) check() gate: an empty macro fails because both type-1 attributes are
+    // absent; deactivating both rules makes check() pass.
+    SOPInstanceReferenceMacro a;
+    OFCHECK(a.check(OFTrue /* quiet */).bad());
+    IODRule* classRule    = a.getRules()->getByTag(DCM_ReferencedSOPClassUID);
+    IODRule* instanceRule = a.getRules()->getByTag(DCM_ReferencedSOPInstanceUID);
+    OFCHECK(classRule != NULL);
+    OFCHECK(instanceRule != NULL);
+    if (classRule && instanceRule)
+    {
+        classRule->setActiveOnWrite(OFFalse);
+        instanceRule->setActiveOnWrite(OFFalse);
+        OFCHECK(a.check(OFTrue).good());
+    }
+
+    // (2) write skip: a valid macro with one rule deactivated writes only the
+    // still-active attribute.
+    SOPInstanceReferenceMacro b;
+    OFCHECK(b.setReferencedSOPClassUID("1.2.840.10008.5.1.4.1.1.4").good());
+    OFCHECK(b.setReferencedSOPInstanceUID("1.2.3.4.5").good());
+    IODRule* bClassRule = b.getRules()->getByTag(DCM_ReferencedSOPClassUID);
+    OFCHECK(bClassRule != NULL);
+    if (bClassRule)
+        bClassRule->setActiveOnWrite(OFFalse);
+    DcmItem out;
+    OFCHECK(b.write(out).good());
+    OFCHECK(!out.tagExists(DCM_ReferencedSOPClassUID));   // suppressed
+    OFCHECK(out.tagExists(DCM_ReferencedSOPInstanceUID)); // still written
 }

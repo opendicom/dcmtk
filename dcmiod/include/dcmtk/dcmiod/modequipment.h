@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 2015-2025, Open Connections GmbH
+ *  Copyright (C) 2015-2026, Open Connections GmbH
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation are maintained by
@@ -37,6 +37,7 @@
  *  Manufacturer's Model Name: (LO, 1, 3)
  *  Device Serial Number: (LO, 1, 3)
  *  Software Version(s): (LO, 1-n, 3)
+ *  Pixel Padding Value: (US or SS, 1, 3)
  */
 class DCMTK_DCMIOD_EXPORT IODGeneralEquipmentModule : public IODModule
 {
@@ -168,6 +169,47 @@ public:
      */
     virtual OFCondition getSoftwareVersions(OFString& value, const signed long pos = 0) const;
 
+    /** Get Pixel Padding Value.
+     *  @note Pixel Padding Value (0028,0120) has VR "US or SS"; the value
+     *        representation depends on Pixel Representation (0028,0103). This
+     *        method returns the unsigned (US) interpretation, which is the
+     *        correct one whenever Pixel Representation is 0 (e.g.\ for
+     *        Segmentation objects). For signed data, retrieve the element
+     *        directly instead.
+     *  @param  value Reference to variable in which the value should be stored
+     *  @param  pos Index of the value to get (0..vm-1)
+     *  @return EC_Normal if successful, an error code otherwise
+     */
+    virtual OFCondition getPixelPaddingValue(Uint16& value, const unsigned long pos = 0) const;
+
+    /** Get Pixel Padding Value, signed (SS) interpretation.
+     *  @note Use this overload when Pixel Representation (0028,0103) is 1, i.e.\
+     *        the pixel data is signed. For unsigned data use the Uint16 overload.
+     *  @param  value Reference to variable in which the value should be stored
+     *  @param  pos Index of the value to get (0..vm-1)
+     *  @return EC_Normal if successful, an error code otherwise
+     */
+    virtual OFCondition getPixelPaddingValue(Sint16& value, const unsigned long pos = 0) const;
+
+    /** Get the Value Representation actually used to store Pixel Padding Value
+     *  (0028,0120), which has VR "US or SS". This lets a caller decide which
+     *  getPixelPaddingValue() overload applies to a value read from a dataset,
+     *  rather than probing both.
+     *  @param  vr Returns the VR of the stored element (EVR_US or EVR_SS) if
+     *          Pixel Padding Value is present
+     *  @return EC_Normal if Pixel Padding Value is present, an error code (e.g.\
+     *          EC_TagNotFound) otherwise
+     */
+    virtual OFCondition getPixelPaddingValueVR(DcmEVR& vr) const;
+
+    /** Check whether Pixel Padding Value (0028,0120) is present and stored with a
+     *  signed (SS) Value Representation. Convenience wrapper around
+     *  getPixelPaddingValueVR().
+     *  @return OFTrue if Pixel Padding Value is present and signed (SS); OFFalse
+     *          if it is absent or unsigned (US)
+     */
+    virtual OFBool isPixelPaddingValueSigned() const;
+
     /** Get a copy altogether as EquipmentInfo
      *  @return EquipmentInfo object containing all relevant information
      *    If some data is not available, it will contain an empty string
@@ -237,6 +279,27 @@ public:
      *  @return EC_Normal if successful, an error code otherwise
      */
     virtual OFCondition setSoftwareVersions(const OFString& value, const OFBool checkValue = OFTrue);
+
+    /** Set Pixel Padding Value.
+     *  @note Pixel Padding Value (0028,0120) has VR "US or SS". This method sets
+     *        the value as US (unsigned), which is correct whenever Pixel
+     *        Representation (0028,0103) is 0 (e.g.\ for Labelmap Segmentation objects).
+     *  @param  value Value to be set (single value only)
+     *  @param  checkValue Check 'value'. Not evaluated (here for consistency
+     *          with other setter functions).
+     *  @return EC_Normal if successful, an error code otherwise
+     */
+    virtual OFCondition setPixelPaddingValue(const Uint16 value, const OFBool checkValue = OFTrue);
+
+    /** Set Pixel Padding Value, signed (SS).
+     *  @note Use this overload when Pixel Representation (0028,0103) is 1, i.e.\
+     *        the pixel data is signed; the value is stored with VR SS.
+     *  @param  value Value to be set (single value only)
+     *  @param  checkValue Check 'value'. Not evaluated (here for consistency
+     *          with other setter functions).
+     *  @return EC_Normal if successful, an error code otherwise
+     */
+    virtual OFCondition setPixelPaddingValue(const Sint16 value, const OFBool checkValue = OFTrue);
 
 private:
     /// Name of the module ("GeneralEquipmentModule")

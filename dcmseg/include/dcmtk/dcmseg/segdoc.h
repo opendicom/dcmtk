@@ -121,7 +121,12 @@ public:
      */
     OFCondition saveFile(const OFString& filename, const E_TransferSyntax writeXfer = EXS_LittleEndianExplicit);
 
-    /** Write current object to given item
+    /** Write current object to given item. The object's attributes are written
+     *  into the item (merged); pre-existing, unrelated attributes already present
+     *  in the item are not removed. In particular, attributes this object decides
+     *  not to write (e.g.\ Pixel Padding Value for a non-Labelmap object) are not
+     *  stripped from the item if a caller put them there beforehand. Pass a fresh
+     *  item if exact contents are required.
      *  @param  dataset The item to write to
      *  @return EC_Normal if writing was successful, error otherwise.
      */
@@ -323,6 +328,12 @@ public:
 
     /** Perform some basic checking. This method is also invoked when
      *  writing the object to a DICOM dataset or file.
+     *  @note For Labelmap segmentations, this does \e not verify that every pixel
+     *        value in the Pixel Data is described by a Segment. That requirement
+     *        (Sup 243, C.8.20.2.3.3) is enforced on the write path only (it
+     *        depends on the background handling mode and may insert a Background
+     *        segment); see setBackgroundHandlingMode(). A successful check() does
+     *        therefore not guarantee a labelmap will write without error.
      *  @param  checkFGStructure If OFTrue (default), structure of functional
      *          groups is checked, too.
      *  @return OFTrue, if no errors were found, OFFalse otherwise.
@@ -408,12 +419,123 @@ public:
      *            parameter. It is assigned from 0 onwards, i.e. the first
      *            segment added will have segment number 1, the second 2, etc.
      *          - For labelmap segmentations, the segment number is taken from
-     *            this parameter and can be >= 0. If the segment number is
-     *            already used, the method will overwrite an old segment with
-     *            this number.
+     *            this parameter and can be >= 0. This is an upsert: if the
+     *            segment number is already used, the existing segment at that
+     *            number is replaced (the previous one is deleted, so it is not
+     *            leaked, and the total number of segments is unchanged). The
+     *            maximum-segments limit therefore only applies to a genuine
+     *            insertion, not to such a replacement. There is no separate
+     *            remove API; clearData() resets the whole object.
      *  @return EC_Normal if adding was successful, error otherwise
      */
     virtual OFCondition addSegment(DcmSegment* seg, Uint16& segmentNumber);
+
+    // ---------- Labelmap background / Pixel Padding Value ----------
+
+    /** Set the policy that governs how pixel values present in the Pixel Data but
+     *  not described by an Item of the Segment Sequence ("uncovered" values) are
+     *  handled when writing a Labelmap segmentation. See
+     *  DcmSegTypes::E_BackgroundHandling for the available modes. The default is
+     *  DcmSegTypes::BGH_AddSegment for objects created from scratch via the
+     *  factory API, and DcmSegTypes::BGH_Warn for objects loaded from a file or
+     *  dataset. Only relevant for Labelmap segmentations.
+     *  @param  mode The background handling mode to use
+     */
+    virtual void setBackgroundHandlingMode(const DcmSegTypes::E_BackgroundHandling mode);
+
+    /** Get the current background handling mode.
+     *  @return The background handling mode
+     */
+    virtual DcmSegTypes::E_BackgroundHandling getBackgroundHandlingMode() const;
+
+    /** Set the pixel value that is treated as background in a Labelmap
+     *  segmentation. This is the value reported in Pixel Padding Value
+     *  (0028,0120); in a labelmap it equals the Segment Number of the background
+     *  segment. The default is 0. Calling this designates the background (the
+     *  single source of truth, the "lead"); the Pixel Padding Value element is
+     *  derived from it when writing, never written here, so it cannot go stale.
+     *
+     *  As a side effect, a Background segment (Segmented Property Category and
+     *  Type Code (DCM,125040,"Background"), label "Background", Segment Algorithm
+     *  Type MANUAL) is inserted immediately at this value. If a Background segment
+     *  already exists there, only its codes are refreshed (re-designating the same
+     *  value preserves any other customizations). It is an error to designate a
+     *  value already occupied by a non-Background segment. The created segment can
+     *  be further customized via getSegment(value) (e.g.\ label, Recommended
+     *  Display CIELab Value, algorithm). Only a single Background segment is kept:
+     *  changing the background value removes the previously created Background
+     *  segment and inserts a new one at the new value. The Pixel Data is not
+     *  modified, so any pixels still holding the old background value become
+     *  uncovered (handled per the background handling mode on writing).
+     *
+     *  This method (or a Pixel Padding Value read from a file, see read()) is the
+     *  way to designate a background: a Background-typed segment merely inserted
+     *  via addSegment() is not auto-detected as the background. Even without
+     *  calling this method, a Background segment may still be added automatically
+     *  on writing if the (default) background value occurs in the Pixel Data
+     *  without a segment (see setBackgroundHandlingMode(), DcmSegTypes::BGH_AddSegment).
+     *  @param  value The background pixel value
+     *  @return EC_Normal if successful, an error code otherwise (e.g.\ if a
+     *          non-background segment already exists at that value)
+     */
+    virtual OFCondition setBackgroundPixelValue(const Uint16 value);
+
+    /** Set the background pixel value and the codes of the Background segment
+     *  that is inserted for it. Behaves like setBackgroundPixelValue(Uint16) but
+     *  uses the given Segmented Property Type and Category Code instead of the
+     *  default Category (SCT,309825002,"Spatial and Relational Concept") and Type
+     *  (DCM,125040,"Background"). Since the background is tracked by its pixel
+     *  value (the lead), not by the type code, the type code may be overridden
+     *  freely without losing the ability to recognize the background. If a
+     *  Background segment already exists at the value, its codes are refreshed in
+     *  place with the ones given here (re-designating the same value to change its
+     *  codes therefore takes effect).
+     *  @param  value The background pixel value
+     *  @param  propertyType Segmented Property Type Code for the Background segment
+     *  @param  propertyCategory Segmented Property Category Code for the Background
+     *          segment
+     *  @return EC_Normal if successful, an error code otherwise
+     */
+    virtual OFCondition setBackgroundPixelValue(const Uint16 value,
+                                                const CodeSequenceMacro& propertyType,
+                                                const CodeSequenceMacro& propertyCategory);
+
+    /** Get the pixel value that is treated as background (default 0).
+     *  @return The background pixel value
+     */
+    virtual Uint16 getBackgroundPixelValue() const;
+
+    /** Get the Segment Number that is treated as background, i.e.\ the designated
+     *  background pixel value, provided a Segment actually exists at that number.
+     *  Only meaningful for Labelmap segmentations.
+     *  @param  segmentNumber Returns the background Segment Number if a background
+     *          is designated and a Segment exists at it
+     *  @return OFTrue if such a background segment exists, OFFalse otherwise
+     */
+    virtual OFBool getBackgroundSegmentNumber(Uint16& segmentNumber);
+
+    /** Get the default Segmented Property Type Code that identifies the Background
+     *  of a Labelmap segmentation: (DCM,125040,"Background"). Provided so clients
+     *  can compare a segment's type code against the background (see also
+     *  isBackgroundSegment()).
+     *  @return The Background Segmented Property Type Code
+     */
+    static CodeSequenceMacro getBackgroundPropertyTypeCode();
+
+    /** Get the default Segmented Property Category Code used for the Background of
+     *  a Labelmap segmentation: (SCT,309825002,"Spatial and Relational Concept").
+     *  @return The Background Segmented Property Category Code
+     */
+    static CodeSequenceMacro getBackgroundPropertyCategoryCode();
+
+    /** Check whether a Segment is typed as the Background, i.e.\ its Segmented
+     *  Property Type Code is exactly (DCM,125040,"Background"). A code that is
+     *  missing, empty, or differs from the Background code is treated as "not a
+     *  Background segment".
+     *  @param  segment The Segment to test (NULL yields OFFalse)
+     *  @return OFTrue iff the segment's type code is (DCM,125040)
+     */
+    static OFBool isBackgroundSegment(DcmSegment* segment);
 
     /** Add a functional group for all frames
      *  @param  group The group to be added as shared functional group. The
@@ -626,6 +748,20 @@ protected:
      */
     static OFCondition createRequiredBitDepth(const Uint16 bitsAllocated, DcmSegmentation*& segmentation);
 
+    /** Create a Background segment (label "Background", Segment Algorithm Type
+     *  MANUAL) with the given codes and add it to this segmentation at the given
+     *  Labelmap pixel value via addSegment() (which replaces any existing segment
+     *  at that value). On failure the temporary segment is freed.
+     *  @param  value The Labelmap pixel value / Segment Number for the background
+     *  @param  propertyType Segmented Property Type Code (usually (DCM,125040,
+     *          "Background"))
+     *  @param  propertyCategory Segmented Property Category Code
+     *  @return EC_Normal if creation and insertion succeeded, an error code otherwise
+     */
+    OFCondition insertBackgroundSegment(const Uint16 value,
+                                        const CodeSequenceMacro& propertyType,
+                                        const CodeSequenceMacro& propertyCategory);
+
 
     /** Initialize IOD rules
      */
@@ -803,6 +939,26 @@ private:
     /// (only relevant for label maps, ignored for binary and fractional segmentations)
     DcmSegTypes::E_SegmentationLabelmapColorModel m_LabelmapColorModel;
 
+    /// Policy for handling uncovered pixel values when writing a Labelmap
+    /// segmentation (only relevant for label maps). Default BGH_AddSegment for
+    /// objects created from scratch; the read path lowers it to BGH_Warn.
+    DcmSegTypes::E_BackgroundHandling m_BackgroundMode;
+
+    /// Pixel value treated as background in Labelmap segmentations, i.e.\ the
+    /// value reported in Pixel Padding Value (0028,0120) and (in a labelmap) the
+    /// Segment Number of the background segment. Default 0. Only meaningful when
+    /// m_BackgroundDesignated is OFTrue. Together with m_BackgroundDesignated this
+    /// is the single source of truth ("the lead") for the background; the Pixel
+    /// Padding Value element and the Background segment are derived from it on
+    /// writing.
+    Uint16 m_BackgroundPixelValue;
+
+    /// Whether a background has actually been designated for this Labelmap (via
+    /// setBackgroundPixelValue(), interpreted from Pixel Padding Value on reading,
+    /// or auto-added under BGH_AddSegment). If OFFalse, m_BackgroundPixelValue is
+    /// just the default and no Pixel Padding Value is written. Default OFFalse.
+    OFBool m_BackgroundDesignated;
+
     /* Image level information */
 
     /// Image Type: (CS, VM 2-n, Type 1), in Segmentations fixed to "DERIVED\PRIMARY"
@@ -866,6 +1022,51 @@ private:
     /** Clear old data
      */
     void clearData();
+
+    /** Collect the set of distinct pixel values that occur in the frame data but
+     *  are not described by an Item of the Segment Sequence ("uncovered" values).
+     *  Only meaningful for Labelmap segmentations.
+     *  @param  uncovered Returns the sorted, de-duplicated uncovered pixel values
+     */
+    void collectUncoveredPixelValues(OFVector<Uint16>& uncovered) const;
+
+    /** Get the Segment Number of the background segment. The background is the
+     *  designated background value (m_BackgroundPixelValue, the "lead"); it is a
+     *  background \e segment only if a Segment actually exists at that number.
+     *  @param  segmentNumber Returns the background Segment Number if found
+     *  @return OFTrue if a background is designated and a Segment exists at it,
+     *          OFFalse otherwise
+     */
+    OFBool findBackgroundSegmentNumber(Uint16& segmentNumber) const;
+
+    /** Finalize a freshly read object: set the loaded-object background handling
+     *  default (BGH_Warn) and interpret the background (Pixel Padding Value,
+     *  uncovered-value warnings). Called from read() and loadConcatenation().
+     */
+    void finishRead();
+
+    /** Apply the background handling policy and synchronize Pixel Padding Value
+     *  prior to writing. For Labelmap segmentations this evaluates the uncovered
+     *  pixel values against the configured mode (possibly inserting a Background
+     *  segment), emits the appropriate warnings/errors, and writes or strips
+     *  Pixel Padding Value (0028,0120) accordingly. For non-labelmaps it only
+     *  makes sure Pixel Padding Value is absent.
+     *  @return EC_Normal if the object may be written, an error code otherwise
+     */
+    OFCondition harmonizeLabelmapBackground();
+
+    /** Write Pixel Padding Value (0028,0120) into the General Equipment Module to
+     *  match the current background segment, or strip it if there is no background
+     *  segment or this is not a Labelmap segmentation.
+     *  @return EC_Normal if successful, an error code otherwise
+     */
+    OFCondition syncPixelPaddingValue();
+
+    /** On reading, warn about pixel values not covered by a Segment and interpret
+     *  Pixel Padding Value (0028,0120) to identify the background pixel value /
+     *  background segment. Only does work for Labelmap segmentations.
+     */
+    void checkAndInterpretBackgroundOnRead();
 
     /** Check the length of the pixel data
      *  @param  pixelData The Pixel Data element

@@ -118,6 +118,9 @@ DcmSegmentation::DcmSegmentation(OFin_place_type_t(ImagePixel))
     , m_Frames()
     , m_16BitPixelData(OFFalse)
     , m_LabelmapColorModel(DcmSegTypes::SLCM_UNKNOWN)
+    , m_BackgroundMode(DcmSegTypes::BGH_AddSegment)
+    , m_BackgroundPixelValue(0)
+    , m_BackgroundDesignated(OFFalse)
     , m_ImageType("DERIVED\\PRIMARY")
     , m_ContentIdentificationMacro()
     , m_SegmentationType(DcmSegTypes::ST_BINARY)
@@ -244,6 +247,9 @@ OFCondition DcmSegmentation::loadConcatenation(ConcatenationLoader& cl,
                     // so even all files had the same transfer syntax, we always
                     // set it to EXS_Unknown.
                     segmentation->m_inputXfer = EXS_Unknown;
+                    // Apply the loaded-object background defaults and interpret the
+                    // background, just like read() does (frames are now in place).
+                    segmentation->finishRead();
                 }
             }
             else
@@ -379,6 +385,11 @@ OFCondition DcmSegmentation::createRequiredBitDepth(const Uint16 bitsAllocated, 
     {
         result = EC_MemoryExhausted;
     }
+    // Record the pixel-data width here (not only in readFrames()), so that paths
+    // which assign frames directly (e.g. loadConcatenation()) also get it right;
+    // collectUncoveredPixelValues() relies on it to size the 8/16-bit value range.
+    if (seg != NULL)
+        seg->m_16BitPixelData = (bitsAllocated == 16);
     return result;
 
 }
@@ -407,10 +418,17 @@ DcmSegmentation::createDerivationImageFG(const OFVector<ImageSOPInstanceReferenc
 
 OFCondition DcmSegmentation::read(DcmItem& dataset)
 {
-
+    // Start from a clean slate so reading into a reused instance cannot accumulate
+    // segments/frames or leak a stale background designation from a prior read.
+    clearData();
     OFCondition result = readWithoutPixelData(dataset);
     if (result.good())
         result = readFrames(dataset);
+    // Apply the loaded-object background defaults (BGH_Warn) and interpret the
+    // background: Pixel Padding Value (0028,0120) and uncovered-value warnings
+    // (Labelmap only). loadConcatenation() calls finishRead() likewise.
+    if (result.good())
+        finishRead();
     return result;
 }
 
@@ -509,6 +527,12 @@ E_TransferSyntax DcmSegmentation::getInputTransferSyntax() const
 
 OFCondition DcmSegmentation::writeWithSeparatePixelData(DcmItem& dataset, Uint8*& pixData, size_t& pixDataLength)
 {
+    // Apply the Labelmap background handling policy (may insert a Background
+    // segment) and synchronize Pixel Padding Value before checking/writing.
+    OFCondition bg = harmonizeLabelmapBackground();
+    if (bg.bad())
+        return bg;
+
     // FGInterface::write() will know whether it has to check FG structure
     // so we do not need to check FG structure here (OFFalse).
     if (!check(OFFalse))
@@ -630,6 +654,12 @@ OFCondition DcmSegmentation::writeWithSeparatePixelData(DcmItem& dataset, Uint8*
 
 OFCondition DcmSegmentation::writeWithSeparatePixelData(DcmItem& dataset, Uint16*& pixData, size_t& numPixelDataBytes)
 {
+    // Apply the Labelmap background handling policy (may insert a Background
+    // segment) and synchronize Pixel Padding Value before checking/writing.
+    OFCondition bg = harmonizeLabelmapBackground();
+    if (bg.bad())
+        return bg;
+
     // FGInterface::write() will know whether it has to check FG structure
     // so we do not need to check FG structure here (OFFalse).
     if (!check(OFFalse))
@@ -802,19 +832,33 @@ OFCondition DcmSegmentation::addSegment(DcmSegment* seg, Uint16& segmentNumber)
     if (seg == NULL)
         return EC_IllegalParameter;
 
-    if (m_NumSegments >= DCM_SEG_MAX_SEGMENTS)
-    {
-        return SG_EC_MaxSegmentsReached;
-    }
-    // For labelmaps, use the given segment number
+    // For labelmaps, use the given segment number. This is an upsert: if a segment
+    // already exists at that number it is replaced (the previous one is freed, the
+    // count is unchanged) rather than leaked. The maximum-segments limit only
+    // applies to a genuine insertion, not to a replacement.
     if (m_SegmentationType == DcmSegTypes::ST_LABELMAP)
     {
         if (segmentNumber >= m_Segments.size())
             m_Segments.resize(segmentNumber + 1, NULL);
-        m_Segments[segmentNumber] = seg;
-        m_NumSegments++;
+        if (m_Segments[segmentNumber] != NULL)
+        {
+            delete m_Segments[segmentNumber];
+            m_Segments[segmentNumber] = seg;
+        }
+        else
+        {
+            if (m_NumSegments >= DCM_SEG_MAX_SEGMENTS)
+                return SG_EC_MaxSegmentsReached;
+            m_Segments[segmentNumber] = seg;
+            m_NumSegments++;
+        }
         m_SegmentsCompatDirty = OFTrue;
         return EC_Normal;
+    }
+
+    if (m_NumSegments >= DCM_SEG_MAX_SEGMENTS)
+    {
+        return SG_EC_MaxSegmentsReached;
     }
     // For binary/fractional, start with 1 if no segment exists
     if (m_NumSegments == 0)
@@ -832,6 +876,464 @@ OFCondition DcmSegmentation::addSegment(DcmSegment* seg, Uint16& segmentNumber)
     m_NumSegments++;
     m_SegmentsCompatDirty = OFTrue;
     return EC_Normal;
+}
+
+
+// ---------- Labelmap background / Pixel Padding Value ----------
+
+// Default codes identifying the Background of a Labelmap segmentation (Sup 243):
+// Segmented Property Type (DCM,125040,"Background") and Segmented Property
+// Category (SCT,309825002,"Spatial and Relational Concept"). "Background" is a
+// Type within CID 7165 (included by the Spatial and Relational Concept type
+// group); it is not itself a Category (CID 7150).
+static const char* const BG_TYPE_VALUE       = "125040";
+static const char* const BG_TYPE_SCHEME      = "DCM";
+static const char* const BG_TYPE_MEANING     = "Background";
+static const char* const BG_CATEGORY_VALUE   = "309825002";
+static const char* const BG_CATEGORY_SCHEME  = "SCT";
+static const char* const BG_CATEGORY_MEANING = "Spatial and Relational Concept";
+
+// Overwrite 'dst' with the code triple of 'src'. CodeSequenceMacro has no
+// assignment operator and 'src' is const (its getters are non-const), so read
+// from a local copy and set the values explicitly.
+static void assignCode(CodeSequenceMacro& dst, const CodeSequenceMacro& src)
+{
+    CodeSequenceMacro tmp(src);
+    OFString value, scheme, meaning, version;
+    tmp.getCodeValue(value);
+    tmp.getCodingSchemeDesignator(scheme);
+    tmp.getCodeMeaning(meaning);
+    tmp.getCodingSchemeVersion(version);
+    dst.set(value, scheme, meaning, version, OFFalse /*checkValue*/);
+}
+
+CodeSequenceMacro DcmSegmentation::getBackgroundPropertyTypeCode()
+{
+    return CodeSequenceMacro(BG_TYPE_VALUE, BG_TYPE_SCHEME, BG_TYPE_MEANING);
+}
+
+CodeSequenceMacro DcmSegmentation::getBackgroundPropertyCategoryCode()
+{
+    return CodeSequenceMacro(BG_CATEGORY_VALUE, BG_CATEGORY_SCHEME, BG_CATEGORY_MEANING);
+}
+
+OFBool DcmSegmentation::isBackgroundSegment(DcmSegment* segment)
+{
+    // A segment is the Background iff its Segmented Property Type Code is exactly
+    // (DCM,125040). A missing, empty or differing code is "not a Background
+    // segment" (autoTag=OFFalse so only the classic Code Value is consulted).
+    if (segment == NULL)
+        return OFFalse;
+    OFString codeValue, designator;
+    if (segment->getSegmentedPropertyTypeCode().getCodeValue(codeValue, 0, OFFalse).bad())
+        return OFFalse;
+    if (segment->getSegmentedPropertyTypeCode().getCodingSchemeDesignator(designator).bad())
+        return OFFalse;
+    return (codeValue == BG_TYPE_VALUE) && (designator == BG_TYPE_SCHEME);
+}
+
+void DcmSegmentation::setBackgroundHandlingMode(const DcmSegTypes::E_BackgroundHandling mode)
+{
+    m_BackgroundMode = mode;
+}
+
+DcmSegTypes::E_BackgroundHandling DcmSegmentation::getBackgroundHandlingMode() const
+{
+    return m_BackgroundMode;
+}
+
+OFCondition DcmSegmentation::setBackgroundPixelValue(const Uint16 value)
+{
+    return setBackgroundPixelValue(value, getBackgroundPropertyTypeCode(), getBackgroundPropertyCategoryCode());
+}
+
+OFCondition DcmSegmentation::setBackgroundPixelValue(const Uint16 value,
+                                                     const CodeSequenceMacro& propertyType,
+                                                     const CodeSequenceMacro& propertyCategory)
+{
+    // For non-labelmaps the value is only recorded (no Background segment, and
+    // Pixel Padding Value is never written for them).
+    if (m_SegmentationType != DcmSegTypes::ST_LABELMAP)
+    {
+        m_BackgroundPixelValue = value;
+        m_BackgroundDesignated = OFTrue;
+        return EC_Normal;
+    }
+
+    DcmSegment* atValue = getSegment(value);
+
+    // Never clobber a non-Background segment occupying the requested value
+    // (consistent with the single-background "move" below, which only ever drops
+    // an actual Background segment).
+    if ((atValue != NULL) && !isBackgroundSegment(atValue))
+    {
+        DCMSEG_ERROR("Cannot set background pixel value " << value
+                     << ": a non-background segment already exists at that Segment Number");
+        return EC_IllegalCall;
+    }
+
+    const Uint16 oldValue   = m_BackgroundPixelValue;
+    const OFBool bgWasAtOld  = m_BackgroundDesignated && (oldValue < m_Segments.size())
+                              && isBackgroundSegment(m_Segments[oldValue]);
+
+    if (atValue != NULL)
+    {
+        // A Background segment already sits here: refresh its codes in place (the
+        // caller may be re-designating it with different codes), preserving any
+        // other customizations (label, Recommended Display CIELab Value, ...).
+        assignCode(atValue->getSegmentedPropertyTypeCode(), propertyType);
+        assignCode(atValue->getSegmentedPropertyCategoryCode(), propertyCategory);
+    }
+    else
+    {
+        // The slot is free: create and insert a new Background segment.
+        OFCondition result = insertBackgroundSegment(value, propertyType, propertyCategory);
+        if (result.bad())
+            return result;
+    }
+
+    // Commit the designation (the "lead"). Pixel Padding Value is derived from
+    // this on writing (see syncPixelPaddingValue()), so it can never go stale.
+    m_BackgroundPixelValue = value;
+    m_BackgroundDesignated = OFTrue;
+
+    // Single-background invariant: drop a previously designated Background segment
+    // if it sat at a different value.
+    if (bgWasAtOld && (oldValue != value))
+    {
+        delete m_Segments[oldValue];
+        m_Segments[oldValue] = NULL;
+        m_NumSegments--;
+        m_SegmentsCompatDirty = OFTrue;
+    }
+    return EC_Normal;
+}
+
+Uint16 DcmSegmentation::getBackgroundPixelValue() const
+{
+    return m_BackgroundPixelValue;
+}
+
+OFCondition DcmSegmentation::insertBackgroundSegment(const Uint16 value,
+                                                     const CodeSequenceMacro& propertyType,
+                                                     const CodeSequenceMacro& propertyCategory)
+{
+    DcmSegment* segment = NULL;
+    OFCondition result  = DcmSegment::create(
+        segment, "Background", propertyCategory, propertyType, DcmSegTypes::SAT_MANUAL, "");
+    if (result.bad())
+    {
+        DCMSEG_ERROR("Cannot create Background segment: " << result.text());
+        return result;
+    }
+    Uint16 number = value;
+    result        = addSegment(segment, number);
+    if (result.bad())
+    {
+        delete segment;
+        if (result == SG_EC_MaxSegmentsReached)
+            DCMSEG_ERROR("Cannot add Background segment for pixel value " << value
+                         << ": the maximum number of segments (" << DCM_SEG_MAX_SEGMENTS << ") is reached");
+        return result;
+    }
+    return EC_Normal;
+}
+
+OFBool DcmSegmentation::getBackgroundSegmentNumber(Uint16& segmentNumber)
+{
+    return findBackgroundSegmentNumber(segmentNumber);
+}
+
+OFBool DcmSegmentation::findBackgroundSegmentNumber(Uint16& segmentNumber) const
+{
+    // The background is the designated value (m_BackgroundPixelValue, the "lead",
+    // i.e. the Pixel Padding Value); it is a background *segment* only if a Segment
+    // actually exists at that number.
+    if ((m_SegmentationType != DcmSegTypes::ST_LABELMAP) || !m_BackgroundDesignated)
+        return OFFalse;
+    if ((m_BackgroundPixelValue >= m_Segments.size()) || (m_Segments[m_BackgroundPixelValue] == NULL))
+        return OFFalse;
+    segmentNumber = m_BackgroundPixelValue;
+    return OFTrue;
+}
+
+void DcmSegmentation::collectUncoveredPixelValues(OFVector<Uint16>& uncovered) const
+{
+    uncovered.clear();
+    if (m_SegmentationType != DcmSegTypes::ST_LABELMAP)
+        return;
+    // Mark which pixel values occur in the frame data without a Segment. The
+    // value range is bounded by Bits Allocated (8 or 16 bit labelmaps).
+    // Possible enhancement: this flat 1-byte-per-value presence array is up to 64 KiB for
+    // 16-bit. DCMTK has no bitset class, but a bit-packed array (~8 KiB) or
+    // something similar would be leaner if this ever shows up in profiles.
+    const size_t maxVals = m_16BitPixelData ? 65536u : 256u;
+    OFVector<OFBool> uncoveredSeen(maxVals, OFFalse);
+    for (size_t f = 0; f < m_Frames.size(); f++)
+    {
+        const DcmIODTypes::FrameBase* frame = m_Frames[f];
+        if (frame == NULL)
+            continue;
+        const size_t numPixels = frame->getLengthInBytes() / frame->bytesPerPixel();
+        for (size_t p = 0; p < numPixels; p++)
+        {
+            Uint16 pixVal = 0;
+            if (frame->bytesPerPixel() == 1)
+            {
+                Uint8 val8 = 0;
+                frame->getUint8AtIndex(val8, p);
+                pixVal = val8;
+            }
+            else
+            {
+                frame->getUint16AtIndex(pixVal, p);
+            }
+            const OFBool covered = (pixVal < m_Segments.size()) && (m_Segments[pixVal] != NULL);
+            // The (pixVal < maxVals) guard defends against an inconsistent state
+            // where a frame's bytes-per-pixel disagrees with m_16BitPixelData.
+            if (!covered && (pixVal < maxVals))
+                uncoveredSeen[pixVal] = OFTrue;
+        }
+    }
+    // Build sorted, de-duplicated result
+    for (size_t v = 0; v < maxVals; v++)
+    {
+        if (uncoveredSeen[v])
+            uncovered.push_back(OFstatic_cast(Uint16, v));
+    }
+}
+
+OFCondition DcmSegmentation::harmonizeLabelmapBackground()
+{
+    // Non-labelmaps must not carry Pixel Padding Value; make sure it is absent.
+    if (m_SegmentationType != DcmSegTypes::ST_LABELMAP)
+        return syncPixelPaddingValue();
+
+    // Pixel Padding Value leads: if no background has been designated yet but a Pixel
+    // Padding Value is present in the equipment module (set directly by the user,
+    // or carried over from a read file), take it over as the designated background.
+    // Once designated (via setBackgroundPixelValue() or on reading),
+    // m_BackgroundPixelValue is the lead and is never overwritten from the
+    // (possibly stale) element again.
+    if (!m_BackgroundDesignated)
+    {
+        Uint16 ppvVal = 0;
+        if (getEquipment().getPixelPaddingValue(ppvVal).good())
+        {
+            m_BackgroundPixelValue = ppvVal;
+            m_BackgroundDesignated = OFTrue;
+        }
+    }
+
+    OFVector<Uint16> uncovered;
+    collectUncoveredPixelValues(uncovered);
+
+    const OFBool bgHasSegment =
+        (m_BackgroundPixelValue < m_Segments.size()) && (m_Segments[m_BackgroundPixelValue] != NULL);
+
+    // A designated background whose value has no Segment (e.g. read from a file
+    // with a Pixel Padding Value but no Segment, or a value not present in the
+    // Pixel Data) needs a Segment too; treat it like an uncovered value.
+    if (m_BackgroundDesignated && !bgHasSegment)
+    {
+        OFBool alreadyListed = OFFalse;
+        for (size_t i = 0; i < uncovered.size(); i++)
+        {
+            if (uncovered[i] == m_BackgroundPixelValue)
+            {
+                alreadyListed = OFTrue;
+                break;
+            }
+        }
+        if (!alreadyListed)
+            uncovered.push_back(m_BackgroundPixelValue);
+    }
+
+    // A designated background pointing at an existing, non-Background-typed Segment
+    // is suspicious; warn (symmetry with the read path).
+    if (m_BackgroundDesignated && bgHasSegment && !isBackgroundSegment(m_Segments[m_BackgroundPixelValue]))
+    {
+        DCMSEG_WARN("Pixel Padding Value designates Segment " << m_BackgroundPixelValue
+                    << " which is not typed as Background (DCM,125040)");
+    }
+
+    if (!uncovered.empty())
+    {
+        switch (m_BackgroundMode)
+        {
+            case DcmSegTypes::BGH_Error:
+            {
+                for (size_t i = 0; i < uncovered.size(); i++)
+                    DCMSEG_ERROR("Pixel value " << uncovered[i] << " is not described by any Segment "
+                                 "(background handling mode "
+                                 << DcmSegTypes::backgroundHandling2OFString(m_BackgroundMode) << ")");
+                return SG_EC_LabelmapPixelValueUncovered;
+            }
+            case DcmSegTypes::BGH_AddSegment:
+            {
+                // Only the configured background value may be uncovered
+                for (size_t i = 0; i < uncovered.size(); i++)
+                {
+                    if (uncovered[i] != m_BackgroundPixelValue)
+                    {
+                        DCMSEG_ERROR("Pixel value " << uncovered[i]
+                                     << " is not described by any Segment and is not the background value ("
+                                     << m_BackgroundPixelValue << "); cannot add a Segment automatically "
+                                     << "(background handling mode "
+                                     << DcmSegTypes::backgroundHandling2OFString(m_BackgroundMode) << ")");
+                        return SG_EC_LabelmapPixelValueUncovered;
+                    }
+                }
+                // Insert the missing Background segment for the background value
+                DCMSEG_WARN("Background pixel value " << m_BackgroundPixelValue
+                            << " is not described by any Segment");
+                DCMSEG_INFO("Inserting Background segment (DCM,125040) for pixel value "
+                            << m_BackgroundPixelValue << " automatically");
+                OFCondition result = insertBackgroundSegment(
+                    m_BackgroundPixelValue, getBackgroundPropertyTypeCode(), getBackgroundPropertyCategoryCode());
+                if (result.bad())
+                    return result;
+                // The (possibly implicit, value 0) background is now materialized;
+                // mark it designated so Pixel Padding Value is written for it.
+                m_BackgroundDesignated = OFTrue;
+                break;
+            }
+            case DcmSegTypes::BGH_Warn:
+            {
+                if (uncovered.size() > 1)
+                {
+                    for (size_t i = 0; i < uncovered.size(); i++)
+                        DCMSEG_ERROR("Pixel value " << uncovered[i] << " is not described by any Segment");
+                    DCMSEG_ERROR("More than one pixel value is not described by a Segment; refusing to write "
+                                 "(background handling mode "
+                                 << DcmSegTypes::backgroundHandling2OFString(m_BackgroundMode)
+                                 << " permits at most one)");
+                    return SG_EC_LabelmapPixelValueUncovered;
+                }
+                DCMSEG_WARN("Pixel value " << uncovered[0]
+                            << " is not described by any Segment; writing the object anyway "
+                            << "(background handling mode "
+                            << DcmSegTypes::backgroundHandling2OFString(m_BackgroundMode) << ")");
+                break;
+            }
+            case DcmSegTypes::BGH_Ignore:
+            {
+                for (size_t i = 0; i < uncovered.size(); i++)
+                    DCMSEG_WARN("Pixel value " << uncovered[i]
+                                << " is not described by any Segment; writing the object anyway "
+                                << "(background handling mode "
+                                << DcmSegTypes::backgroundHandling2OFString(m_BackgroundMode) << ")");
+                break;
+            }
+        }
+    }
+
+    // Write or strip Pixel Padding Value to match the (possibly just added)
+    // background segment.
+    return syncPixelPaddingValue();
+}
+
+OFCondition DcmSegmentation::syncPixelPaddingValue()
+{
+    // Whether Pixel Padding Value (0028,0120) is written is controlled by toggling
+    // the "active on write" flag of its rule. The rule is fetched from the General
+    // Equipment Module's own rule container (the one consulted when that module is
+    // written), so the toggle and the write can never decouple.
+    IODRule* ppvRule = getEquipment().getRules()->getByTag(DCM_PixelPaddingValue);
+
+    // Pixel Padding Value is written iff this is a Labelmap with a designated
+    // background (Part 3 Section A.51.4); its value is derived from
+    // m_BackgroundPixelValue (the lead), so a previously written element can never
+    // go stale.
+    if ((m_SegmentationType == DcmSegTypes::ST_LABELMAP) && m_BackgroundDesignated)
+    {
+        if (ppvRule != NULL)
+            ppvRule->setActiveOnWrite(OFTrue);
+        return getEquipment().setPixelPaddingValue(m_BackgroundPixelValue);
+    }
+
+    // Not a labelmap, or a labelmap without a designated background: do not write
+    // Pixel Padding Value (the rule is deactivated; the in-memory value, if any, is
+    // left untouched).
+    if (ppvRule != NULL)
+        ppvRule->setActiveOnWrite(OFFalse);
+    return EC_Normal;
+}
+
+void DcmSegmentation::checkAndInterpretBackgroundOnRead()
+{
+    if (m_SegmentationType != DcmSegTypes::ST_LABELMAP)
+        return;
+
+    // Interpret Pixel Padding Value (0028,0120), if present: it holds the
+    // background pixel value, which equals the background Segment Number, and
+    // becomes the designated background (the "lead").
+    Uint16 ppv     = 0;
+    OFBool havePpv = OFFalse;
+    if (getEquipment().isPixelPaddingValueSigned())
+    {
+        // Signed (SS) encoding is non-conformant for a Labelmap (whose Pixel
+        // Representation is always unsigned). Normalize: convert a non-negative
+        // value to US and use it, drop a negative one (it cannot be a valid
+        // unsigned pixel value).
+        Sint16 ppvS = 0;
+        getEquipment().getPixelPaddingValue(ppvS);
+        DCMSEG_WARN("Pixel Padding Value is encoded as SS (signed), which is non-conformant "
+                    "for a Labelmap segmentation (Pixel Representation is unsigned)");
+        if (ppvS >= 0)
+        {
+            ppv = OFstatic_cast(Uint16, ppvS);
+            DCMSEG_WARN("Converting Pixel Padding Value to US (" << ppv << ")");
+            getEquipment().setPixelPaddingValue(ppv); // rewrite the element as US
+            havePpv = OFTrue;
+        }
+        else
+        {
+            DCMSEG_WARN("Pixel Padding Value (" << ppvS << ") is negative and invalid for a "
+                        "Labelmap; removing it");
+            getEquipment().getData().findAndDeleteElement(DCM_PixelPaddingValue);
+        }
+    }
+    else if (getEquipment().getPixelPaddingValue(ppv).good())
+    {
+        // Unsigned (US) value, as required for a Labelmap (Pixel Representation 0).
+        havePpv = OFTrue;
+    }
+
+    if (havePpv)
+    {
+        m_BackgroundPixelValue = ppv;
+        m_BackgroundDesignated = OFTrue;
+        if ((ppv >= m_Segments.size()) || (m_Segments[ppv] == NULL))
+        {
+            DCMSEG_WARN("Pixel Padding Value (" << ppv << ") does not reference an existing Segment");
+        }
+        else if (!isBackgroundSegment(m_Segments[ppv]))
+        {
+            DCMSEG_WARN("Segment " << ppv << " referenced by Pixel Padding Value is not typed as "
+                        "Background (DCM,125040)");
+        }
+    }
+
+    // Warn about any pixel value not described by a Segment (Sup 243, C.8.20.2.3.3)
+    OFVector<Uint16> uncovered;
+    collectUncoveredPixelValues(uncovered);
+    for (size_t i = 0; i < uncovered.size(); i++)
+    {
+        DCMSEG_WARN("Pixel value " << uncovered[i] << " is not described by any Segment (Segment Sequence)");
+    }
+}
+
+void DcmSegmentation::finishRead()
+{
+    // Loaded Labelmap objects default to BGH_Warn so that a "foreign" object is
+    // never modified automatically on re-writing. The mode is only relevant for
+    // labelmaps, so leave the constructor default for other types (this also keeps
+    // a later in-memory conversion to Labelmap at the from-scratch default). Then
+    // interpret the background (Pixel Padding Value, uncovered-value warnings).
+    if (m_SegmentationType == DcmSegTypes::ST_LABELMAP)
+        m_BackgroundMode = DcmSegTypes::BGH_Warn;
+    checkAndInterpretBackgroundOnRead();
 }
 
 
@@ -1632,6 +2134,11 @@ void DcmSegmentation::clearData()
     m_MaximumFractionalValue.clear();
     m_SegmentationFractionalType = DcmSegTypes::SFT_UNKNOWN;
     m_SegmentationType           = DcmSegTypes::ST_UNKNOWN;
+    // Reset the background designation to the constructor defaults so it cannot
+    // leak across a re-read of the same object.
+    m_BackgroundMode             = DcmSegTypes::BGH_AddSegment;
+    m_BackgroundPixelValue       = 0;
+    m_BackgroundDesignated       = OFFalse;
 }
 
 OFBool DcmSegmentation::checkPixDataLength(DcmElement* pixelData,
@@ -1809,38 +2316,11 @@ OFBool DcmSegmentation::check(const OFBool checkFGStructure)
         return OFFalse;
     }
 
-    // For LABELMAP, every pixel value in the pixel data must be described
-    // by a Segment Sequence item (Sup 243, Section C.8.20.2.3.3).
-    if (m_SegmentationType == DcmSegTypes::ST_LABELMAP)
-    {
-        for (size_t f = 0; f < m_Frames.size(); f++)
-        {
-            const DcmIODTypes::FrameBase* frame = m_Frames[f];
-            if (frame == NULL)
-                continue;
-            const size_t numPixels = frame->getLengthInBytes() / frame->bytesPerPixel();
-            for (size_t p = 0; p < numPixels; p++)
-            {
-                Uint16 pixVal = 0;
-                if (frame->bytesPerPixel() == 1)
-                {
-                    Uint8 val8 = 0;
-                    frame->getUint8AtIndex(val8, p);
-                    pixVal = val8;
-                }
-                else
-                {
-                    frame->getUint16AtIndex(pixVal, p);
-                }
-                if (pixVal >= m_Segments.size() || m_Segments[pixVal] == NULL)
-                {
-                    DCMSEG_ERROR("Pixel value " << pixVal << " in frame " << f
-                        << " has no corresponding Segment Sequence item");
-                    return OFFalse;
-                }
-            }
-        }
-    }
+    // Note: for Labelmap, the requirement that every pixel value be described by a
+    // Segment (part 3 section C.8.20.2.3.3) is enforced on the write path by
+    // harmonizeLabelmapBackground() (which also applies the background handling
+    // mode and may insert a Background segment), the single authority for it.
+    // check() deliberately does not scan the Pixel Data for coverage.
 
     if (checkFGStructure)
     {
