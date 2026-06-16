@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 2003-2025, OFFIS e.V.
+ *  Copyright (C) 2003-2026, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -53,6 +53,9 @@ typedef xmlDoc *xmlDocPtr;
 #include DCMTK_DIAGNOSTIC_IGNORE_CLANG_PRAGMAS_ON_GCC
 #include <libxml/xmlstring.h>
 #include DCMTK_DIAGNOSTIC_POP
+
+/// maximum sequence nesting level supported
+#define DCMXML_MAX_SEQUENCE_NESTING 128
 
 class DcmElement;
 class DcmItem;
@@ -127,7 +130,7 @@ private:
 
   /** create a new, empty DICOM element corresponding to the given XML node pointer
    *  @param current pointer to current XML node
-   *  @param newElem
+   *  @param newElem pointer to new element returned in this parameter
    *  @return EC_Normal upon success, an error code otherwise
    */
   OFCondition createNewElement(
@@ -153,7 +156,8 @@ private:
     xmlNodePtr current);
 
   /** parse a DICOM sequence
-   *  @param sequence
+   *  @param sequence pointer to the sequence object to be parsed
+   *  @param depth current recursion depth
    *  @param current pointer to current XML node
    *  @param xfer transfer syntax in which the XML file is read
    *  @param stopOnError if true, stop parsing and return an error code upon encountering a parse error,
@@ -162,12 +166,13 @@ private:
    */
   OFCondition parseSequence(
     DcmSequenceOfItems *sequence,
+    size_t depth,
     xmlNodePtr current,
     E_TransferSyntax xfer,
     const OFBool stopOnError);
 
   /** parse a DICOM pixel sequence of a compressed image files
-   *  @param sequence
+   *  @param sequence pointer to the sequence object to be parsed
    *  @param current pointer to current XML node
    *  @param stopOnError if true, stop parsing and return an error code upon encountering a parse error,
    *    otherwise ignore parse errors and continue
@@ -194,6 +199,7 @@ private:
 
   /** parse the dataset part of an XML file containing a DICOM file or a DICOM dataset.
    *  @param dataset dataset stored in this parameter
+   *  @param depth current recursion depth
    *  @param current pointer to current XML node
    *  @param xfer transfer syntax in which the XML file is read
    *  @param stopOnError if true, stop parsing and return an error code upon encountering a parse error,
@@ -202,6 +208,7 @@ private:
    */
   OFCondition parseDataSet(
     DcmItem *dataset,
+    size_t depth,
     xmlNodePtr current,
     E_TransferSyntax xfer,
     const OFBool stopOnError);

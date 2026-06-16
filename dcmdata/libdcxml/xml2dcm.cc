@@ -443,10 +443,17 @@ OFCondition DcmXMLParseHelper::parseElement(
 
 OFCondition DcmXMLParseHelper::parseSequence(
     DcmSequenceOfItems *sequence,
+    size_t depth,
     xmlNodePtr current,
     E_TransferSyntax xfer,
     const OFBool stopOnError)
 {
+    if (depth > DCMXML_MAX_SEQUENCE_NESTING)
+    {
+        DCMDATA_ERROR("DcmXMLParseHelper: maximum sequence nesting level " << DCMXML_MAX_SEQUENCE_NESTING << " exceeded");
+        return EC_NestingDepthLimitExceeded;
+    }
+
     OFCondition result = EC_Normal;
     if (sequence != NULL)
     {
@@ -464,19 +471,23 @@ OFCondition DcmXMLParseHelper::parseSequence(
                 {
                     sequence->insert(newItem);
                     /* proceed parsing the item content */
-                    result = parseDataSet(newItem, current->xmlChildrenNode, xfer, stopOnError);
-                    if (result.bad())
-                        DCMDATA_WARN("DcmXMLParseHelper: cannot parse invalid item: " << result.text());
+                    result = parseDataSet(newItem, depth + 1, current->xmlChildrenNode, xfer, stopOnError);
+                    /* don't print warning about nexting depth limit because the warning would then
+                     * be repeated on each recursion level. We print that message elsewhere, and only once.
+                     * Other errors, however, should be reported here.
+                     */
+                    if (result.bad() && (result != EC_NestingDepthLimitExceeded))
+                        DCMDATA_WARN("DcmXMLParseHelper: cannot parse invalid item: " << result.text() << ", stop = " << stopOnError);
                 }
             } else if (!xmlIsBlankNodeOrComment(current))
                 DCMDATA_WARN("DcmXMLParseHelper: unexpected node '" << current->name << "', 'item' expected, skipping");
+
             /* check for errors */
             if (result.bad())
             {
                 if  (stopOnError)
                 {
-                    /* exit the loop and return with an error */
-                    break;
+                    return result;
                 } else {
                     DCMDATA_DEBUG("DcmXMLParseHelper::parseSequence() ignoring error as requested by the user");
                     /* ignore the error */
@@ -584,10 +595,17 @@ OFCondition DcmXMLParseHelper::parseMetaHeader(
 
 OFCondition DcmXMLParseHelper::parseDataSet(
     DcmItem *dataset,
+    size_t depth,
     xmlNodePtr current,
     E_TransferSyntax xfer,
     const OFBool stopOnError)
 {
+    if (depth > DCMXML_MAX_SEQUENCE_NESTING)
+    {
+        DCMDATA_ERROR("DcmXMLParseHelper: maximum sequence nesting level " << DCMXML_MAX_SEQUENCE_NESTING << " exceeded");
+        return EC_NestingDepthLimitExceeded;
+    }
+
     OFCondition result = EC_Normal;
     /* ignore blank (empty or whitespace only) nodes */
     while ((current != NULL) && xmlIsBlankNodeOrComment(current))
@@ -625,7 +643,7 @@ OFCondition DcmXMLParseHelper::parseDataSet(
                     } else {
                         /* proceed parsing the items of the sequence */
                         if (newElem->ident() == EVR_SQ)
-                            result = parseSequence(OFstatic_cast(DcmSequenceOfItems *, newElem), current->xmlChildrenNode, xfer, stopOnError);
+                            result = parseSequence(OFstatic_cast(DcmSequenceOfItems *, newElem), depth + 1, current->xmlChildrenNode, xfer, stopOnError);
                         else
                             DCMDATA_WARN("DcmXMLParseHelper: wrong VR for 'sequence' element, ignoring child nodes");
                     }
@@ -760,7 +778,7 @@ OFCondition DcmXMLParseHelper::readXmlFile(
                             xmlChar *xferUID = xmlGetProp(current, OFreinterpret_cast(const xmlChar *, "xfer"));
                             if (xferUID != NULL)
                                 xfer = DcmXfer(OFreinterpret_cast(char *, xferUID)).getXfer();
-                            result = parseDataSet(fileformat.getDataset(), current->xmlChildrenNode, xfer, stopOnError);
+                            result = parseDataSet(fileformat.getDataset(), 0, current->xmlChildrenNode, xfer, stopOnError);
                             /* free allocated memory */
                             xmlFree(xferUID);
                             if (result.bad())
