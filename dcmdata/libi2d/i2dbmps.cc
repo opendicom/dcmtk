@@ -201,7 +201,9 @@ OFCondition I2DBmpSource::readBitmapHeader(Uint16 &width,
   if (tmp_height < 0) /* Is this a top down bitmap? */
   {
     isTopDown = OFTrue;
-    tmp_height = -tmp_height;
+    // Negate in the unsigned domain to avoid signed-overflow UB for INT_MIN.
+    // INT_MIN stays negative here and is rejected by the range check below.
+    tmp_height = OFstatic_cast(Sint32, 0 - OFstatic_cast(Uint32, tmp_height));
   }
   else
     isTopDown = OFFalse;
@@ -214,7 +216,8 @@ OFCondition I2DBmpSource::readBitmapHeader(Uint16 &width,
 
   if (tmp_width < 0) /* Width also can be signed, but no semantic */
   {
-    tmp_width = -tmp_width;
+    // Negate in the unsigned domain to avoid signed-overflow UB for INT_MIN.
+    tmp_width = OFstatic_cast(Sint32, 0 - OFstatic_cast(Uint32, tmp_width));
   }
   width = OFstatic_cast(Uint16, tmp_width);
   if (tmp_width <= 0 || tmp_width > OFstatic_cast(Sint32, UINT16_MAX))
@@ -637,17 +640,11 @@ int I2DBmpSource::readLong(Sint32& result)
   if (readDWord(tmp) != 0)
     return EOF;
 
-  /* tmp is a two's complement (signed integer) and we have to convert it into that */
-  if (tmp & (1UL << 31))
-  {
-    /* If the highest bit is set, it is a negative number, convert it */
-    result = -(OFstatic_cast(Sint32, ~(tmp - 1)));
-  }
-  else
-  {
-    /* It is a positive number, no conversion necessary */
-    result = tmp;
-  }
+  /* Reinterpret the 32-bit two's-complement bit pattern as a signed integer.
+   * A direct unsigned-to-signed conversion yields the correct value across the
+   * whole Sint32 range (including INT_MIN for 0x80000000) and, unlike negating
+   * the magnitude, never invokes signed-overflow undefined behaviour. */
+  result = OFstatic_cast(Sint32, tmp);
 
   return 0;
 }
