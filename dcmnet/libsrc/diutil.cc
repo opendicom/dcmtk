@@ -855,8 +855,18 @@ void DU_logSelectResult(int selectReturnValue)
     DCMNET_DEBUG("Windows Socket error while waiting for incoming network data: " << err);
 #else
     // POSIX interface
-    char buf[256];
-    DCMNET_DEBUG("Error while waiting for incoming network data: " << OFStandard::strerror(errno, buf, 256));
+    if (errno == EINTR)
+    {
+      // EINTR is expected when signals are delivered (e.g. during thread
+      // creation or signal handler invocation). The caller will simply
+      // retry the select() call, so only log at TRACE level.
+      DCMNET_DEBUG("select() interrupted by signal (EINTR), will retry");
+    }
+    else
+    {
+      char buf[256];
+      DCMNET_DEBUG("Error while waiting for incoming network data: " << OFStandard::strerror(errno, buf, 256));
+    }
 #endif
   }
   else if (selectReturnValue == 0)
