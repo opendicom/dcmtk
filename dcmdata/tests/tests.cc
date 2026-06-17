@@ -84,7 +84,7 @@ OFTEST_REGISTER(dcmdata_elementLength_EVR_UR);
 OFTEST_REGISTER(dcmdata_elementLength_EVR_US);
 OFTEST_REGISTER(dcmdata_elementLength_EVR_UV);
 OFTEST_REGISTER(dcmdata_elementLength_EVR_UT);
-OFTEST_REGISTER(dcmdata_elementLength_EVR_lt);
+OFTEST_REGISTER(dcmdata_elementLength_EVR_lt_);
 OFTEST_REGISTER(dcmdata_elementLength_EVR_na);
 OFTEST_REGISTER(dcmdata_elementLength_EVR_ox);
 OFTEST_REGISTER(dcmdata_elementLength_EVR_px);

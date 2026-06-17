@@ -122,7 +122,7 @@ TEST_VR(EVR_UR)
 TEST_VR(EVR_UT)
 TEST_VR(EVR_ox)
 TEST_VR(EVR_px)
-TEST_VR(EVR_lt)
+OFTEST(dcmdata_elementLength_EVR_lt_) { testElementLengthForVR(EVR_lt, 12); }
 TEST_VR(EVR_UNKNOWN)
 TEST_VR(EVR_UN)
 /* Converted to UN during write */
