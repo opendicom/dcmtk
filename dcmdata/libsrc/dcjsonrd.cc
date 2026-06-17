@@ -575,8 +575,15 @@ OFCondition DcmJSONReader::processJSONEscapeCharacters(OFString& value)
 OFCondition DcmJSONReader::parseElement(
     DcmItem* dataset,
     DcmItem* metaheader,
+    size_t depth,
     OFJsmnTokenPtr& current)
 {
+    if (depth > DCMJSON_MAX_SEQUENCE_NESTING)
+    {
+        DCMDATA_ERROR("DcmJSONReader: maximum sequence nesting level " << DCMJSON_MAX_SEQUENCE_NESTING << " exceeded");
+        return EC_NestingDepthLimitExceeded;
+    }
+
     OFCondition result = EC_Normal;
     DCMDATA_TRACE("element at " << current->start);
 
@@ -795,7 +802,7 @@ OFCondition DcmJSONReader::parseElement(
         // Sequence
         if (newElem->ident() == EVR_SQ)
         {
-            result = parseSequence(*(OFstatic_cast(DcmSequenceOfItems*, newElem)), valueToken);
+            result = parseSequence(*(OFstatic_cast(DcmSequenceOfItems*, newElem)), depth, valueToken);
         }
         else if (newElem->getTag() == DCM_PixelData)
         {
@@ -899,6 +906,7 @@ OFCondition DcmJSONReader::extractTag(
 
 OFCondition DcmJSONReader::parseSequence(
     DcmSequenceOfItems& sequence,
+    size_t depth,
     OFJsmnTokenPtr& current)
 {
     OFCondition result = EC_Normal;
@@ -924,7 +932,7 @@ OFCondition DcmJSONReader::parseSequence(
             sequence.insert(newItem);
 
             // proceed parsing the item content
-            result = parseDataSet(newItem, NULL, current);
+            result = parseDataSet(newItem, NULL, depth + 1, current);
             if (result.bad() && stopOnErrorPolicy_) return result;
         }
         DCMDATA_TRACE("item " << sqStart << ":" << i << " end, next up : " << current->start);
@@ -937,8 +945,15 @@ OFCondition DcmJSONReader::parseSequence(
 OFCondition DcmJSONReader::parseDataSet(
     DcmItem* dataset,
     DcmItem* metaheader,
+    size_t depth,
     OFJsmnTokenPtr& current)
 {
+    if (depth > DCMJSON_MAX_SEQUENCE_NESTING)
+    {
+        DCMDATA_ERROR("DcmJSONReader: maximum sequence nesting level " << DCMJSON_MAX_SEQUENCE_NESTING << " exceeded");
+        return EC_NestingDepthLimitExceeded;
+    }
+
     OFCondition result = EC_Normal;
 
     // we expect a JSON object that encapsulates the DICOM dataset
@@ -955,7 +970,7 @@ OFCondition DcmJSONReader::parseDataSet(
     for (int i = 0; i < dsSize; i++)
     {
         // read each entry in the content object as a DICOM element
-        result = parseElement(dataset, metaheader, current);
+        result = parseElement(dataset, metaheader, depth + 1, current);
         if (result.bad() && stopOnErrorPolicy_) return result;
     }
     DCMDATA_TRACE("dataset end " << dsStart << "; next element: " << current->start);
@@ -1254,7 +1269,7 @@ OFCondition DcmJSONReader::readAndConvertJSONFile(
             // Silently ignore the array structure and parse the dataset
             DCMDATA_DEBUG("DcmJSONReader: parsing JSON array containing a single dataset");
             current++;
-            result = parseDataSet(dataset, metaheader, current);
+            result = parseDataSet(dataset, metaheader, 0, current);
         }
         else
         {
@@ -1274,7 +1289,7 @@ OFCondition DcmJSONReader::readAndConvertJSONFile(
                 DcmSequenceOfItems *newSQ = new DcmSequenceOfItems(private_sequence);
                 result = dataset->putAndInsertString(private_reservation, JSON2DCM_PRIVATE_RESERVATION);
                 if (result.good()) result = dataset->insert(newSQ);
-                if (result.good()) result = parseSequence(*newSQ, current);
+                if (result.good()) result = parseSequence(*newSQ, 0, current);
             }
             else
             {
@@ -1305,7 +1320,7 @@ OFCondition DcmJSONReader::readAndConvertJSONFile(
                     }
 
                     // extract the single dataset at the target location
-                    result = parseDataSet(dataset, metaheader, current);
+                    result = parseDataSet(dataset, metaheader, 0, current);
                 }
             }
         }
@@ -1314,7 +1329,7 @@ OFCondition DcmJSONReader::readAndConvertJSONFile(
     {
         // we expect a single dataset here, parseDataSet() will check if it is the right JSON structure
         DCMDATA_DEBUG("DcmJSONReader: parsing single JSON dataset");
-        result = parseDataSet(dataset, metaheader, current);
+        result = parseDataSet(dataset, metaheader, 0, current);
     }
 
     if (!stopOnErrorPolicy_) result = EC_Normal;

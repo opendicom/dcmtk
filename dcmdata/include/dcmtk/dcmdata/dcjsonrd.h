@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 2024-2025, OFFIS e.V.
+ *  Copyright (C) 2024-2026, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -32,6 +32,9 @@ class OFCondition;
 
 #define JSMN_HEADER
 #include "dcmtk/ofstd/ofjsmn.h"         /* for JSMN declarations  */
+
+/// maximum sequence nesting level supported
+#define DCMJSON_MAX_SEQUENCE_NESTING 128
 
 typedef jsmn_parser OFJsmnParser;
 typedef jsmntok_t OFJsmnToken;
@@ -272,32 +275,38 @@ private:
   /** parse the dataset part of an XML file containing a DICOM file or a DICOM dataset.
    *  @param dataset dataset stored in this parameter
    *  @param metaheader metaheader stored in this parameter
+   *  @param depth current recursion depth
    *  @param current pointer to current JSMN Token
    *  @return EC_Normal upon success, an error code otherwise
    */
   virtual OFCondition parseDataSet(
       DcmItem* dataset,
       DcmItem* metaheader,
+      size_t depth,
       OFJsmnTokenPtr& current);
 
   /** parse a DICOM sequence
    *  @param sequence DICOM Sequence
+   *  @param depth current recursion depth
    *  @param current pointer to current token in the tokenArray
    *  @return EC_Normal upon success, an error code otherwise
    */
   virtual OFCondition parseSequence(
       DcmSequenceOfItems& sequence,
+      size_t depth,
       OFJsmnTokenPtr& current);
 
   /** parse a DICOM element that is not a sequence
    *  @param dataset dataset stored in this parameter
    *  @param metaheader metaheader stored in this parameter
+   *  @param depth current recursion depth
    *  @param current pointer to current JSMN Token
    *  @return EC_Normal upon success, an error code otherwise
    */
   virtual OFCondition parseElement(
       DcmItem* dataset,
       DcmItem* metaheader,
+      size_t depth,
       OFJsmnTokenPtr& current);
 
   /** parse a value array from JSON to DICOM
