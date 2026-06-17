@@ -209,8 +209,14 @@ OFCondition DSRDocumentTreeNode::write(DcmItem &dataset,
 OFCondition DSRDocumentTreeNode::readXML(const DSRXMLDocument &doc,
                                          DSRXMLCursor cursor,
                                          const E_DocumentType documentType,
-                                         const size_t flags)
+                                         const size_t flags,
+                                         const size_t depth)
 {
+    if (depth > DCMSR_MAX_XML_NESTING_LEVEL)
+    {
+        return EC_NestingDepthLimitExceeded;
+    }
+
     OFCondition result = SR_EC_InvalidDocument;
     if (cursor.valid())
     {
@@ -300,7 +306,7 @@ OFCondition DSRDocumentTreeNode::readXML(const DSRXMLDocument &doc,
                             DCMSR_WARN("Content item has invalid/incomplete template identification");
                     }
                     /* proceed with reading child nodes */
-                    result = node->readXML(doc, cursor, documentType, flags);
+                    result = node->readXML(doc, cursor, documentType, flags, depth + 1);
                     /* print node error message (if any) */
                     doc.printGeneralNodeError(cursor, result);
                 } else {

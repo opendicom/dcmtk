@@ -226,7 +226,7 @@ OFCondition DSRDocumentTree::readXML(const DSRXMLDocument &doc,
                             DCMSR_WARN("Root content item has invalid/incomplete template identification");
                     }
                     /* ... and let the node read the rest of the document */
-                    result = node->readXML(doc, cursor, DocumentType, flags);
+                    result = node->readXML(doc, cursor, DocumentType, flags, 0);
                     /* check and update by-reference relationships (if applicable) */
                     checkByReferenceRelationships<DSRDocumentTreeNodeCursor>(CM_updatePositionString);
                 } else
