@@ -1726,7 +1726,8 @@ OFCondition DcmSCU::sendACTIONRequest(const T_ASC_PresentationContextID presID,
                                       const OFString& sopInstanceUID,
                                       const Uint16 actionTypeID,
                                       DcmDataset* reqDataset,
-                                      Uint16& rspStatusCode)
+                                      Uint16& rspStatusCode,
+                                      const OFString& reqSOPClassUID)
 {
     // Do some basic validity checks
     if (!isConnected())
@@ -1754,7 +1755,10 @@ OFCondition DcmSCU::sendACTIONRequest(const T_ASC_PresentationContextID presID,
     findPresentationContext(pcid, abstractSyntax, transferSyntax);
     if (abstractSyntax.empty() || transferSyntax.empty())
         return DIMSE_NOVALIDPRESENTATIONCONTEXTID;
-    OFStandard::strlcpy(actionReq.RequestedSOPClassUID, abstractSyntax.c_str(), sizeof(actionReq.RequestedSOPClassUID));
+    // Use an explicit Requested SOP Class UID if provided (e.g. UPS Push over a
+    // Pull/Watch presentation context); otherwise the abstract syntax.
+    const OFString& reqSOPClass = reqSOPClassUID.empty() ? abstractSyntax : reqSOPClassUID;
+    OFStandard::strlcpy(actionReq.RequestedSOPClassUID, reqSOPClass.c_str(), sizeof(actionReq.RequestedSOPClassUID));
     OFStandard::strlcpy(
         actionReq.RequestedSOPInstanceUID, sopInstanceUID.c_str(), sizeof(actionReq.RequestedSOPInstanceUID));
 
@@ -2269,7 +2273,8 @@ OFCondition DcmSCU::sendNSETRequest(const T_ASC_PresentationContextID presID,
     const OFString& requestedSopInstanceUID,
     DcmDataset* modificationList,
     DcmDataset*& attributeList,
-    Uint16& rspStatusCode)
+    Uint16& rspStatusCode,
+    const OFString& reqSOPClassUID)
 {
 
     // Do some basic validity checks
@@ -2293,7 +2298,10 @@ OFCondition DcmSCU::sendNSETRequest(const T_ASC_PresentationContextID presID,
     rqmsg.MessageID = nextMessageID();
     rqmsg.DataSetType = DIMSE_DATASET_PRESENT;
 
-    OFStandard::strlcpy(rqmsg.RequestedSOPClassUID, abstractSyntax.c_str(), sizeof(rqmsg.RequestedSOPClassUID));
+    // Use an explicit Requested SOP Class UID if provided (e.g. UPS Push over a
+    // Pull presentation context); otherwise the abstract syntax.
+    const OFString& reqSOPClass = reqSOPClassUID.empty() ? abstractSyntax : reqSOPClassUID;
+    OFStandard::strlcpy(rqmsg.RequestedSOPClassUID, reqSOPClass.c_str(), sizeof(rqmsg.RequestedSOPClassUID));
     OFStandard::strlcpy(rqmsg.RequestedSOPInstanceUID, requestedSopInstanceUID.c_str(), sizeof(rqmsg.RequestedSOPInstanceUID));
 
     OFString tempStr;
@@ -2403,7 +2411,8 @@ OFCondition DcmSCU::sendNGETRequest(const T_ASC_PresentationContextID presID,
                                     const OFString& requestedSopInstanceUID,
                                     const OFList<DcmTagKey>& attributeIdentifierList,
                                     DcmDataset*& attributeList,
-                                    Uint16& rspStatusCode)
+                                    Uint16& rspStatusCode,
+                                    const OFString& reqSOPClassUID)
 {
     if (!isConnected())
         return DIMSE_ILLEGALASSOCIATION;
@@ -2435,7 +2444,10 @@ OFCondition DcmSCU::sendNGETRequest(const T_ASC_PresentationContextID presID,
     rqmsg.AttributeIdentifierList             = attrList.empty() ? OFnullptr : &attrList[0];
     rqmsg.ListCount                           = OFstatic_cast(int, attrList.size());
 
-    OFStandard::strlcpy(rqmsg.RequestedSOPClassUID, abstractSyntax.c_str(), sizeof(rqmsg.RequestedSOPClassUID));
+    // Use an explicit Requested SOP Class UID if provided (e.g. UPS Push over a
+    // Pull presentation context); otherwise the abstract syntax.
+    const OFString& reqSOPClass = reqSOPClassUID.empty() ? abstractSyntax : reqSOPClassUID;
+    OFStandard::strlcpy(rqmsg.RequestedSOPClassUID, reqSOPClass.c_str(), sizeof(rqmsg.RequestedSOPClassUID));
     OFStandard::strlcpy(rqmsg.RequestedSOPInstanceUID, requestedSopInstanceUID.c_str(), sizeof(rqmsg.RequestedSOPInstanceUID));
 
     OFString tempStr;

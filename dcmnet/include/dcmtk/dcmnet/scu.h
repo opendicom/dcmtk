@@ -619,6 +619,11 @@ public:
      *  @param reqDataset     [in]  The dataset to be sent
      *  @param rspStatusCode  [out] The response status code received. 0 means success,
      *                              others can be found in the DICOM standard.
+     *  @param reqSOPClassUID [in]  Optional Requested SOP Class UID (0000,0003) to send
+     *                              instead of the presentation context's abstract syntax.
+     *                              Needed e.g. for UPS, where N-ACTION over the Pull/Watch
+     *                              SOP Class must still name the UPS Push SOP Class
+     *                              Empty = use abstract syntax.
      *  @return EC_Normal if request could be issued and response was received successfully,
      *          an error code otherwise
      */
@@ -626,7 +631,8 @@ public:
                                           const OFString& sopInstanceUID,
                                           const Uint16 actionTypeID,
                                           DcmDataset* reqDataset,
-                                          Uint16& rspStatusCode);
+                                          Uint16& rspStatusCode,
+                                          const OFString& reqSOPClassUID = "");
 
     /** This function sends N-EVENT-REPORT request and receives the corresponding response
      *  @param presID         [in]  The ID of the presentation context to be used for sending
@@ -688,6 +694,11 @@ public:
      *                                        for deleting the returned object.
      *  @param rspStatusCode            [out] The response status code received. 0 means success,
      *                                        others can be found in the DICOM standard.
+     *  @param reqSOPClassUID           [in]  Optional Requested SOP Class UID (0000,0003) to send
+     *                                        instead of the presentation context's abstract syntax.
+     *                                        Needed e.g. for UPS, where N-SET over the Pull
+     *                                        presentation context must still name the UPS Push SOP
+     *                                        Class. Empty = use the abstract syntax.
      *  @return EC_Normal if request could be issued and response was received successfully,
      *          an error code otherwise. If a code different from EC_Normal is returned, other
      *          output like rspStatusCode may be invalid.
@@ -696,7 +707,8 @@ public:
                                         const OFString& requestedSopInstanceUID,
                                         DcmDataset* modificationList,
                                         DcmDataset*& attributeList,
-                                        Uint16& rspStatusCode);
+                                        Uint16& rspStatusCode,
+                                        const OFString& reqSOPClassUID = "");
 
     /** This function sends N-GET request and receives the corresponding response.
      *  @param presID                   [in]  The ID of the presentation context to be used for sending
@@ -710,6 +722,11 @@ public:
      *                                        The caller is responsible for deleting the returned object.
      *  @param rspStatusCode            [out] The response status code received. 0 means success,
      *                                        others can be found in the DICOM standard.
+     *  @param reqSOPClassUID           [in]  Optional Requested SOP Class UID (0000,0003) to send
+     *                                        instead of the presentation context's abstract syntax.
+     *                                        Needed e.g. for UPS, where N-GET over the Pull
+     *                                        presentation context must still name the UPS Push SOP
+     *                                        Class. Empty = use the abstract syntax.
      *  @return EC_Normal if request could be issued and response was received successfully,
      *          an error code otherwise. If a code different from EC_Normal is returned, other
      *          output like rspStatusCode may be invalid.
@@ -718,7 +735,8 @@ public:
                                         const OFString& requestedSopInstanceUID,
                                         const OFList<DcmTagKey>& attributeIdentifierList,
                                         DcmDataset*& attributeList,
-                                        Uint16& rspStatusCode);
+                                        Uint16& rspStatusCode,
+                                        const OFString& reqSOPClassUID = "");
 
     /** Function handling a single C-GET, C-FIND or C-MOVE Response, used by
      *  handleCGETResponse(), handleFINDResponse() and handleMOVEResponse().
