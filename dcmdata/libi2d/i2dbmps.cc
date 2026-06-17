@@ -230,6 +230,12 @@ OFCondition I2DBmpSource::readBitmapHeader(Uint16 &width,
   bpp = tmp_word;
   DCMDATA_LIBI2D_DEBUG("I2DBmpSource: BMP bpp: " << OFstatic_cast(int, bpp));
 
+  /* Only these bit depths are supported. Reject everything else here, before
+   * any size computation (e.g. width * bpp) is performed, so that an attacker
+   * cannot use a large bpp value to overflow those calculations. */
+  if (bpp != 1 && bpp != 4 && bpp != 8 && bpp != 16 && bpp != 24 && bpp != 32)
+    return makeOFCondition(OFM_dcmdata, 18, OF_error, "unsupported BMP file - invalid bpp");
+
   /* Compression info */
   if (readDWord(tmp_dword) != 0)
     return EC_EndOfStream;
@@ -343,7 +349,7 @@ OFCondition I2DBmpSource::readBitmapData(
      row_length = (row_length + 3) & ~3
    */
 
-  const Uint32 row_length = ((width * bpp + 31) / 32) * 4;
+  const Uint32 row_length = ((OFstatic_cast(Uint32, width) * bpp + 31) / 32) * 4;
   Uint8 *row_data;
   Uint32 y;
   OFBool positive_direction;
@@ -373,13 +379,11 @@ OFCondition I2DBmpSource::readBitmapData(
     max = 0;
   }
 
-  Uint32 dims = width*height;
+  Uint32 dims = OFstatic_cast(Uint32, width) * OFstatic_cast(Uint32, height);
   if (!OFStandard::safeMult(dims, OFstatic_cast(Uint32, samplesPerPixel), length))
   {
     return makeOFCondition(OFM_dcmdata, 18, OF_error, "BMP dimensions too large, width*height*samplesPerPixel exceeds 32 bit length field");
   }
-
-  length = width * height * samplesPerPixel;
 
   DCMDATA_LIBI2D_DEBUG("I2DBmpSource: Starting to read bitmap data");
 

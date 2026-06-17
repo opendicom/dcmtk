@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright (C) 2007-2025, OFFIS e.V.
+ *  Copyright (C) 2007-2026, OFFIS e.V.
  *  All rights reserved.  See COPYRIGHT file for details.
  *
  *  This software and supporting documentation were developed by
@@ -707,6 +707,17 @@ OFCondition I2DJpegSource::extractRawJPEGStream(char*& pixelData, Uint32& pixLen
         {
             DCMDATA_LIBI2D_ERROR("Length field in JPEG data bigger than remaining file");
             cond = makeOFCondition(OFM_dcmdata, 18, OF_error, "Length field in JPEG data bigger than remaining file");
+        }
+        // Make sure the block still fits into the buffer. The block boundaries are
+        // derived from marker offsets collected during an earlier scan of the file.
+        // If the file content is no longer consistent with that scan (e.g. the
+        // underlying file changed between the two passes, or the APP/COM segment
+        // accounting is off), the accumulated block sizes could otherwise exceed
+        // rawStreamSize and write past the end of the allocated buffer.
+        else if (blockSize > (pixelData + rawStreamSize) - currBufferPos)
+        {
+            DCMDATA_LIBI2D_ERROR("Inconsistent segment sizes in JPEG data");
+            cond = makeOFCondition(OFM_dcmdata, 18, OF_error, "Inconsistent segment sizes in JPEG data");
         }
         if (cond.good())
         {
