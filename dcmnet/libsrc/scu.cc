@@ -1732,7 +1732,7 @@ OFCondition DcmSCU::sendACTIONRequest(const T_ASC_PresentationContextID presID,
     // Do some basic validity checks
     if (!isConnected())
         return DIMSE_ILLEGALASSOCIATION;
-    if (sopInstanceUID.empty() || (reqDataset == NULL))
+    if (sopInstanceUID.empty())
         return DIMSE_NULLKEY;
 
     // Prepare DIMSE data structures for issuing request
@@ -1747,7 +1747,7 @@ OFCondition DcmSCU::sendACTIONRequest(const T_ASC_PresentationContextID presID,
 
     request.CommandField   = DIMSE_N_ACTION_RQ;
     actionReq.MessageID    = nextMessageID();
-    actionReq.DataSetType  = DIMSE_DATASET_PRESENT;
+    actionReq.DataSetType  = (reqDataset == NULL) ? DIMSE_DATASET_NULL : DIMSE_DATASET_PRESENT;
     actionReq.ActionTypeID = actionTypeID;
 
     // Determine SOP Class from presentation context
