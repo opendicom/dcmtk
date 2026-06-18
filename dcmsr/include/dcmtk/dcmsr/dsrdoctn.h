@@ -211,6 +211,18 @@ class DCMTK_DCMSR_EXPORT DSRDocumentTreeNode
                                 const size_t flags,
                                 const size_t depth);
 
+    /** read general XML document tree node data
+     ** @param  doc           document containing the XML file content
+     *  @param  cursor        cursor pointing to the starting node
+     *  @param  documentType  type of the document to be read (used for debug output only)
+     *  @param  flags         flag used to customize the reading process (see DSRTypes::XF_xxx)
+     ** @return status, EC_Normal if successful, an error code otherwise
+     */
+    virtual OFCondition readXML(const DSRXMLDocument &doc,
+                                DSRXMLCursor cursor,
+                                const E_DocumentType documentType,
+                                const size_t flags);
+
     /** write content item in XML format
      ** @param  stream  output stream to which the XML document is written
      *  @param  flags   flag used to customize the output (see DSRTypes::XF_xxx)

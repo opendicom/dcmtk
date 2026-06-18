@@ -209,6 +209,14 @@ OFCondition DSRDocumentTreeNode::write(DcmItem &dataset,
 OFCondition DSRDocumentTreeNode::readXML(const DSRXMLDocument &doc,
                                          DSRXMLCursor cursor,
                                          const E_DocumentType documentType,
+                                         const size_t flags)
+{
+    return readXML(doc, cursor, documentType, flags, 0);
+}
+
+OFCondition DSRDocumentTreeNode::readXML(const DSRXMLDocument &doc,
+                                         DSRXMLCursor cursor,
+                                         const E_DocumentType documentType,
                                          const size_t flags,
                                          const size_t depth)
 {
