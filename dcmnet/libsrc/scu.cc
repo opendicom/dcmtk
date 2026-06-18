@@ -39,7 +39,9 @@ OFString DcmSCU::TLogger::m_loggerName[DcmSCU::TLogger::LOGGER_NUM_LOGGERS] = {
     "dcmtk.dcmnet.scu.cfindrsp.dataset",
     "dcmtk.dcmnet.scu.cstorerq.dataset",
     "dcmtk.dcmnet.scu.ngetrq.identifierlist",
-    "dcmtk.dcmnet.scu.ngetrsp.dataset"
+    "dcmtk.dcmnet.scu.ngetrsp.dataset",
+    "dcmtk.dcmnet.scu.nactionrq.actioninformation",
+    "dcmtk.dcmnet.scu.nactionrsp.actionreply"
 };
 
 
@@ -1766,15 +1768,24 @@ OFCondition DcmSCU::sendACTIONRequest(const T_ASC_PresentationContextID presID,
     if (DCM_dcmnetLogger.isEnabledFor(OFLogger::DEBUG_LOG_LEVEL))
     {
         DCMNET_INFO("Sending N-ACTION Request");
-        // Output dataset only if trace level is enabled
-        if (DCM_dcmnetLogger.isEnabledFor(OFLogger::TRACE_LOG_LEVEL))
-            DCMNET_DEBUG(DIMSE_dumpMessage(tempStr, request, DIMSE_OUTGOING, reqDataset, pcid));
-        else
-            DCMNET_DEBUG(DIMSE_dumpMessage(tempStr, request, DIMSE_OUTGOING, NULL, pcid));
+        DCMNET_DEBUG(DIMSE_dumpMessage(tempStr, request, DIMSE_OUTGOING, NULL, pcid));
     }
     else
     {
         DCMNET_INFO("Sending N-ACTION Request (MsgID " << actionReq.MessageID << ")");
+    }
+    // Log request Action Information if the related logger is enabled
+    if (Logger.isEnabled(TLogger::LOGGER_N_ACTION_RQ_ACTION_INFORMATION))
+    {
+        if (reqDataset == NULL)
+        {
+            OFLOG_DEBUG(DcmSCU::Logger[TLogger::LOGGER_N_ACTION_RQ_ACTION_INFORMATION], "N-ACTION request action information: none");
+        }
+        else
+        {
+            OFLOG_DEBUG(DcmSCU::Logger[TLogger::LOGGER_N_ACTION_RQ_ACTION_INFORMATION], "N-ACTION request action information:" << OFendl
+                        << DcmObject::PrintHelper(*reqDataset));
+        }
     }
     cond = sendDIMSEMessage(pcid, &request, reqDataset);
     if (cond.bad())
@@ -1837,6 +1848,12 @@ OFCondition DcmSCU::sendACTIONRequest(const T_ASC_PresentationContextID presID,
         if (cond.good())
         {
             DCMNET_WARN("Received unexpected dataset after N-ACTION response, ignoring");
+            // Log response Action Reply if the related logger is enabled
+            if ((tempDataset != NULL) && Logger.isEnabled(TLogger::LOGGER_N_ACTION_RSP_ACTION_REPLY))
+            {
+                OFLOG_DEBUG(DcmSCU::Logger[TLogger::LOGGER_N_ACTION_RSP_ACTION_REPLY], "N-ACTION response action reply:" << OFendl
+                            << DcmObject::PrintHelper(*tempDataset));
+            }
             delete tempDataset;
         }
         else
@@ -2999,11 +3016,13 @@ void RetrieveResponse::print()
 // Default constructor, initializes logger names and sets defaults for enabled states
 DcmSCU::TLogger::TLogger()
 {
-    m_loggerEnabled[LOGGER_C_FIND_RQ_DATASET]         = OFTrue;
-    m_loggerEnabled[LOGGER_C_FIND_RSP_DATASET]        = OFFalse;
-    m_loggerEnabled[LOGGER_C_STORE_RQ_DATASET]        = OFFalse;
-    m_loggerEnabled[LOGGER_N_GET_RQ_IDENTIFIER_LIST]  = OFTrue;
-    m_loggerEnabled[LOGGER_N_GET_RSP_DATASET]         = OFFalse;
+    m_loggerEnabled[LOGGER_C_FIND_RQ_DATASET]              = OFTrue;
+    m_loggerEnabled[LOGGER_C_FIND_RSP_DATASET]             = OFFalse;
+    m_loggerEnabled[LOGGER_C_STORE_RQ_DATASET]             = OFFalse;
+    m_loggerEnabled[LOGGER_N_GET_RQ_IDENTIFIER_LIST]       = OFTrue;
+    m_loggerEnabled[LOGGER_N_GET_RSP_DATASET]              = OFFalse;
+    m_loggerEnabled[LOGGER_N_ACTION_RQ_ACTION_INFORMATION] = OFTrue;
+    m_loggerEnabled[LOGGER_N_ACTION_RSP_ACTION_REPLY]      = OFFalse;
 }
 
 // Access logger names by enum value

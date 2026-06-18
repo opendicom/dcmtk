@@ -685,6 +685,9 @@ struct TestSCPWithMPPSSupport : TestSCP
         if (incomingMsg->CommandField == DIMSE_N_GET_RQ)
             return OnNGETRequest(incomingMsg->msg.NGetRQ, presInfo.presentationContextID);
 
+        if (incomingMsg->CommandField == DIMSE_N_ACTION_RQ)
+            return OnNACTIONRequest(incomingMsg->msg.NActionRQ, presInfo.presentationContextID);
+
         return DcmSCP::handleIncomingCommand(incomingMsg, presInfo);
     }
 
@@ -942,6 +945,53 @@ struct TestSCPWithMPPSSupport : TestSCP
         DcmDataset* responseDataset = (responseStatus == STATUS_N_Success) ? &filteredDataset : OFnullptr;
         return sendNGETResponse(presID, getRq.MessageID, requestedSOPClassUID, requestedSOPInstanceUID,
                                 responseStatus, responseDataset);
+    }
+
+    /** Handle an N-ACTION request sent by the SCU (dispatched from
+     *  handleIncomingCommand()).
+     *
+     *  This is a deliberately minimal N-ACTION implementation whose only purpose
+     *  is to give the DcmSCU N-ACTION code path (DcmSCU::sendACTIONRequest(), and
+     *  in particular its dedicated Action Information / Action Reply loggers) a
+     *  real peer to talk to. It does not implement any specific SOP class action
+     *  semantics. The handler:
+     *   -# receives the request together with its optional Action Information
+     *      dataset via receiveACTIONRequest() (the dataset is accepted and then
+     *      simply discarded; the Action Type ID is not evaluated),
+     *   -# looks up the addressed SOP instance among the instances that were
+     *      previously created on this SCP via N-CREATE (m_managedSopInstances),
+     *   -# answers with STATUS_N_Success for a managed instance or
+     *      STATUS_N_InvalidSOPInstance for an unknown one.
+     *  The N-ACTION response is sent via sendACTIONResponse() and never carries
+     *  an Action Reply dataset.
+     *  @param  actionRq The received N-ACTION request command set.
+     *  @param  presID   Presentation context ID the request arrived on.
+     *  @return EC_Normal if the response was sent successfully, an error
+     *          code otherwise (e.g. if receiving the request failed).
+     */
+    OFCondition OnNACTIONRequest(T_DIMSE_N_ActionRQ& actionRq, const T_ASC_PresentationContextID presID)
+    {
+        // Receive the command set plus the optional Action Information dataset.
+        DcmDataset* reqDataset = OFnullptr;
+        Uint16 actionTypeID = 0;
+        OFCondition result = receiveACTIONRequest(actionRq, presID, reqDataset, actionTypeID);
+        if (result.bad())
+            return result;
+
+        const OFString requestedSOPClassUID    = actionRq.RequestedSOPClassUID;
+        const OFString requestedSOPInstanceUID = actionRq.RequestedSOPInstanceUID;
+        Uint16 responseStatus = STATUS_N_Success;
+
+        // Only accept the action for an instance that is actually managed,
+        // i.e. one that was created earlier in the same association via N-CREATE.
+        if (m_managedSopInstances.find(requestedSOPInstanceUID) == m_managedSopInstances.end())
+            responseStatus = STATUS_N_InvalidSOPInstance;
+
+        // The Action Information is not needed any further in this test SCP.
+        delete reqDataset;
+        // Acknowledge the action; an N-ACTION response carries no Action Reply here.
+        return sendACTIONResponse(presID, actionRq.MessageID, requestedSOPClassUID,
+                                  requestedSOPInstanceUID, responseStatus);
     }
 
     OFMap<OFString, DcmDataset> m_managedSopInstances;
@@ -1260,6 +1310,131 @@ OFTEST_FLAGS(dcmnet_scu_sendNGETRequest_sets_error_status_for_nonexistent_instan
     OFList<DcmTagKey> tagList;
     OFCondition result = fixture.mppsSCU.sendNGETRequest(fixture.presIDMpps, "9.9.9.9",
                                                          tagList, fixture.retrievedAttributes, rspStatusCode);
+    OFCHECK_MSG(result.good(), result.text());
+    OFCHECK(rspStatusCode == STATUS_N_InvalidSOPInstance);
+
+    fixture.scp.m_set_stop_after_assoc = OFTrue;
+    OFCHECK_MSG((result = fixture.mppsSCU.releaseAssociation()).good(), result.text());
+}
+
+
+/** Fixture for the N-ACTION tests.
+ *
+ *  Builds on NCREATEFixture, which already opens the association and negotiates
+ *  the Verification and MPPS presentation contexts. On top of that it prepares
+ *  everything the N-ACTION tests need:
+ *   -# It enables the two dedicated DcmSCU loggers for the N-ACTION Action
+ *      Information (request) and Action Reply (response). LOGGER_N_ACTION_RQ_*
+ *      is on by default, but both are set explicitly so the new logging code in
+ *      DcmSCU::sendACTIONRequest() is always exercised when the tests run.
+ *   -# It pre-creates a managed SOP instance on the SCP via N-CREATE, so that an
+ *      N-ACTION addressed to that instance ("2.2.2.2") is accepted while any
+ *      other instance UID is rejected.
+ *   -# It prepares a small Action Information dataset (Modality) that is passed
+ *      to sendACTIONRequest() and therefore both logged by the SCU and
+ *      transmitted to the SCP.
+ */
+struct NACTIONFixture : NCREATEFixture
+{
+    NACTIONFixture()
+    {
+        // (1) Enable the dedicated loggers for the N-ACTION Action Information / Action Reply.
+        mppsSCU.Logger.setEnabled(DcmSCU::TLogger::LOGGER_N_ACTION_RQ_ACTION_INFORMATION, OFTrue);
+        mppsSCU.Logger.setEnabled(DcmSCU::TLogger::LOGGER_N_ACTION_RSP_ACTION_REPLY, OFTrue);
+
+        // (2) Pre-create an instance so the SCP has a managed instance to act on.
+        Uint16 rspStatusCode = 0;
+        OFCondition result = mppsSCU.sendNCREATERequest(presIDRetrieve, affectedSopInstanceUid,
+                                                        &reqDataset, createdInstance, rspStatusCode);
+        OFCHECK_MSG(result.good(), result.text());
+        OFCHECK(rspStatusCode == STATUS_N_Success);
+
+        // (3) Action Information dataset that is logged and transmitted with the request.
+        actionInformation.putAndInsertOFStringArray(DCM_Modality, "US");
+    }
+
+    /// Action Information sent with every N-ACTION request in these tests.
+    DcmDataset actionInformation;
+};
+
+/** Local input validation: sendACTIONRequest() must reject an empty Requested
+ *  SOP Instance UID before anything is sent on the wire. The call is expected to
+ *  return an error (DIMSE_NULLKEY) and the SCP is never contacted, so no status
+ *  code is produced. This exercises the early-exit guard in sendACTIONRequest().
+ */
+OFTEST_FLAGS(dcmnet_scu_sendACTIONRequest_fails_when_requestedsopinstance_is_empty, EF_Slow)
+{
+    NACTIONFixture fixture;
+
+    Uint16 rspStatusCode = 0;
+    // Empty SOP Instance UID -> rejected locally, request never leaves the SCU.
+    OFCondition result = fixture.mppsSCU.sendACTIONRequest(fixture.presIDMpps, "", 1,
+                                                           &fixture.actionInformation, rspStatusCode);
+    OFCHECK(result.bad());
+
+    fixture.scp.m_set_stop_after_assoc = OFTrue;
+    OFCHECK_MSG((result = fixture.mppsSCU.releaseAssociation()).good(), result.text());
+}
+
+/** Happy path / full N-ACTION round trip against the managed instance
+ *  ("2.2.2.2") that the fixture created. The request and its Action Information
+ *  dataset are sent to the SCP (this is the case that drives the new SCU Action
+ *  Information logger), the SCP accepts the instance, and the SCU receives a
+ *  STATUS_N_Success response. Verifies both the transport (result.good()) and
+ *  the DIMSE status code returned by the SCP.
+ */
+OFTEST_FLAGS(dcmnet_scu_sendACTIONRequest_succeeds_when_scp_has_instance, EF_Slow)
+{
+    NACTIONFixture fixture;
+
+    Uint16 rspStatusCode = 0;
+    // Address the instance the fixture created -> SCP answers with success.
+    OFCondition result = fixture.mppsSCU.sendACTIONRequest(fixture.presIDMpps, fixture.affectedSopInstanceUid, 1,
+                                                           &fixture.actionInformation, rspStatusCode);
+    OFCHECK_MSG(result.good(), result.text());
+    OFCHECK_MSG(rspStatusCode == STATUS_N_Success, OFString("Status code is: ") + DU_nactionStatusString(rspStatusCode));
+
+    fixture.scp.m_set_stop_after_assoc = OFTrue;
+    OFCHECK_MSG((result = fixture.mppsSCU.releaseAssociation()).good(), result.text());
+}
+
+/** N-ACTION carrying no Action Information dataset. N-ACTION may legitimately be
+ *  issued without a dataset (PS3.7 10.1.4), e.g. for parameterless actions. This
+ *  is the counterpart to the success test above and covers the other branch of
+ *  the new SCU logger: with a NULL request dataset it logs
+ *  "N-ACTION request action information: none" instead of dumping a dataset, and
+ *  the request goes out announcing DIMSE_DATASET_NULL. The SCP's dataset-less
+ *  receive path is exercised too, and the managed instance is still answered
+ *  with STATUS_N_Success.
+ */
+OFTEST_FLAGS(dcmnet_scu_sendACTIONRequest_succeeds_without_dataset, EF_Slow)
+{
+    NACTIONFixture fixture;
+
+    Uint16 rspStatusCode = 0;
+    // No Action Information dataset (OFnullptr) -> logged as "none", sent without a dataset.
+    OFCondition result = fixture.mppsSCU.sendACTIONRequest(fixture.presIDMpps, fixture.affectedSopInstanceUid, 1,
+                                                           OFnullptr, rspStatusCode);
+    OFCHECK_MSG(result.good(), result.text());
+    OFCHECK_MSG(rspStatusCode == STATUS_N_Success, OFString("Status code is: ") + DU_nactionStatusString(rspStatusCode));
+
+    fixture.scp.m_set_stop_after_assoc = OFTrue;
+    OFCHECK_MSG((result = fixture.mppsSCU.releaseAssociation()).good(), result.text());
+}
+
+/** Error-status path: an N-ACTION addressed to a SOP instance the SCP does not
+ *  manage ("9.9.9.9") still completes normally on the wire (result.good()), but
+ *  the SCP reports STATUS_N_InvalidSOPInstance. Confirms that a DIMSE-level error
+ *  status is propagated back to the caller separately from the transport status.
+ */
+OFTEST_FLAGS(dcmnet_scu_sendACTIONRequest_sets_error_status_for_nonexistent_instance, EF_Slow)
+{
+    NACTIONFixture fixture;
+
+    Uint16 rspStatusCode = 0;
+    // Unknown SOP Instance UID -> request succeeds but SCP rejects it by status.
+    OFCondition result = fixture.mppsSCU.sendACTIONRequest(fixture.presIDMpps, "9.9.9.9", 1,
+                                                           &fixture.actionInformation, rspStatusCode);
     OFCHECK_MSG(result.good(), result.text());
     OFCHECK(rspStatusCode == STATUS_N_InvalidSOPInstance);
 

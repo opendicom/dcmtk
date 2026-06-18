@@ -210,6 +210,10 @@ private:
  *     (default level: enabled, i.e. logged by default)
  *  - "dcmtk.dcmnet.scu.ngetrsp.dataset": Logs N-GET response attribute list datasets to DEBUG level
  *     (default level: OFF, i.e. not logged by default)
+ *  - "dcmtk.dcmnet.scu.nactionrq.actioninformation": Logs N-ACTION request Action Information to DEBUG level
+ *     (default level: enabled, i.e. logged by default)
+ *  - "dcmtk.dcmnet.scu.nactionrsp.actionreply": Logs N-ACTION response Action Reply to DEBUG level
+ *     (default level: OFF, i.e. not logged by default)
  *
  *  These loggers can be enabled or disabled individually via the DcmSCU::Logger member,
  *  e.g. `scu.Logger.setEnabled(DcmSCU::TLogger::LOGGER_C_STORE_RQ_DATASET, OFTrue);`
@@ -242,9 +246,13 @@ public:
                 LOGGER_N_GET_RQ_IDENTIFIER_LIST = 3,
                 /// Logger for N-GET-RSP attribute list dataset, disabled per default
                 LOGGER_N_GET_RSP_DATASET = 4,
+                /// Logger for N-ACTION-RQ Action Information, enabled per default
+                LOGGER_N_ACTION_RQ_ACTION_INFORMATION = 5,
+                /// Logger for N-ACTION-RSP Action Reply, disabled per default
+                LOGGER_N_ACTION_RSP_ACTION_REPLY = 6,
                 /// Number of loggers; provides number of loggers and can be
                 /// used a a placeholder to enable/disable all loggers at once
-                LOGGER_NUM_LOGGERS = 5
+                LOGGER_NUM_LOGGERS = 7
             };
 
             /// Default constructor, initializes logger names and sets defaults
@@ -285,13 +293,15 @@ public:
     };
 
     /// Member holding information to extra loggers utilized by DcmSCU.
-    /// | Logger Enum                         | Logger Name                               | Description                                               | Default State |
-    /// |-------------------------------------|-------------------------------------------|-----------------------------------------------------------|---------------|
-    /// | LOGGER_C_FIND_RQ_DATASET            | dcmtk.dcmnet.scu.cfindrq.dataset          | Logs C-FIND request datasets to DEBUG level               | Enabled       |
-    /// | LOGGER_C_FIND_RSP_DATASET           | dcmtk.dcmnet.scu.cfindrsp.dataset         | Logs C-FIND response datasets to DEBUG level              | Disabled      |
-    /// | LOGGER_C_STORE_RQ_DATASET           | dcmtk.dcmnet.scu.cstorerq.dataset         | Logs C-STORE request datasets to DEBUG level              | Disabled      |
-    /// | LOGGER_N_GET_RQ_IDENTIFIER_LIST     | dcmtk.dcmnet.scu.ngetrq.identifierlist    | Logs N-GET request attribute identifier lists to DEBUG level | Enabled    |
-    /// | LOGGER_N_GET_RSP_DATASET            | dcmtk.dcmnet.scu.ngetrsp.dataset          | Logs N-GET response attribute list datasets to DEBUG level | Disabled     |
+    /// | Logger Enum                           | Logger Name                               | Description                                               | Default State |
+    /// |---------------------------------------|-------------------------------------------|-----------------------------------------------------------|---------------|
+    /// | LOGGER_C_FIND_RQ_DATASET              | dcmtk.dcmnet.scu.cfindrq.dataset          | Logs C-FIND request datasets to DEBUG level               | Enabled       |
+    /// | LOGGER_C_FIND_RSP_DATASET             | dcmtk.dcmnet.scu.cfindrsp.dataset         | Logs C-FIND response datasets to DEBUG level              | Disabled      |
+    /// | LOGGER_C_STORE_RQ_DATASET             | dcmtk.dcmnet.scu.cstorerq.dataset         | Logs C-STORE request datasets to DEBUG level              | Disabled      |
+    /// | LOGGER_N_GET_RQ_IDENTIFIER_LIST       | dcmtk.dcmnet.scu.ngetrq.identifierlist    | Logs N-GET request attribute identifier lists to DEBUG level | Enabled    |
+    /// | LOGGER_N_GET_RSP_DATASET              | dcmtk.dcmnet.scu.ngetrsp.dataset          | Logs N-GET response attribute list datasets to DEBUG level | Disabled     |
+    /// | LOGGER_N_ACTION_RQ_ACTION_INFORMATION | dcmtk.dcmnet.scu.nactionrq.actioninformation | Logs N-ACTION request Action Information to DEBUG level | Enabled    |
+    /// | LOGGER_N_ACTION_RSP_ACTION_REPLY      | dcmtk.dcmnet.scu.nactionrsp.actionreply      | Logs N-ACTION response Action Reply to DEBUG level      | Disabled   |
     TLogger Logger;
 
     /** Constructor, just initializes internal class members
