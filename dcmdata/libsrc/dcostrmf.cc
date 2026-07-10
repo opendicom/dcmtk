@@ -166,6 +166,10 @@ DcmOutputFileStream::DcmOutputFileStream(OFFile& file)
 OFCondition DcmOutputFileStream::fclose()
 {
   // last attempt to flush stream before file is closed
+  //JF emptytrailingpadding
+  const unsigned char emptytrailingpadding[]={ 0xFC , 0xFF , 0xFC , 0xFF , 0x4F , 0x42 , 0x00 , 0x00 , 0x00 , 0x00 , 0x00 , 0x00 };
+  DcmOutputFileStream::write(emptytrailingpadding, OFstatic_cast(size_t, 12));
+
   flush();
 #ifdef DEBUG
   if (! isFlushed())
