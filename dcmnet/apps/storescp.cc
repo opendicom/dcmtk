@@ -79,6 +79,8 @@ static char rcsid[] = "$dcmtk: " OFFIS_CONSOLE_APPLICATION " v" OFFIS_DCMTK_VERS
 #define APPLICATIONTITLE "STORESCP"     /* our application entity title */
 
 #define PATH_PLACEHOLDER "#p"
+#define OBJECT_CLASS_PLACEHOLDER "#o"
+
 #define FILENAME_PLACEHOLDER "#f"
 #define CALLING_AETITLE_PLACEHOLDER "#a"
 #define CALLED_AETITLE_PLACEHOLDER "#c"
@@ -191,6 +193,7 @@ OFBool             opt_abortAfterStore = OFFalse;
 OFBool             opt_promiscuous = OFFalse;
 OFBool             opt_correctUIDPadding = OFFalse;
 OFBool             opt_inetd_mode = OFFalse;
+OFString           objectClass;                       //JF
 OFString           callingAETitle;                    // calling application entity title will be stored here
 OFString           calledAETitle;                     // called application entity title will be stored here
 OFString           callingPresentationAddress;        // remote hostname or IP address will be stored here
@@ -2152,7 +2155,7 @@ static OFCondition storeSCP(
 {
   OFCondition cond = EC_Normal;
   T_DIMSE_C_StoreRQ *req;
-  char imageFileName[2048];
+  char imageFileName[256];
 
   // assign the actual information of the C-STORE-RQ command to a local variable
   req = &msg->msg.CStoreRQ;
@@ -2237,8 +2240,13 @@ static OFCondition storeSCP(
       {
         OFLOG_WARN(storescpLogger, "Sanitized unusual characters in SOP Instance UID, converted from \"" << s << "\" to \"" << uid << "\".");
       }
-      OFStandard::snprintf(imageFileName, sizeof(imageFileName), "%s%c%s.%s%s", opt_outputDirectory.c_str(), PATH_SEPARATOR, dcmSOPClassUIDToModality(req->AffectedSOPClassUID, "UNKNOWN"),
-        uid.c_str(), opt_fileNameExtension.c_str());
+      objectClass = OFSTRING_GUARD(dcmSOPClassUIDToModality(req->AffectedSOPClassUID, "UNKNOWN"));
+      //char dirName[191];
+      //OFStandard::snprintf(dirName, sizeof(dirName), "%s%c%s", opt_outputDirectory.c_str(), PATH_SEPARATOR,objectClass.c_str());
+      //if ((mkdir(dirName, 0777) ==-1) and (errno != EEXIST)) {
+      //  OFLOG_ERROR(storescpLogger, "Cannot create dir (" <<  dirName << ")");
+     // }
+      OFStandard::snprintf(imageFileName, sizeof(imageFileName), "%s%c%s%s", opt_outputDirectory.c_str(), PATH_SEPARATOR, uid.c_str(), opt_fileNameExtension.c_str());
     }
   }
 
@@ -2268,7 +2276,7 @@ static OFCondition storeSCP(
   }
 
   // define an address where the information which will be received over the network will be stored
-  DcmDataset *dset = dcmff.getDataset();
+  //JF DcmDataset *dset = dcmff.getDataset();
 
   // if opt_bitPreserving is set, the user requires that the data shall be
   // written exactly as it was received. Depending on this option, function
@@ -2280,6 +2288,9 @@ static OFCondition storeSCP(
   }
   else
   {
+    //JF define an address where the information which will be received over the network will be stored
+    DcmDataset *dset = dcmff.getDataset();
+
     cond = DIMSE_storeProvider(assoc, presID, req, NULL, opt_useMetaheader, &dset,
       storeSCPCallback, &callbackData, opt_blockMode, opt_dimse_timeout);
   }
@@ -2388,6 +2399,8 @@ static void executeOnReception()
     OFString outputFileName = outputFileNameArray.back();
     cmd = replaceChars( cmd, OFString(FILENAME_PLACEHOLDER), outputFileName );
   }
+
+  cmd = replaceChars( cmd, OFString(OBJECT_CLASS_PLACEHOLDER), objectClass );
 
   // perform substitution for placeholder #a.
   // Note that this string is already enclosed in double quotes at this point
