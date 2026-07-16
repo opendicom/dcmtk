@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="storescp" type="CMakeRunConfiguration" factoryName="Application" singleton="false" PROGRAM_PARAMS="-lc $USER_HOME$/Desktop/tmpStorescp.cfg -dhl -pdu 65534 -pm -od $USER_HOME$/Desktop/ +B +F -xcr '$USER_HOME$/Desktop/storescp.xcr.sh #p #o #f #a #r #c' 11111" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="DCMTK" TARGET_NAME="storescp" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="DCMTK" RUN_TARGET_NAME="storescp">
+  <configuration default="false" name="storescp" type="CMakeRunConfiguration" factoryName="Application" singleton="false" PROGRAM_PARAMS="-lc $USER_HOME$/Desktop/tmpStorescp.cfg -dhl -pdu 65534 -pm -od $USER_HOME$/Desktop/ +B +F -xcr '$USER_HOME$/Desktop/storescp.xcr.sh #u #v #s #k #i #o #t #l #p #f #a #r #c' 11111" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="DCMTK" TARGET_NAME="storescp" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="DCMTK" RUN_TARGET_NAME="storescp">
     <envs>
       <env name="DCMDICTPATH" value="../../dcmdata/data/dicom.dic" />
     </envs>

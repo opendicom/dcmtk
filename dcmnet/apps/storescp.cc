@@ -79,12 +79,20 @@ static char rcsid[] = "$dcmtk: " OFFIS_CONSOLE_APPLICATION " v" OFFIS_DCMTK_VERS
 #define APPLICATIONTITLE "STORESCP"     /* our application entity title */
 
 #define PATH_PLACEHOLDER "#p"
-#define OBJECT_CLASS_PLACEHOLDER "#o"
-
 #define FILENAME_PLACEHOLDER "#f"
 #define CALLING_AETITLE_PLACEHOLDER "#a"
 #define CALLED_AETITLE_PLACEHOLDER "#c"
 #define CALLING_PRESENTATION_ADDRESS_PLACEHOLDER "#r"
+
+//JF
+#define u_PLACEHOLDER "#u"
+#define v_PLACEHOLDER "#v"
+#define s_PLACEHOLDER "#s"
+#define k_PLACEHOLDER "#k"
+#define i_PLACEHOLDER "#i"
+#define o_PLACEHOLDER "#o"
+#define t_PLACEHOLDER "#t"
+#define l_PLACEHOLDER "#l"
 
 static OFCondition processCommands(T_ASC_Association *assoc);
 static OFCondition acceptAssociation(T_ASC_Network *net, DcmAssociationConfiguration& asccfg, OFBool secureConnection);
@@ -193,7 +201,6 @@ OFBool             opt_abortAfterStore = OFFalse;
 OFBool             opt_promiscuous = OFFalse;
 OFBool             opt_correctUIDPadding = OFFalse;
 OFBool             opt_inetd_mode = OFFalse;
-OFString           objectClass;                       //JF
 OFString           callingAETitle;                    // calling application entity title will be stored here
 OFString           calledAETitle;                     // called application entity title will be stored here
 OFString           callingPresentationAddress;        // remote hostname or IP address will be stored here
@@ -256,6 +263,8 @@ extern "C" void sigChildHandler(int)
 
 #define SHORTCOL 4
 #define LONGCOL 21
+
+
 
 int main(int argc, char *argv[])
 {
@@ -2137,7 +2146,15 @@ storeSCPCallback(
   }
 }
 
-
+//JF
+const char *u_REPLACE;//theirImplementationClassUID
+const char *v_REPLACE;//theirImplementationVersion
+char s_REPLACE[6];//max pdu size
+const char *k_REPLACE;//sop class dcmtk key (padded with _ up to 4 chars)
+char i_REPLACE[4];//ID context negotiated
+char l_REPLACE[2048];//list of presentation context id.class-transfer_ (no spaces between elements)
+char o_REPLACE[64];
+char t_REPLACE[64];
 static OFCondition storeSCP(
   T_ASC_Association *assoc,
   T_DIMSE_Message *msg,
@@ -2154,11 +2171,38 @@ static OFCondition storeSCP(
      */
 {
   OFCondition cond = EC_Normal;
-  T_DIMSE_C_StoreRQ *req;
-  char imageFileName[256];
 
   // assign the actual information of the C-STORE-RQ command to a local variable
+  T_DIMSE_C_StoreRQ *req;
   req = &msg->msg.CStoreRQ;
+
+  u_REPLACE=assoc->params->theirImplementationClassUID;//UI
+  v_REPLACE=assoc->params->theirImplementationVersionName;//SH
+  OFStandard::snprintf(s_REPLACE, sizeof(s_REPLACE), "%ul", assoc->params->DULparams.maxPDU);
+  k_REPLACE=dcmSOPClassUIDToModality(req->AffectedSOPClassUID, "UNKNOWN");
+  OFStandard::snprintf(i_REPLACE, sizeof(i_REPLACE), "%3hhu", presID);
+  //#l
+  int nbrOfAcceptedContexts = ASC_countAcceptedPresentationContexts(assoc->params);
+  T_ASC_Parameters *pcs = assoc->params;
+  T_ASC_PresentationContext pc;
+  int l_INDEX=0;
+  for (int i = 0; i < nbrOfAcceptedContexts; ++i) {
+    ASC_getPresentationContext(pcs, i, &pc);
+    OFString abstractSyntax = pc.abstractSyntax;
+    OFString transferSyntax = pc.acceptedTransferSyntax;
+    OFStandard::snprintf(l_REPLACE+l_INDEX, 2048-l_INDEX, "%03hhu_%s-%s~",pc.presentationContextID,abstractSyntax.c_str(),transferSyntax.c_str());
+    l_INDEX+=6+abstractSyntax.length()+transferSyntax.length();
+    if (pc.presentationContextID == presID) {
+      OFStandard::snprintf(o_REPLACE, sizeof(o_REPLACE), "%s", abstractSyntax.c_str());
+      OFStandard::snprintf(t_REPLACE, sizeof(t_REPLACE), "%s", transferSyntax.c_str());
+    }
+  }
+  /*
+  * #o iod
+  * #t transfer syntax
+  * */
+  char imageFileName[256];
+
 
   // if opt_ignore is set, the user requires that the data shall be received but not
   // stored. in this case, we want to create a corresponding temporary filename for
@@ -2240,12 +2284,9 @@ static OFCondition storeSCP(
       {
         OFLOG_WARN(storescpLogger, "Sanitized unusual characters in SOP Instance UID, converted from \"" << s << "\" to \"" << uid << "\".");
       }
-      objectClass = OFSTRING_GUARD(dcmSOPClassUIDToModality(req->AffectedSOPClassUID, "UNKNOWN"));
-      //char dirName[191];
-      //OFStandard::snprintf(dirName, sizeof(dirName), "%s%c%s", opt_outputDirectory.c_str(), PATH_SEPARATOR,objectClass.c_str());
-      //if ((mkdir(dirName, 0777) ==-1) and (errno != EEXIST)) {
-      //  OFLOG_ERROR(storescpLogger, "Cannot create dir (" <<  dirName << ")");
-     // }
+      //JF association params registered into globals to be passed to script
+      //transfertSyntax = assoc->params->ourImplementationClassUID  ;//presID;
+      //objectClass = OFSTRING_GUARD(dcmSOPClassUIDToModality(req->AffectedSOPClassUID, "UNKNOWN"));
       OFStandard::snprintf(imageFileName, sizeof(imageFileName), "%s%c%s%s", opt_outputDirectory.c_str(), PATH_SEPARATOR, uid.c_str(), opt_fileNameExtension.c_str());
     }
   }
@@ -2281,6 +2322,8 @@ static OFCondition storeSCP(
   // if opt_bitPreserving is set, the user requires that the data shall be
   // written exactly as it was received. Depending on this option, function
   // DIMSE_storeProvider must be called with certain parameters.
+  //define an address where the information which will be received over the network will be stored
+  DcmDataset *dset = dcmff.getDataset();
   if (opt_bitPreserving)
   {
     cond = DIMSE_storeProvider(assoc, presID, req, imageFileName, opt_useMetaheader, NULL,
@@ -2288,9 +2331,6 @@ static OFCondition storeSCP(
   }
   else
   {
-    //JF define an address where the information which will be received over the network will be stored
-    DcmDataset *dset = dcmff.getDataset();
-
     cond = DIMSE_storeProvider(assoc, presID, req, NULL, opt_useMetaheader, &dset,
       storeSCPCallback, &callbackData, opt_blockMode, opt_dimse_timeout);
   }
@@ -2400,8 +2440,6 @@ static void executeOnReception()
     cmd = replaceChars( cmd, OFString(FILENAME_PLACEHOLDER), outputFileName );
   }
 
-  cmd = replaceChars( cmd, OFString(OBJECT_CLASS_PLACEHOLDER), objectClass );
-
   // perform substitution for placeholder #a.
   // Note that this string is already enclosed in double quotes at this point
   s = callingAETitle;
@@ -2431,6 +2469,16 @@ static void executeOnReception()
     OFLOG_WARN(storescpLogger, "Sanitized unusual characters in calling presentation address, converted from " << callingPresentationAddress << " to " << s << ".");
   }
   cmd = replaceChars( cmd, OFString(CALLING_PRESENTATION_ADDRESS_PLACEHOLDER), s );
+
+  //JF
+  cmd = replaceChars( cmd, OFString(u_PLACEHOLDER), u_REPLACE );
+  cmd = replaceChars( cmd, OFString(v_PLACEHOLDER), v_REPLACE );
+  cmd = replaceChars( cmd, OFString(s_PLACEHOLDER), s_REPLACE );
+  cmd = replaceChars( cmd, OFString(k_PLACEHOLDER), k_REPLACE );
+  cmd = replaceChars( cmd, OFString(i_PLACEHOLDER), i_REPLACE );
+  cmd = replaceChars( cmd, OFString(l_PLACEHOLDER), l_REPLACE );
+  cmd = replaceChars( cmd, OFString(o_PLACEHOLDER), o_REPLACE );
+  cmd = replaceChars( cmd, OFString(t_PLACEHOLDER), t_REPLACE );
 
   // Execute command in a new process
   executeCommand( cmd );
