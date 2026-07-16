@@ -2145,7 +2145,6 @@ storeSCPCallback(
     }
   }
 }
-
 //JF
 const char *u_REPLACE;//theirImplementationClassUID
 const char *v_REPLACE;//theirImplementationVersion
@@ -2284,10 +2283,7 @@ static OFCondition storeSCP(
       {
         OFLOG_WARN(storescpLogger, "Sanitized unusual characters in SOP Instance UID, converted from \"" << s << "\" to \"" << uid << "\".");
       }
-      //JF association params registered into globals to be passed to script
-      //transfertSyntax = assoc->params->ourImplementationClassUID  ;//presID;
-      //objectClass = OFSTRING_GUARD(dcmSOPClassUIDToModality(req->AffectedSOPClassUID, "UNKNOWN"));
-      OFStandard::snprintf(imageFileName, sizeof(imageFileName), "%s%c%s%s", opt_outputDirectory.c_str(), PATH_SEPARATOR, uid.c_str(), opt_fileNameExtension.c_str());
+      OFStandard::snprintf(imageFileName, sizeof(imageFileName), "%s%c%s%s", opt_outputDirectory.c_str(),PATH_SEPARATOR, uid.c_str(), opt_fileNameExtension.c_str());
     }
   }
 
@@ -2323,7 +2319,6 @@ static OFCondition storeSCP(
   // written exactly as it was received. Depending on this option, function
   // DIMSE_storeProvider must be called with certain parameters.
   //define an address where the information which will be received over the network will be stored
-  DcmDataset *dset = dcmff.getDataset();
   if (opt_bitPreserving)
   {
     cond = DIMSE_storeProvider(assoc, presID, req, imageFileName, opt_useMetaheader, NULL,
@@ -2331,6 +2326,7 @@ static OFCondition storeSCP(
   }
   else
   {
+    DcmDataset *dset = dcmff.getDataset();
     cond = DIMSE_storeProvider(assoc, presID, req, NULL, opt_useMetaheader, &dset,
       storeSCPCallback, &callbackData, opt_blockMode, opt_dimse_timeout);
   }
